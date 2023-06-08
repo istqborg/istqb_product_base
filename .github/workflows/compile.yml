@@ -12,12 +12,12 @@ jobs:
           root_file: main.tex
           compiler: pdflatex
           args: -shell-escape
-      - name: Generate BibTex document for references 
+      - name: Generate BibTex document for references
         uses: dante-ev/latex-action@latest
         with:
             root_file: main.aux
             compiler: bibtex
-            args: 
+            args:
       - name: Compile LaTeX document
         uses: dante-ev/latex-action@latest
         with:
@@ -35,3 +35,12 @@ jobs:
         with:
           name: PDF
           path: main.pdf
+      - name: Create a prerelease
+        if: github.ref == 'refs/heads/main'
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          title: The latest version
+          automatic_release_tag: latest
+          prerelease: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          files: main.pdf
