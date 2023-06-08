@@ -8,19 +8,19 @@ jobs:
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3
-      - name: Compile LaTeX document main.tex
-        run: latexmk -shell-escape -pdf main.tex
-      - name: Upload PDF document main.pdf
+      - name: Compile LaTeX document example.tex
+        run: latexmk -shell-escape -pdf example.tex
+      - name: Upload PDF document example.pdf
         uses: actions/upload-artifact@v3
         with:
           name: PDF
-          path: main.pdf
+          path: example.pdf
       - name: Create a prerelease
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/example'
         uses: marvinpinto/action-automatic-releases@latest
         with:
           title: The latest version
           automatic_release_tag: latest
           prerelease: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          files: main.pdf
+          files: example.pdf
