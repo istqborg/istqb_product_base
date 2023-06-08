@@ -10,11 +10,15 @@ jobs:
         uses: actions/checkout@v3
       - name: Compile LaTeX document example.tex
         run: latexmk -shell-escape -pdf example.tex
-      - name: Upload PDF document example.pdf
+      - name: Compile LaTeX document atlas.tex
+        run: latexmk -shell-escape -pdf atlas.tex
+      - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
           name: PDF
-          path: example.pdf
+          path: |
+            example.pdf
+            atlas.pdf
       - name: Create a prerelease
         if: github.ref == 'refs/heads/example'
         uses: marvinpinto/action-automatic-releases@latest
@@ -23,4 +27,6 @@ jobs:
           automatic_release_tag: latest
           prerelease: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          files: example.pdf
+          files: |
+            example.pdf
+            atlas.pdf
