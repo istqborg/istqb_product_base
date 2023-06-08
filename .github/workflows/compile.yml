@@ -3,34 +3,14 @@ on: [push]
 jobs:
   build_latex:
     runs-on: ubuntu-latest
+    container:
+      image: witiko/markdown:2.22.0-0-g5a3d0fe-latest
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3
-      - name: Compile LaTeX document to generate references and main.aux
-        uses: dante-ev/latex-action@latest
-        with:
-          root_file: main.tex
-          compiler: pdflatex
-          args: -shell-escape
-      - name: Generate BibTex document for references
-        uses: dante-ev/latex-action@latest
-        with:
-            root_file: main.aux
-            compiler: bibtex
-            args:
-      - name: Compile LaTeX document
-        uses: dante-ev/latex-action@latest
-        with:
-            root_file: main.tex
-            compiler: pdflatex
-            args: -shell-escape
-      - name: Compile LaTeX document v2
-        uses: dante-ev/latex-action@latest
-        with:
-            root_file: main.tex
-            compiler: pdflatex
-            args: -shell-escape
-      - name: Upload PDF file
+      - name: Compile LaTeX document main.tex
+        run: latexmk -shell-escape -pdf main.tex
+      - name: Upload PDF document main.pdf
         uses: actions/upload-artifact@v3
         with:
           name: PDF
