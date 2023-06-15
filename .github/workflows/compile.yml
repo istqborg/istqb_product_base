@@ -3,35 +3,30 @@ on: [push]
 jobs:
   build_latex:
     runs-on: ubuntu-latest
+    container:
+      image: witiko/markdown:2.22.0-0-g5a3d0fe-latest
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3
-      - name: Compile LaTeX document to generate references and main.aux
-        uses: dante-ev/latex-action@latest
-        with:
-          root_file: main.tex
-          compiler: pdflatex
-          args: -shell-escape
-      - name: Generate BibTex document for references 
-        uses: dante-ev/latex-action@latest
-        with:
-            root_file: main.aux
-            compiler: bibtex
-            args: 
-      - name: Compile LaTeX document
-        uses: dante-ev/latex-action@latest
-        with:
-            root_file: main.tex
-            compiler: pdflatex
-            args: -shell-escape
-      - name: Compile LaTeX document v2
-        uses: dante-ev/latex-action@latest
-        with:
-            root_file: main.tex
-            compiler: pdflatex
-            args: -shell-escape
-      - name: Upload PDF file
+      - name: Compile LaTeX document example.tex
+        run: latexmk -shell-escape -pdf example.tex
+      - name: Compile LaTeX document atlas.tex
+        run: latexmk -shell-escape -pdf atlas.tex
+      - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
           name: PDF
-          path: main.pdf
+          path: |
+            example.pdf
+            atlas.pdf
+      - name: Create a prerelease
+        if: github.ref == 'refs/heads/example'
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          title: The latest version
+          automatic_release_tag: latest
+          prerelease: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            example.pdf
+            atlas.pdf
