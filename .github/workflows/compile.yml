@@ -20,7 +20,7 @@ jobs:
             example.pdf
             atlas.pdf
       - name: Create a prerelease
-        if: github.ref == 'refs/heads/example'
+        if: github.ref == 'refs/heads/main'
         uses: marvinpinto/action-automatic-releases@latest
         with:
           title: The latest version
