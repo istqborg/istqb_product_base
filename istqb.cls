@@ -6,9 +6,9 @@
 %% Page geometry
 \RequirePackage{geometry}
 \ExplSyntaxOn
-\tl_new:N \g_geometry_tl
+\tl_new:N \g_istqb_geometry_tl
 \tl_gset:Nn
-  \g_geometry_tl
+  \g_istqb_geometry_tl
   {
     left = 1in,
     right = 1in,
@@ -19,7 +19,7 @@
   }
 \exp_args:NV
   \geometry
-  \g_geometry_tl
+  \g_istqb_geometry_tl
 \ExplSyntaxOff
 
 %% Text alignment
@@ -28,11 +28,11 @@
 \RaggedRight
 
 %% Typefaces
-\usepackage{tgheros}
+\RequirePackage{tgheros}
 \renewcommand*\familydefault{\sfdefault}
 
 %% Microtypography
-\usepackage{microtype}
+\RequirePackage{microtype}
 
 %% Header and Footer
 \RequirePackage{fancyhdr}
@@ -40,10 +40,20 @@
 \fancyhf{}
 
 %%% Header
+\ExplSyntaxOn
+\str_new:N \g_istqb_title_str
+\str_gset:Nn
+  \g_istqb_title_str
+  { Title }
+\str_new:N \g_istqb_subtitle_str
+\str_gset:Nn
+  \g_istqb_subtitle_str
+  { Subtitle }
 \lhead{%
-  \kern 0.1in \mbox{Certified Tester} \\[0.025in] \leavevmode
-  \kern 0.1in \mbox{Foundation Level}%
+  \kern 0.1in \mbox{\g_istqb_title_str} \\[0.025in] \leavevmode
+  \kern 0.1in \mbox{\g_istqb_subtitle_str}%
 }
+\ExplSyntaxOff
 \rhead{%
   \includegraphics[height=\headheight]{istqb-logo}%
 }
@@ -67,46 +77,75 @@
 \RequirePackage{lastpage}
 \RequirePackage{hyperref}
 \ExplSyntaxOn
+\str_new:N \g_istqb_version_str
+\str_gset:Nn
+  \g_istqb_version_str
+  { vM.mm }
+\str_new:N \g_istqb_date_str
+\str_gset:Nn
+  \g_istqb_date_str
+  { Development~Phase~or~YYYY/MM/DD }
+\str_new:N \g_istqb_release_str
+\str_gset:Nn
+  \g_istqb_release_str
+  { For~public~release }
+\tl_new:N \g_istqb_footer_tl
+\tl_gset:Nn
+  \g_istqb_footer_tl
+  {
+    \begin{mdframed}[
+      linewidth=0.75pt,
+      linecolor=black!25!white,
+      innerleftmargin=0.08in,
+      innerrightmargin=8pt,
+      innertopmargin=3pt,
+      innerbottommargin=3pt,
+      leftmargin=-8pt,
+      rightmargin=-8pt,
+    ]
+      \begin{minipage}{0.4\linewidth}
+      \mbox{\g_istqb_version_str}
+      \end{minipage}
+      \begin{minipage}{0.2\linewidth}
+      \centering
+      \mbox{Page~\thepage{}~of~\pageref{LastPage}}
+      \end{minipage}
+      \begin{minipage}{0.4\linewidth}
+      \hfill
+      \mbox{\g_istqb_date_str}
+      \end{minipage}
+      \\
+      \mbox{\g_istqb_release_str}
+      \\[0.16in]
+      \fontsize{6}{6}\selectfont
+      \textcopyright{}~International~Software~Testing~Qualifications~Board
+    \end{mdframed}
+  }
+\box_new:N \l_istqb_footer_box
 \AtBeginDocument
   {
-    \box_new:N \g_footer_box
-    \vbox_gset:Nn
-      \g_footer_box
-      {
-        \begin{mdframed}[
-          linewidth=0.75pt,
-          linecolor=black!25!white,
-          innerleftmargin=0.08in,
-          innerrightmargin=8pt,
-          innertopmargin=3pt,
-          innerbottommargin=3pt,
-          leftmargin=-8pt,
-          rightmargin=-8pt,
-        ]
-          Version~2018~V3.1\hfill
-          Page~\thepage{}~of~\pageref{LastPage}\hfill
-          11~November~2019\\
-          For~public~release\\[0.16in]
-          \fontsize{6}{6}\selectfont
-          \textcopyright{}~International~Software~Testing~Qualifications~Board
-        \end{mdframed}
-      }
+    \cs_generate_variant:Nn
+      \vbox_gset:Nn
+      { NV }
+    \vbox_gset:NV
+      \l_istqb_footer_box
+      \g_istqb_footer_tl
     % Ensure that the footer is always the 0.8in from the bottom of the page regardless of its contents.
-    \tl_new:N \l_geometry_tl
+    \tl_new:N \l_istqb_geometry_tl
     \tl_gset:NV
-      \l_geometry_tl
-      \g_geometry_tl
+      \l_istqb_geometry_tl
+      \g_istqb_geometry_tl
     \tl_gput_right:Nn
-      \l_geometry_tl
+      \l_istqb_geometry_tl
       {
-        bottom = \dimexpr( 0.8in + \box_ht_plus_dp:N \g_footer_box ),
+        bottom = \dimexpr( 0.8in + \box_ht_plus_dp:N \l_istqb_footer_box ),
       }
     \exp_args:NV
       \newgeometry
-      \l_geometry_tl
+      \l_istqb_geometry_tl
     \cfoot
       {
-        \box_use:N \g_footer_box
+        \tl_use:N \g_istqb_footer_tl
       }
   }
 \ExplSyntaxOff

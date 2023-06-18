@@ -4,3 +4,41 @@
   {2023-06-18}%
   {0.0.1}%
   {LaTeX theme for the Markdown Package that typesets ISTQB Syllabi}
+
+% Metadata
+\markdownSetupSnippet
+  { metadata }
+  {
+    jekyllData,
+    expectJekyllData,
+    jekyllDataRenderers = {
+      title = {
+        \str_gset:Nn
+          \g_istqb_title_str
+          { #1 }
+      },
+      subtitle = {
+        \str_gset:Nn
+          \g_istqb_subtitle_str
+          { #1 }
+      },
+      version = {
+        \str_gset:Nn
+          \g_istqb_version_str
+          { #1 }
+      },
+      date = {
+        \str_gset:Nn
+          \g_istqb_date_str
+          { #1 }
+      },
+      release = {
+        \str_gset:Nn
+          \g_istqb_release_str
+          { #1 }
+      },
+    },
+    renderers = {
+      jekyllDataEnd = {},
+    },
+  }
