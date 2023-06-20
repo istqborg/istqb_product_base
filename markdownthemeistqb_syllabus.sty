@@ -6,20 +6,32 @@
   {LaTeX theme for the Markdown Package that typesets ISTQB Syllabi}
 
 % Metadata
+\str_new:N \g_istqb_title_str
+\str_new:N \g_istqb_code_str
 \markdownSetupSnippet
   { metadata }
   {
     jekyllData,
     expectJekyllData,
     jekyllDataRenderers = {
+      schema = {
+        \str_gset:Nn
+          \g_istqb_schema_str
+          { #1 }
+      },
+      level = {
+        \str_gset:Nn
+          \g_istqb_level_str
+          { #1 }
+      },
       title = {
         \str_gset:Nn
           \g_istqb_title_str
           { #1 }
       },
-      subtitle = {
+      code = {
         \str_gset:Nn
-          \g_istqb_subtitle_str
+          \g_istqb_code_str
           { #1 }
       },
       version = {

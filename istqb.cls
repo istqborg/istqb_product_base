@@ -41,17 +41,29 @@
 
 %%% Header
 \ExplSyntaxOn
-\str_new:N \g_istqb_title_str
-\str_gset:Nn
-  \g_istqb_title_str
-  { Title }
-\str_new:N \g_istqb_subtitle_str
-\str_gset:Nn
-  \g_istqb_subtitle_str
-  { Subtitle }
+\str_new:N \g_istqb_schema_str
+\str_new:N \g_istqb_level_str
 \lhead{%
-  \kern 0.1in \mbox{\g_istqb_title_str} \\[0.025in] \leavevmode
-  \kern 0.1in \mbox{\g_istqb_subtitle_str}%
+  \tl_if_empty:NTF
+    \g_istqb_schema_str
+    {
+      \tl_if_empty:NF
+        \g_istqb_level_str
+        {
+          \kern 0.1in \mbox{\g_istqb_level_str}
+        }
+    }
+    {
+      \tl_if_empty:NTF
+        \g_istqb_level_str
+        {
+          \kern 0.1in \mbox{\g_istqb_schema_str}
+        }
+        {
+          \kern 0.1in \mbox{\g_istqb_schema_str} \\[0.025in] \leavevmode
+          \kern 0.1in \mbox{\g_istqb_level_str}
+        }
+    }
 }
 \ExplSyntaxOff
 \rhead{%
