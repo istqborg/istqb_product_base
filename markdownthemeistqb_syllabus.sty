@@ -1,2 +1,56 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{markdownthemeistqb_syllabus}[2023/06/08 Markdown theme for ISTQB Syllabi]
+\ProvidesExplPackage
+  {markdownthemeistqb_syllabus}%
+  {2023-06-18}%
+  {0.0.1}%
+  {LaTeX theme for the Markdown Package that typesets ISTQB Syllabi}
+
+% Metadata
+\str_new:N \g_istqb_title_str
+\str_new:N \g_istqb_code_str
+\markdownSetupSnippet
+  { metadata }
+  {
+    jekyllData,
+    expectJekyllData,
+    jekyllDataRenderers = {
+      schema = {
+        \str_gset:Nn
+          \g_istqb_schema_str
+          { #1 }
+      },
+      level = {
+        \str_gset:Nn
+          \g_istqb_level_str
+          { #1 }
+      },
+      title = {
+        \str_gset:Nn
+          \g_istqb_title_str
+          { #1 }
+      },
+      code = {
+        \str_gset:Nn
+          \g_istqb_code_str
+          { #1 }
+      },
+      version = {
+        \str_gset:Nn
+          \g_istqb_version_str
+          { #1 }
+      },
+      date = {
+        \str_gset:Nn
+          \g_istqb_date_str
+          { #1 }
+      },
+      release = {
+        \str_gset:Nn
+          \g_istqb_release_str
+          { #1 }
+      },
+    },
+    renderers = {
+      jekyllDataEnd = {},
+    },
+  }
