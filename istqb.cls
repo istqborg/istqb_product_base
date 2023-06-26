@@ -177,3 +177,7 @@
 \RequirePackage{etoolbox}
 \pretocmd{\listoffigures}{\clearpage}{}{}  % Ensure List of Figures starts on a new page.
 \pretocmd{\listoftables}{\clearpage}{}{}  % Ensure List of Tables starts on a new page.
+
+% Table of Contents
+\setcounter{tocdepth}{3}  % Show level 1 up to level 3 of headings.
+\setcounter{section}{-1}  % Start sections from 0.
