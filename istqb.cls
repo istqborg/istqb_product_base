@@ -166,6 +166,12 @@
 % Graphics
 \RequirePackage{graphicx}
 \graphicspath{{./img}{.}}  % Look for images first in ./img and then in ./
+\setkeys{Gin}{width = \columnwidth, keepaspectratio}  % By default, typeset images to maximum width.
+
+% Tables and Figures
+\RequirePackage{float}
+\floatplacement{figure}{H}  % Prevent tables and figures from floating.
+\floatplacement{table}{H}
 
 % Lists of Tables and Figures
 \RequirePackage{etoolbox}
