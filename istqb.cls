@@ -166,3 +166,8 @@
 % Graphics
 \RequirePackage{graphicx}
 \graphicspath{{./img}{.}}  % Look for images first in ./img and then in ./
+
+% Lists of Tables and Figures
+\RequirePackage{etoolbox}
+\pretocmd{\listoffigures}{\clearpage}{}{}  % Ensure List of Figures starts on a new page.
+\pretocmd{\listoftables}{\clearpage}{}{}  % Ensure List of Tables starts on a new page.
