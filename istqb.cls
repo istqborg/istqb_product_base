@@ -22,10 +22,11 @@
   \g_istqb_geometry_tl
 \ExplSyntaxOff
 
-%% Text alignment
-\raggedbottom
+%% Paragraphs and text alignment
+\raggedbottom  % Do not try to equalize the number of lines on a page by increasing vertical spaces.
 \RequirePackage{ragged2e}
-\RaggedRight
+\RaggedRight  % Do not try to justify text by increasing horizontal spaces.
+\usepackage{parskip}  % Put half of line height between paragraphs.
 
 %% Typefaces
 \RequirePackage{tgheros}
