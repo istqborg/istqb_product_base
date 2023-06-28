@@ -88,6 +88,7 @@
 \RequirePackage{xcolor}
 \RequirePackage{mdframed}
 \RequirePackage{lastpage}
+\PassOptionsToPackage{hidelinks}{hyperref}
 \RequirePackage{hyperref}
 \ExplSyntaxOn
 \str_new:N \g_istqb_version_str

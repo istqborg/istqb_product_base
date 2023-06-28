@@ -67,7 +67,15 @@
           \tl_if_empty:nF
             { #4 }
             { \caption { #4 } }
-          \label { figure:#1 }
+          \tl_set:Nx
+            \l_tmpa_tl
+            {
+              \str_lowercase:n
+                { figure:#1 }
+            }
+          \exp_args:NV
+            \label
+            \l_tmpa_tl
         \end{figure}
       },
       imageAttributeContextBegin = {
@@ -89,6 +97,40 @@
     },
   }
 
+% Headings
+\seq_new:N \l_istqb_header_identifiers_seq
+\markdownSetup
+  {
+    headerAttributes,
+    rendererPrototypes = {
+      headerAttributeContextBegin = {
+        \markdownSetup
+          {
+            rendererPrototypes = {
+              attributeIdentifier = {
+                \group_begin:
+                \def\next####1{
+                  \def####1########1
+                    {
+                      \group_end:
+                      ####1 { ########1 }
+                      \label { section:##1 }
+                    }
+                }
+                \next\markdownRendererHeadingOne
+                \next\markdownRendererHeadingTwo
+                \next\markdownRendererHeadingThree
+                \next\markdownRendererHeadingFour
+                \next\markdownRendererHeadingFive
+                \next\markdownRendererHeadingSix
+              },
+            },
+          }
+      },
+      headerAttributeContextEnd = {},
+    },
+  }
+
 % Tables
 \RequirePackage{booktabs}
 \markdownSetup
@@ -98,45 +140,107 @@
   }
 
 % Relative references
+\PassOptionsToPackage{nameinlink}{cleveref}
 \RequirePackage{cleveref}
 \markdownSetup
   {
     relativeReferences,
   }
 \renewcommand
+  \markdownLaTeXRendererDirectOrIndirectLink[4]
+  {
+    % If the URL begins with a hash sign, then we assume that it is a relative
+    % reference. Otherwise, we assume that it is an absolute URL.
+    \tl_set:Nn
+      \l_tmpa_tl
+      { #3 }
+    \tl_trim_spaces:N
+      \l_tmpa_tl
+    \tl_set:Nx
+      \l_tmpb_tl
+      {
+        \tl_range:Nnn
+          \l_tmpa_tl
+          { 1 }
+          { 1 }
+      }
+    \str_if_eq:NNTF
+      \l_tmpb_tl
+      \c_hash_str
+      {
+        \tl_set:Nx
+          \l_tmpb_tl
+          {
+            \tl_range:Nnn
+              \l_tmpa_tl
+              { 2 }
+              { -1 }
+          }
+        \tl_set:Nx
+          \l_tmpa_tl
+          {
+            [
+              \str_lowercase:V
+                \l_tmpb_tl
+            ]
+          }
+        \emph
+          {
+            \exp_last_unbraced:NV
+              \hyperref
+              \l_tmpa_tl
+              { #1 }
+          }
+      }{
+        \emph { \href { #3 } { #1 } }
+      }
+  }
+\renewcommand
   \markdownLaTeXRendererAutolink[2]
   {
-  % If the URL begins with a hash sign, then we assume that it is a relative
-  % reference. Otherwise, we assume that it is an absolute URL.
-  \tl_set:Nn
-    \l_tmpa_tl
-    { #2 }
-  \tl_trim_spaces:N
-    \l_tmpa_tl
-  \tl_set:Nx
-    \l_tmpb_tl
-    {
-      \tl_range:Nnn
-        \l_tmpa_tl
-        { 1 }
-        { 1 }
-    }
-  \str_if_eq:NNTF
-    \l_tmpb_tl
-    \c_hash_str
-    {
-      \tl_set:Nx
-        \l_tmpb_tl
-        {
-          \tl_range:Nnn
-            \l_tmpa_tl
-            { 2 }
-            { -1 }
-        }
-      \exp_args:NV
-        \Cref
-        \l_tmpb_tl
-    }{
-      \url { #2 }
-    }
+    % If the URL begins with a hash sign, then we assume that it is a relative
+    % reference. Otherwise, we assume that it is an absolute URL.
+    \tl_set:Nn
+      \l_tmpa_tl
+      { #2 }
+    \tl_trim_spaces:N
+      \l_tmpa_tl
+    \tl_set:Nx
+      \l_tmpb_tl
+      {
+        \tl_range:Nnn
+          \l_tmpa_tl
+          { 1 }
+          { 1 }
+      }
+    \str_if_eq:NNTF
+      \l_tmpb_tl
+      \c_hash_str
+      {
+        \tl_set:Nx
+          \l_tmpb_tl
+          {
+            \tl_range:Nnn
+              \l_tmpa_tl
+              { 2 }
+              { -1 }
+          }
+        \tl_set:Nx
+          \l_tmpa_tl
+          {
+            \str_lowercase:V
+              \l_tmpb_tl
+          }
+        \emph
+          {
+            \exp_args:NV
+              \Cref
+              \l_tmpa_tl
+          }
+      }{
+        \emph { \url { #2 } }
+      }
 }
+\cs_generate_variant:Nn
+  \str_lowercase:n
+  { V }
