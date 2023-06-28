@@ -22,10 +22,11 @@
   \g_istqb_geometry_tl
 \ExplSyntaxOff
 
-%% Text alignment
-\raggedbottom
+%% Paragraphs and text alignment
+\raggedbottom  % Do not try to equalize the number of lines on a page by increasing vertical spaces.
 \RequirePackage{ragged2e}
-\RaggedRight
+\RaggedRight  % Do not try to justify text by increasing horizontal spaces.
+\usepackage{parskip}  % Put half of line height between paragraphs.
 
 %% Typefaces
 \RequirePackage{tgheros}
@@ -165,3 +166,18 @@
 % Graphics
 \RequirePackage{graphicx}
 \graphicspath{{./img}{.}}  % Look for images first in ./img and then in ./
+\setkeys{Gin}{width = \columnwidth, keepaspectratio}  % By default, typeset images to maximum width.
+
+% Tables and Figures
+\RequirePackage{float}
+\floatplacement{figure}{H}  % Prevent tables and figures from floating.
+\floatplacement{table}{H}
+
+% Lists of Tables and Figures
+\RequirePackage{etoolbox}
+\pretocmd{\listoffigures}{\clearpage}{}{}  % Ensure List of Figures starts on a new page.
+\pretocmd{\listoftables}{\clearpage}{}{}  % Ensure List of Tables starts on a new page.
+
+% Table of Contents
+\setcounter{tocdepth}{3}  % Show level 1 up to level 3 of headings.
+\setcounter{section}{-1}  % Start sections from 0.

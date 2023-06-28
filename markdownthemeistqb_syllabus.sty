@@ -54,3 +54,89 @@
       jekyllDataEnd = {},
     },
   }
+
+% Images
+\markdownSetup
+  {
+    linkAttributes,
+    rendererPrototypes = {
+      image = {
+        \begin{figure}
+          \centering
+          \includegraphics { #3 }
+          \tl_if_empty:nF
+            { #4 }
+            { \caption { #4 } }
+          \label { figure:#1 }
+        \end{figure}
+      },
+      imageAttributeContextBegin = {
+        \group_begin:
+        \markdownSetup
+          {
+            renderers = {
+              attributeKeyValue = {
+                \setkeys  % Pass the key-value
+                { Gin } % to graphicx package
+                { { ##1 } = { ##2 } }
+              },
+            },
+          }
+      },
+      imageAttributeContextEnd = {
+        \group_end:
+      },
+    },
+  }
+
+% Tables
+\RequirePackage{booktabs}
+\markdownSetup
+  {
+    pipeTables,
+    tableCaptions,
+  }
+
+% Relative references
+\RequirePackage{cleveref}
+\markdownSetup
+  {
+    relativeReferences,
+  }
+\renewcommand
+  \markdownLaTeXRendererAutolink[2]
+  {
+  % If the URL begins with a hash sign, then we assume that it is a relative
+  % reference. Otherwise, we assume that it is an absolute URL.
+  \tl_set:Nn
+    \l_tmpa_tl
+    { #2 }
+  \tl_trim_spaces:N
+    \l_tmpa_tl
+  \tl_set:Nx
+    \l_tmpb_tl
+    {
+      \tl_range:Nnn
+        \l_tmpa_tl
+        { 1 }
+        { 1 }
+    }
+  \str_if_eq:NNTF
+    \l_tmpb_tl
+    \c_hash_str
+    {
+      \tl_set:Nx
+        \l_tmpb_tl
+        {
+          \tl_range:Nnn
+            \l_tmpa_tl
+            { 2 }
+            { -1 }
+        }
+      \exp_args:NV
+        \Cref
+        \l_tmpb_tl
+    }{
+      \url { #2 }
+    }
+}
