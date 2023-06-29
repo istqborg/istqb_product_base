@@ -182,3 +182,13 @@
 % Table of Contents
 \setcounter{tocdepth}{3}  % Show level 1 up to level 3 of headings.
 \setcounter{section}{-1}  % Start sections from 0.
+
+% Bibliography
+\RequirePackage{csquotes}
+\PassOptionsToPackage{style=iso-authoryear}{biblatex}
+\RequirePackage{biblatex}
+\defbibheading{bibliography}[Bibliography]{%
+  \clearpage
+  \section{#1}%
+  \addcontentsline{toc}{section}{#1}%
+}
