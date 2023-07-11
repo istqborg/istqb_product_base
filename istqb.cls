@@ -188,7 +188,21 @@
 \PassOptionsToPackage{style=iso-authoryear}{biblatex}
 \RequirePackage{biblatex}
 \defbibheading{bibliography}[Bibliography]{%
+  \subsection*{#1}%
+}
+
+%% Entry type filters
+\defbibfilter{standards}{type=report}
+\defbibfilter{istqb-documents}{type=misc and keyword=istqb}
+\defbibfilter{books}{type=book}
+\defbibfilter{articles-and-web-pages}{type=article or type=online}
+
+%% Reference printing
+\newcommand\printistqbbibliography{%
   \clearpage
-  \section{#1}%
-  \addcontentsline{toc}{section}{#1}%
+  \section{References}
+  \printbibliography[filter=standards, title=Standards]
+  \printbibliography[filter=istqb-documents, title=ISTQB\textsuperscript{\textregistered} Documents]
+  \printbibliography[filter=books, title=Books]
+  \printbibliography[filter=articles-and-web-pages, title=Articles and Web Pages]
 }
