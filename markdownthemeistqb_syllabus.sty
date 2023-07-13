@@ -102,11 +102,73 @@
 \markdownSetup
   {
     headerAttributes,
+    tightLists=false,
+    startNumber=false,
     rendererPrototypes = {
       headerAttributeContextBegin = {
         \markdownSetup
           {
             rendererPrototypes = {
+              %% Learning objectives
+              attributeClassName = {
+                \tl_if_eq:nnT
+                  { ##1 }
+                  { learning-objectives }
+                  {
+                    \kern 0.175in  % extra space above learning objectives
+                    \group_begin:
+                    \markdownSetup
+                      {
+                        rendererPrototypes = {
+                          olBegin = {
+                            \group_begin:
+                            \markdownSetup
+                              {
+                                rendererPrototypes = {
+                                  olBegin = {
+                                    \group_begin:
+                                    \markdownSetup
+                                      {
+                                        rendererPrototypes = {
+                                          olItem = {
+                                            \def\next################################1\markdownRendererOlItemEnd
+                                              {
+                                                \istqbsubobjective { ################################1 }
+                                                \markdownRendererOlItemEnd
+                                              }
+                                            \next
+                                          },
+                                          olEnd = {
+                                            \end { istqb subobjectives }
+                                            \group_end:
+                                          },
+                                        }
+                                      }
+                                    \begin { istqb subobjectives }
+                                  },
+                                  olItem = {
+                                    \def\next################1\markdownRendererInterblockSeparator
+                                      {
+                                        \istqbobjective { ################1 }
+                                        \markdownRendererInterblockSeparator
+                                      }
+                                    \next
+                                  },
+                                  olEnd = {
+                                    \end { istqb objectives }
+                                    \group_end:
+                                  },
+                                }
+                              }
+                            \begin { istqb objectives }
+                          },
+                          headerAttributeContextEnd = {
+                            \group_end:
+                          },
+                        }
+                      }
+                  }
+              },
               attributeIdentifier = {
                 \group_begin:
                 \def\next####1{
