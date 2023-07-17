@@ -210,6 +210,39 @@
   \printbibliography[filter=articles-and-web-pages, title=Articles and Web Pages]
 }
 
+% Landing Page
+\ExplSyntaxOn
+\newcommand
+  \istqblandingpage
+  {
+    \group_begin:
+    \centering
+    \vspace * { 0.4in }
+    \normalfont
+    \bfseries
+    \fontsize { 24 } { 28.8 } \selectfont
+    \g_istqb_level_str{}~Syllabus
+    \par \vspace { 0.45in }
+    \normalfont
+    \itshape
+    \fontsize { 18 } { 21.6 } \selectfont
+    \g_istqb_version_str
+    \par \vspace { 1.6in }
+    \leaders \vrule width \textwidth \vskip 1pt
+    \par \vspace { 0.1in }
+    \normalfont
+    \fontsize { 18 } { 21.6 } \selectfont
+    International~Software~Testing~Qualifications~Board
+    \par \vspace { 0.25in }
+    \leaders \vrule width \textwidth \vskip 1pt
+    \par \vspace { 0.4in }
+    \includegraphics [ height = 1.2in ] { istqb-logo }
+    \par
+    \group_end:
+    \clearpage
+  }
+\ExplSyntaxOff
+
 % Headings
 %% Sections, subsections, and subsubsections
 \RequirePackage{xpatch, mdframed}
