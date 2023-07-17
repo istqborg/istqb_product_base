@@ -232,7 +232,7 @@
     \bfseries
     \fontsize{16}{19.2}\selectfont
     \begingroup
-    \titlelabel{\thetitle.\kern0.3em}
+    \titlelabel{\thetitle\kern0.3em}
     #1%
     \endgroup
   \end{mdframed}%
@@ -252,7 +252,7 @@
     \mdseries
     \fontsize{14}{16.8}\selectfont
     \begingroup
-    \titlelabel{\thetitle.\kern0.15em}
+    \titlelabel{\thetitle\kern0.3em}
     #1%
     \endgroup
   \end{mdframed}%
@@ -263,7 +263,7 @@
     \mdseries
     \fontsize{12}{14.4}\selectfont
 }%
-{\thesubsubsection.}% label
+{\thesubsubsection}% label
 {0.5em}% sep
 {}% before-code
 \titlespacing\section{0pt}{0pt}{*3.2}
