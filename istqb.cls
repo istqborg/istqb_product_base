@@ -308,6 +308,7 @@
 \newcounter{istqbobjective}[section]
 \newcounter{istqbsubobjective}[istqbobjective]
 \newenvironment{istqbobjectives}{%
+  \kern 0.175in\relax
   \def\istqbobjective##1{%
     \stepcounter{istqbobjective}%
     \par\kern -0.03in
