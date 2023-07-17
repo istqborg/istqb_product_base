@@ -312,3 +312,36 @@
   {
     citations,
   }
+
+% Index
+\markdownSetup
+  {
+    bracketedSpans,
+    rendererPrototypes = {
+      bracketedSpanAttributeContextBegin = {
+        \group_begin:
+        \markdownSetup
+          {
+            rendererPrototypes = {
+              attributeClassName = {
+                \str_if_eq:nnT
+                  { ##1 }
+                  { index }
+                  {
+                    \def\next####1\markdownRendererBracketedSpanAttributeContextEnd
+                      {
+                        \global\index { ####1 }
+                        ####1
+                        \markdownRendererBracketedSpanAttributeContextEnd
+                      }
+                    \next
+                  }
+              },
+            }
+          }
+      },
+      bracketedSpanAttributeContextEnd = {
+        \group_end:
+      },
+    }
+  }
