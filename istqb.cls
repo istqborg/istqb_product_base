@@ -188,7 +188,10 @@
 \PassOptionsToPackage{style=iso-authoryear}{biblatex}
 \RequirePackage{biblatex}
 \defbibheading{bibliography}[Bibliography]{%
-  \subsection*{#1}%
+  \normalfont
+  \mdseries
+  \fontsize{14}{16.8}\selectfont
+  #1%
 }
 
 %% Entry type filters
@@ -205,4 +208,93 @@
   \printbibliography[filter=istqb-documents, title=ISTQB\textsuperscript{\textregistered} Documents]
   \printbibliography[filter=books, title=Books]
   \printbibliography[filter=articles-and-web-pages, title=Articles and Web Pages]
+}
+
+% Headings
+%% Sections, subsections, and subsubsections
+\RequirePackage{xpatch, mdframed}
+\xpatchcmd{\section}{\normalfont\Large\bfseries}{\istqbsectionbox}{}{\PatchFailed}
+\xpatchcmd{\subsection}{\normalfont\large\bfseries}{\istqbsubsectionbox}{}{\PatchFailed}
+\RequirePackage{titlesec}
+\newcommand\istqbsectionbox[1]{%
+  \clearpage
+  \begin{mdframed}[
+    linewidth=0.95pt,
+    linecolor=black,
+    innerleftmargin=0.08in,
+    innerrightmargin=0.08in,
+    innertopmargin=0.05in,
+    innerbottommargin=0in,
+    leftmargin=0.06in,
+    rightmargin=-0.1in,
+  ]%
+    \normalfont
+    \bfseries
+    \fontsize{16}{19.2}\selectfont
+    \begingroup
+    \titlelabel{\thetitle\kern0.3em}
+    #1%
+    \endgroup
+  \end{mdframed}%
+}
+\newcommand\istqbsubsectionbox[1]{%
+  \begin{mdframed}[
+    linewidth=0.63pt,
+    linecolor=black,
+    innerleftmargin=0.08in,
+    innerrightmargin=0.08in,
+    innertopmargin=0.035in,
+    innerbottommargin=0in,
+    leftmargin=0.06in,
+    rightmargin=-0.1in,
+  ]%
+    \normalfont
+    \mdseries
+    \fontsize{14}{16.8}\selectfont
+    \begingroup
+    \titlelabel{\thetitle\kern0.3em}
+    #1%
+    \endgroup
+  \end{mdframed}%
+}
+\titleformat\subsubsection
+{% format
+    \normalfont
+    \mdseries
+    \fontsize{12}{14.4}\selectfont
+}%
+{\thesubsubsection}% label
+{0.5em}% sep
+{}% before-code
+\titlespacing\section{0pt}{0pt}{*3.2}
+\titlespacing\subsection{0pt}{*5.5}{*0.8}
+\titlespacing\subsubsection{0pt}{*3.25}{*1}
+
+%% Learning objectives
+\RequirePackage{longtable}
+\newcounter{istqbobjective}[section]
+\newcounter{istqbsubobjective}[istqbobjective]
+\newenvironment{istqbobjectives}{%
+  \def\istqbobjective##1{%
+    \stepcounter{istqbobjective}%
+    \par\kern -0.03in
+    \paragraph{\thesection.\theistqbobjective\enspace##1}%
+    \par\leavevmode
+  }%
+}{%
+  \setcounter{istqbobjective}{0}%
+  \clearpage
+}
+\newenvironment{istqbsubobjectives}{%
+  \def\istqbsubobjective##1{%
+    \stepcounter{istqbsubobjective}%
+    FL-\thesection.\theistqbobjective.\theistqbsubobjective & ##1 \\[0.07in]
+  }%
+  \LTpre=0.08in
+  \LTpost=0.12in
+  \begin{longtable}{@{}p{1in}@{}p{\dimexpr(\linewidth - 1in)}@{}}%
+}{%
+  \end{longtable}%
+  \setcounter{istqbsubobjective}{0}%
+  \par\kern -0.2in
 }
