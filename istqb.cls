@@ -268,7 +268,7 @@
 {}% before-code
 \titlespacing\section{0pt}{0pt}{*3.2}
 \titlespacing\subsection{0pt}{*5.5}{*0.8}
-\titlespacing\subsubsection{0.37in}{*3.25}{*1}
+\titlespacing\subsubsection{0pt}{*3.25}{*1}
 
 %% Learning objectives
 \RequirePackage{longtable}
