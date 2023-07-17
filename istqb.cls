@@ -188,7 +188,10 @@
 \PassOptionsToPackage{style=iso-authoryear}{biblatex}
 \RequirePackage{biblatex}
 \defbibheading{bibliography}[Bibliography]{%
-  \subsection*{#1}%
+  \normalfont
+  \mdseries
+  \fontsize{14}{16.8}\selectfont
+  #1%
 }
 
 %% Entry type filters
