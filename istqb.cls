@@ -283,6 +283,7 @@
   }%
 }{%
   \setcounter{istqbobjective}{0}%
+  \clearpage
 }
 \newenvironment{istqbsubobjectives}{%
   \def\istqbsubobjective##1{%
