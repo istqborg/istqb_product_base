@@ -88,8 +88,6 @@
 \RequirePackage{xcolor}
 \RequirePackage{mdframed}
 \RequirePackage{lastpage}
-\PassOptionsToPackage{hidelinks}{hyperref}
-\RequirePackage{hyperref}
 \ExplSyntaxOn
 \str_new:N \g_istqb_version_str
 \str_gset:Nn
@@ -332,3 +330,16 @@
   \setcounter{istqbsubobjective}{0}%
   \par\kern -0.2in
 }
+
+% Index
+\RequirePackage{imakeidx}
+\makeindex[columns=2, columnsep=1cm, noautomatic]
+% Ensure that the index is numbered and part of the table of contents.
+\renewcommand\imki@indexlevel{\section}
+% Remove spaces between indexed items.
+\RequirePackage{etoolbox}
+\apptocmd\theindex{\let\indexspace=\relax}{}{\PatchFailed}
+
+% Hyperlinks
+\PassOptionsToPackage{hidelinks}{hyperref}
+\RequirePackage{hyperref}
