@@ -210,32 +210,48 @@
 
 % Landing Page
 \ExplSyntaxOn
+\str_new:N \g_istqb_title_str
+\str_new:N \g_istqb_code_str
 \newcommand
   \istqblandingpage
   {
     \group_begin:
+    \parskip=0pt
     \centering
-    \vspace * { 0.4in }
+    \leavevmode \par \vfill
     \normalfont
     \bfseries
     \fontsize { 24 } { 28.8 } \selectfont
-    \g_istqb_level_str{}~Syllabus
-    \par \vspace { 0.45in }
+    \g_istqb_schema_str \\
+    \tl_if_empty:NF
+      \g_istqb_title_str
+      {
+        \g_istqb_title_str
+        \tl_if_empty:NF
+          \g_istqb_code_str
+          {
+            {}~(\g_istqb_code_str)
+          }
+        \\
+      }
+    \g_istqb_level_str \\
+    Syllabus
+    \par \vfill
     \normalfont
     \itshape
     \fontsize { 18 } { 21.6 } \selectfont
     \g_istqb_version_str
-    \par \vspace { 1.6in }
+    \par \vfill \vfill
     \leaders \vrule width \textwidth \vskip 1pt
-    \par \vspace { 0.1in }
+    \par \vspace { 0.2in }
     \normalfont
     \fontsize { 18 } { 21.6 } \selectfont
     International~Software~Testing~Qualifications~Board
-    \par \vspace { 0.25in }
+    \par \vspace { 0.3in }
     \leaders \vrule width \textwidth \vskip 1pt
-    \par \vspace { 0.4in }
+    \par \vspace { 0.45in }
     \includegraphics [ height = 1.2in ] { istqb-logo }
-    \par
+    \par \vspace { 1.45in }
     \group_end:
     \clearpage
   }
