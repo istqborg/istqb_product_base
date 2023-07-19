@@ -6,8 +6,6 @@
   {LaTeX theme for the Markdown Package that typesets ISTQB Syllabi}
 
 % Metadata
-\str_new:N \g_istqb_title_str
-\str_new:N \g_istqb_code_str
 \markdownSetupSnippet
   { metadata }
   {
@@ -115,8 +113,8 @@
                   { ##1 }
                   { learning-objectives }
                   {
-                    \kern 0.175in  % extra space above learning objectives
                     \group_begin:
+                    \begin { istqb objectives }
                     \markdownSetup
                       {
                         rendererPrototypes = {
@@ -155,12 +153,11 @@
                                     \next
                                   },
                                   olEnd = {
-                                    \end { istqb objectives }
                                     \group_end:
+                                    \end { istqb objectives }
                                   },
                                 }
                               }
-                            \begin { istqb objectives }
                           },
                           headerAttributeContextEnd = {
                             \group_end:
