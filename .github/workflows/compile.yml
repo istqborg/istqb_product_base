@@ -17,8 +17,10 @@ jobs:
           find -type f \( -name '*.md' -o -name '*.yml' \) -exec dos2unix {} +
       - name: Compile LaTeX document example.tex
         run: latexmk -shell-escape -pdf example.tex
-      - name: Compile LaTeX document atlas.tex
-        run: latexmk -shell-escape -pdf atlas.tex
+      - name: Compile LaTeX document atlas-syllabus.tex
+        run: latexmk -shell-escape -pdf atlas-syllabus.tex
+      - name: Compile LaTeX document atlas-bok.tex
+        run: latexmk -shell-escape -pdf atlas-bok.tex
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
