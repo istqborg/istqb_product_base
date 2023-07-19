@@ -347,6 +347,19 @@
   \par\kern -0.2in
 }
 
+%% Appendices
+\newcounter{istqbappendix}
+\newenvironment{istqbappendices}{%
+  \begingroup
+  \let\istqboldsection\section
+  \def\section##1{%
+    \stepcounter{istqbappendix}%
+    \istqboldsection{Appendix~\Alph{istqbappendix}~--~##1}}%
+}{%
+  \setcounter{istqbappendix}{0}%
+  \endgroup
+}
+
 % Index
 \RequirePackage{imakeidx}
 \makeindex[columns=2, columnsep=1cm, noautomatic]
