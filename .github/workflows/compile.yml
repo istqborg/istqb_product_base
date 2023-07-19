@@ -9,6 +9,12 @@ jobs:
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3
+      - name: Ensure correct encoding of input files
+        run: |
+          set -ex
+          apt -qy update
+          apt -qy install --no-install-recommends dos2unix
+          find -type f \( -name '*.md' -o -name '*.yml' \) -exec dos2unix {} +
       - name: Compile LaTeX document example.tex
         run: latexmk -shell-escape -pdf example.tex
       - name: Compile LaTeX document atlas.tex
