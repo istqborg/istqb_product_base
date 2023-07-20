@@ -142,7 +142,7 @@
     \vbox_gset:NV
       \l_istqb_footer_box
       \g_istqb_footer_tl
-    % Ensure that the footer is always the 0.8in from the bottom of the page regardless of its contents.
+    %%%% Ensure that the footer is always the 0.8in from the bottom of the page regardless of its contents.
     \tl_new:N \l_istqb_geometry_tl
     \tl_gset:NV
       \l_istqb_geometry_tl
@@ -363,9 +363,9 @@
 % Index
 \RequirePackage{imakeidx}
 \makeindex[columns=2, columnsep=1cm, noautomatic]
-% Ensure that the index is numbered and part of the table of contents.
+%% Ensure that the index is numbered and part of the table of contents.
 \renewcommand\imki@indexlevel{\section}
-% Remove spaces between indexed items.
+%% Remove spaces between indexed items.
 \RequirePackage{etoolbox}
 \apptocmd\theindex{\let\indexspace=\relax}{}{\PatchFailed}
 
