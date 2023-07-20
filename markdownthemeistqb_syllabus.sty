@@ -7,6 +7,7 @@
 
 % Hybrid Markdown + LaTeX text
 \markdownSetup{
+  fencedCode,
   rawAttribute,
 }
 
@@ -128,8 +129,94 @@
                         rendererPrototypes = {
                           headingOne = {
                             \section * { ####1 }
-                            \addcontentsline { toc } { section } { ####1 }
                             \markboth { ####1 } { ####1 }
+                            \addcontentsline { toc } { section } { ####1 }
+                          },
+                        }
+                      }
+                  }
+                %% Revision history
+                \tl_if_eq:nnT
+                  { ##1 }
+                  { revision-history }
+                  {
+                    \group_begin:
+                    \def \markdownLaTeXTopRule { }
+                    \def \markdownLaTeXMidRule { }
+                    \def \markdownLaTeXBottomRule { }
+                    \def \markdownLaTeXRenderTableRow ####1
+                      {
+                        \markdownLaTeXColumnCounter = 0
+                        \ifnum \markdownLaTeXRowCounter = 0 \relax
+                          \markdownLaTeXReadAlignments ####1
+                          \markdownLaTeXTable = \expandafter \expandafter \expandafter {
+                            \expandafter \the \expandafter \markdownLaTeXTable \expandafter {
+                              \the \markdownLaTeXTableAlignment } }
+                          \addto@hook
+                            \markdownLaTeXTable
+                            {
+                              \markdownLaTeXTopRule
+                            }
+                        \else
+                          \markdownLaTeXRenderTableCell ####1
+                        \fi
+                        \ifnum \markdownLaTeXRowCounter = 1 \relax
+                          \addto@hook
+                            \markdownLaTeXTable
+                            \markdownLaTeXMidRule
+                        \fi
+                        \advance \markdownLaTeXRowCounter by 1 \relax
+                        \ifnum \markdownLaTeXRowCounter > \markdownLaTeXRowTotal \relax
+                          \addto@hook
+                            \markdownLaTeXTable
+                            {
+                              \markdownLaTeXBottomRule
+                              \endistqbrevisionhistory
+                            }
+                          \the \markdownLaTeXTable
+                          \expandafter \@gobble
+                        \fi \markdownLaTeXRenderTableRow
+                      }
+                    \def \markdownLaTeXReadAlignments ####1
+                      {
+                        \advance \markdownLaTeXColumnCounter by 1 \relax
+                        % Ignore alignment information, since the alignment in revision history is predetermined.
+                        \ifnum\markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal \relax \else
+                          \expandafter \@gobble
+                        \fi \markdownLaTeXReadAlignments
+                      }
+                    \def \markdownLaTeXRenderTableCell ####1
+                      {
+                        \advance \markdownLaTeXColumnCounter by 1 \relax
+                        \ifnum \markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal \relax
+                          \addto@hook
+                            \markdownLaTeXTable
+                            { ####1 & }
+                        \else
+                          \addto@hook
+                            \markdownLaTeXTable
+                            { ####1 \\ \hline }
+                          \expandafter \@gobble
+                        \fi \markdownLaTeXRenderTableCell
+                      }
+                    \markdownSetup
+                      {
+                        rendererPrototypes = {
+                          table = {
+                            \markdownLaTeXTable = { }
+                            \markdownLaTeXTableAlignment = { }
+                            \addto@hook
+                              \markdownLaTeXTable
+                              {
+                                \beginistqbrevisionhistory
+                              }
+                            \markdownLaTeXRowCounter = 0
+                            \markdownLaTeXRowTotal = ####2
+                            \markdownLaTeXColumnTotal = ####3
+                            \markdownLaTeXRenderTableRow
+                          },
+                          headerAttributeContextEnd = {
+                            \group_end:
                           },
                         }
                       }
@@ -140,7 +227,6 @@
                   { learning-objectives }
                   {
                     \group_begin:
-                    \begin { istqb objectives }
                     \markdownSetup
                       {
                         rendererPrototypes = {
@@ -179,8 +265,8 @@
                                     \next
                                   },
                                   olEnd = {
-                                    \group_end:
                                     \end { istqb objectives }
+                                    \group_end:
                                   },
                                 }
                               }
@@ -190,6 +276,7 @@
                           },
                         }
                       }
+                    \begin { istqb objectives }
                   }
               },
               attributeIdentifier = {
@@ -234,8 +321,8 @@
 \renewcommand
   \markdownLaTeXRendererDirectOrIndirectLink[4]
   {
-    % If the URL begins with a hash sign, then we assume that it is a relative
-    % reference. Otherwise, we assume that it is an absolute URL.
+    %% If the URL begins with a hash sign, then we assume that it is a relative
+    %% reference. Otherwise, we assume that it is an absolute URL.
     \tl_set:Nn
       \l_tmpa_tl
       { #3 }
@@ -283,8 +370,8 @@
 \renewcommand
   \markdownLaTeXRendererAutolink[2]
   {
-    % If the URL begins with a hash sign, then we assume that it is a relative
-    % reference. Otherwise, we assume that it is an absolute URL.
+    %% If the URL begins with a hash sign, then we assume that it is a relative
+    %% reference. Otherwise, we assume that it is an absolute URL.
     \tl_set:Nn
       \l_tmpa_tl
       { #2 }
