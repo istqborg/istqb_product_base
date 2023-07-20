@@ -271,11 +271,11 @@
     linewidth=0.95pt,
     linecolor=black,
     innerleftmargin=0.08in,
-    innerrightmargin=0.08in,
+    innerrightmargin=0.2in,
     innertopmargin=0.05in,
     innerbottommargin=0in,
-    leftmargin=0.06in,
-    rightmargin=-0.1in,
+    leftmargin=0in,
+    rightmargin=0in,
   ]%
     \normalfont
     \bfseries
@@ -292,11 +292,11 @@
     linewidth=0.63pt,
     linecolor=black,
     innerleftmargin=0.08in,
-    innerrightmargin=0.08in,
+    innerrightmargin=0.2in,
     innertopmargin=0.035in,
     innerbottommargin=0in,
-    leftmargin=0.06in,
-    rightmargin=-0.1in,
+    leftmargin=0in,
+    rightmargin=0in,
   ]%
     \normalfont
     \mdseries
