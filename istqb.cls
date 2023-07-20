@@ -142,7 +142,7 @@
     \vbox_gset:NV
       \l_istqb_footer_box
       \g_istqb_footer_tl
-    % Ensure that the footer is always the 0.8in from the bottom of the page regardless of its contents.
+    %%%% Ensure that the footer is always the 0.8in from the bottom of the page regardless of its contents.
     \tl_new:N \l_istqb_geometry_tl
     \tl_gset:NV
       \l_istqb_geometry_tl
@@ -173,9 +173,9 @@
 \floatplacement{table}{H}
 
 % Lists of Tables and Figures
-\RequirePackage{etoolbox}
-\pretocmd{\listoffigures}{\clearpage}{}{}  % Ensure List of Figures starts on a new page.
-\pretocmd{\listoftables}{\clearpage}{}{}  % Ensure List of Tables starts on a new page.
+%% Place lists into the Table of Contents.
+\PassOptionsToPackage{nottoc}{tocbibind}
+\RequirePackage{tocbibind}
 
 % Table of Contents
 \setcounter{tocdepth}{3}  % Show level 1 up to level 3 of headings.
@@ -191,6 +191,8 @@
   \fontsize{14}{16.8}\selectfont
   #1%
 }
+\urlstyle{same}
+\setlength\bibitemsep{0.5\baselineskip}
 
 %% Entry type filters
 \defbibfilter{standards}{type=report}
@@ -278,6 +280,7 @@
     \normalfont
     \bfseries
     \fontsize{16}{19.2}\selectfont
+    \phantomsection
     \begingroup
     \titlelabel{\thetitle\kern0.3em}
     #1%
@@ -298,6 +301,7 @@
     \normalfont
     \mdseries
     \fontsize{14}{16.8}\selectfont
+    \phantomsection
     \begingroup
     \titlelabel{\thetitle\kern0.3em}
     #1%
@@ -363,9 +367,9 @@
 % Index
 \RequirePackage{imakeidx}
 \makeindex[columns=2, columnsep=1cm, noautomatic]
-% Ensure that the index is numbered and part of the table of contents.
+%% Ensure that the index is numbered and part of the table of contents.
 \renewcommand\imki@indexlevel{\section}
-% Remove spaces between indexed items.
+%% Remove spaces between indexed items.
 \RequirePackage{etoolbox}
 \apptocmd\theindex{\let\indexspace=\relax}{}{\PatchFailed}
 
