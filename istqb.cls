@@ -191,6 +191,7 @@
   \fontsize{14}{16.8}\selectfont
   #1%
 }
+\urlstyle{same}
 \setlength\bibitemsep{0.5\baselineskip}
 
 %% Entry type filters
