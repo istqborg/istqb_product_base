@@ -278,6 +278,7 @@
     \normalfont
     \bfseries
     \fontsize{16}{19.2}\selectfont
+    \phantomsection
     \begingroup
     \titlelabel{\thetitle\kern0.3em}
     #1%
@@ -298,6 +299,7 @@
     \normalfont
     \mdseries
     \fontsize{14}{16.8}\selectfont
+    \phantomsection
     \begingroup
     \titlelabel{\thetitle\kern0.3em}
     #1%
