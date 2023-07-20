@@ -347,6 +347,19 @@
   \par\kern -0.2in
 }
 
+%% Appendices
+\newcounter{istqbappendix}
+\newenvironment{istqbappendices}{%
+  \begingroup
+  \let\istqboldsection\section
+  \def\section##1{%
+    \stepcounter{istqbappendix}%
+    \istqboldsection{Appendix~\Alph{istqbappendix}~--~##1}}%
+}{%
+  \setcounter{istqbappendix}{0}%
+  \endgroup
+}
+
 % Index
 \RequirePackage{imakeidx}
 \makeindex[columns=2, columnsep=1cm, noautomatic]
@@ -359,3 +372,16 @@
 % Hyperlinks
 \PassOptionsToPackage{hidelinks}{hyperref}
 \RequirePackage{hyperref}
+
+% Revision History
+\RequirePackage{tabularx, array}
+\RequirePackage{xcolor, colortbl}
+\definecolor{istqbrevisionhistoryheader}{HTML}{D9D9D9}
+\long\def\beginistqbrevisionhistory#1\endistqbrevisionhistory{%
+  \leavevmode \kern 0.08in\relax % Indent the table
+  \renewcommand{\arraystretch}{1.5}% Increase line spread
+  \begin{tabularx}\linewidth{|l|l|X|}\hline
+  \rowcolor{istqbrevisionhistoryheader}
+  #1%
+  \end{tabularx}%
+}
