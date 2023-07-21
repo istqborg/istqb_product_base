@@ -141,9 +141,6 @@
                   { revision-history }
                   {
                     \group_begin:
-                    \def \markdownLaTeXTopRule { }
-                    \def \markdownLaTeXMidRule { }
-                    \def \markdownLaTeXBottomRule { }
                     \def \markdownLaTeXRenderTableRow ####1
                       {
                         \markdownLaTeXColumnCounter = 0
@@ -152,27 +149,14 @@
                           \markdownLaTeXTable = \expandafter \expandafter \expandafter {
                             \expandafter \the \expandafter \markdownLaTeXTable \expandafter {
                               \the \markdownLaTeXTableAlignment } }
-                          \addto@hook
-                            \markdownLaTeXTable
-                            {
-                              \markdownLaTeXTopRule
-                            }
                         \else
                           \markdownLaTeXRenderTableCell ####1
-                        \fi
-                        \ifnum \markdownLaTeXRowCounter = 1 \relax
-                          \addto@hook
-                            \markdownLaTeXTable
-                            \markdownLaTeXMidRule
                         \fi
                         \advance \markdownLaTeXRowCounter by 1 \relax
                         \ifnum \markdownLaTeXRowCounter > \markdownLaTeXRowTotal \relax
                           \addto@hook
                             \markdownLaTeXTable
-                            {
-                              \markdownLaTeXBottomRule
-                              \endistqbrevisionhistory
-                            }
+                            \endistqbrevisionhistory
                           \the \markdownLaTeXTable
                           \expandafter \@gobble
                         \fi \markdownLaTeXRenderTableRow
@@ -184,20 +168,6 @@
                         \ifnum\markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal \relax \else
                           \expandafter \@gobble
                         \fi \markdownLaTeXReadAlignments
-                      }
-                    \def \markdownLaTeXRenderTableCell ####1
-                      {
-                        \advance \markdownLaTeXColumnCounter by 1 \relax
-                        \ifnum \markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal \relax
-                          \addto@hook
-                            \markdownLaTeXTable
-                            { ####1 & }
-                        \else
-                          \addto@hook
-                            \markdownLaTeXTable
-                            { ####1 \\ \hline }
-                          \expandafter \@gobble
-                        \fi \markdownLaTeXRenderTableCell
                       }
                     \markdownSetup
                       {
@@ -304,11 +274,89 @@
   }
 
 % Tables
-\RequirePackage{booktabs}
 \markdownSetup
   {
     pipeTables,
     tableCaptions,
+  }
+\def \markdownLaTeXRenderTableRow #1
+  {
+    \markdownLaTeXColumnCounter = 0
+    \ifnum \markdownLaTeXRowCounter = 0 \relax
+      \markdownLaTeXReadAlignments #1
+      \markdownLaTeXTable = \expandafter \expandafter \expandafter {
+        \expandafter \the \expandafter \markdownLaTeXTable \expandafter {
+          \the \markdownLaTeXTableAlignment } }
+    \else
+      \markdownLaTeXRenderTableCell #1
+    \fi
+    \advance \markdownLaTeXRowCounter by 1 \relax
+    \ifnum \markdownLaTeXRowCounter > \markdownLaTeXRowTotal \relax
+      \markdownLaTeXTable = \expandafter \expandafter \expandafter {
+        \expandafter \the \expandafter \markdownLaTeXTable
+          \the \markdownLaTeXTableEnd }
+      \the \markdownLaTeXTable
+      \expandafter \@gobble
+    \fi \markdownLaTeXRenderTableRow
+  }
+\def \markdownLaTeXReadAlignments #1
+  {
+    \advance \markdownLaTeXColumnCounter by 1 \relax
+    \if #1 d
+      \addto@hook \markdownLaTeXTableAlignment { X| }
+    \else
+      \addto@hook \markdownLaTeXTableAlignment { #1| }
+    \fi
+    \ifnum\markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal \relax \else
+      \expandafter \@gobble
+    \fi \markdownLaTeXReadAlignments
+  }
+\def \markdownLaTeXRenderTableCell #1
+  {
+    \advance \markdownLaTeXColumnCounter by 1 \relax
+    \ifnum \markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal \relax
+      \addto@hook
+        \markdownLaTeXTable
+        { #1 & }
+    \else
+      \addto@hook
+        \markdownLaTeXTable
+        { #1 \\ \hline }
+      \expandafter \@gobble
+    \fi \markdownLaTeXRenderTableCell
+  }
+\markdownSetup
+  {
+    rendererPrototypes = {
+      table = {
+        \markdownLaTeXTable = { }
+        \markdownLaTeXTableAlignment = { | }
+        \markdownLaTeXTableEnd = { \endistqbtable }
+        \tl_if_empty:nF
+          { #1 }
+          {
+            \addto@hook
+              \markdownLaTeXTable
+              {
+                \begin { table }
+                \centering
+              }
+            \addto@hook
+              \markdownLaTeXTableEnd
+              {
+                \caption { #1 }
+                \end { table }
+              }
+          }
+        \addto@hook
+          \markdownLaTeXTable
+          \beginistqbtable
+        \markdownLaTeXRowCounter = 0
+        \markdownLaTeXRowTotal = #2
+        \markdownLaTeXColumnTotal = #3
+        \markdownLaTeXRenderTableRow
+      },
+    }
   }
 
 % Relative references
