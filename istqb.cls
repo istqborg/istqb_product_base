@@ -383,7 +383,6 @@
 \RequirePackage{xcolor, colortbl}
 \definecolor{istqbtableheader}{HTML}{D9D9D9}
 \long\def\beginistqbtable#1#2\endistqbtable{%
-  \leavevmode \kern 0.08in\relax % Indent the table
   \renewcommand{\arraystretch}{1.5}% Increase line spread
   \begin{tabularx}\linewidth{#1}\hline
   \rowcolor{istqbtableheader}
