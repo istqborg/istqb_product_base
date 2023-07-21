@@ -25,7 +25,7 @@ jobs:
           name: PDF
           path: |
             example.pdf
-            atlas-syllabus
+            atlas-syllabus.pdf
       - name: Create a prerelease
         if: github.ref == 'refs/heads/main'
         uses: marvinpinto/action-automatic-releases@latest
@@ -36,4 +36,4 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             example.pdf
-            atlas-syllabus
+            atlas-syllabus.pdf
