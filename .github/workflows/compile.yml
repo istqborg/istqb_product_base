@@ -39,4 +39,5 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             example.pdf
-            atlas.pdf
+            atlas-syllabus.tex
+            atlas-bok.pdf
