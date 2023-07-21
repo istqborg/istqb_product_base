@@ -271,11 +271,11 @@
     linewidth=0.95pt,
     linecolor=black,
     innerleftmargin=0.08in,
-    innerrightmargin=0.08in,
+    innerrightmargin=0.2in,
     innertopmargin=0.05in,
     innerbottommargin=0in,
-    leftmargin=0.06in,
-    rightmargin=-0.1in,
+    leftmargin=0in,
+    rightmargin=0in,
   ]%
     \normalfont
     \bfseries
@@ -292,11 +292,11 @@
     linewidth=0.63pt,
     linecolor=black,
     innerleftmargin=0.08in,
-    innerrightmargin=0.08in,
+    innerrightmargin=0.2in,
     innertopmargin=0.035in,
     innerbottommargin=0in,
-    leftmargin=0.06in,
-    rightmargin=-0.1in,
+    leftmargin=0in,
+    rightmargin=0in,
   ]%
     \normalfont
     \mdseries
@@ -377,15 +377,20 @@
 \PassOptionsToPackage{hidelinks}{hyperref}
 \RequirePackage{hyperref}
 
-% Revision History
+% Tables
 \RequirePackage{tabularx, array}
 \RequirePackage{xcolor, colortbl}
-\definecolor{istqbrevisionhistoryheader}{HTML}{D9D9D9}
-\long\def\beginistqbrevisionhistory#1\endistqbrevisionhistory{%
+\definecolor{istqbtableheader}{HTML}{D9D9D9}
+\long\def\beginistqbtable#1#2\endistqbtable{%
   \leavevmode \kern 0.08in\relax % Indent the table
   \renewcommand{\arraystretch}{1.5}% Increase line spread
-  \begin{tabularx}\linewidth{|l|l|X|}\hline
-  \rowcolor{istqbrevisionhistoryheader}
-  #1%
+  \begin{tabularx}\linewidth{#1}\hline
+  \rowcolor{istqbtableheader}
+  #2%
   \end{tabularx}%
+}
+
+%% Revision History
+\long\def\beginistqbrevisionhistory#1\endistqbrevisionhistory{%
+  \beginistqbtable{|l|l|X|}#1\endistqbtable
 }
