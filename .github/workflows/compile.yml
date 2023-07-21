@@ -17,15 +17,15 @@ jobs:
           find -type f \( -name '*.md' -o -name '*.yml' \) -exec dos2unix {} +
       - name: Compile LaTeX document example.tex
         run: latexmk -shell-escape -pdf example.tex
-      - name: Compile LaTeX document atlas.tex
-        run: latexmk -shell-escape -pdf atlas.tex
+      - name: Compile LaTeX document atlas-syllabus.tex
+        run: latexmk -shell-escape -pdf atlas-syllabus.tex
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
           name: PDF
           path: |
             example.pdf
-            atlas.pdf
+            atlas-syllabus
       - name: Create a prerelease
         if: github.ref == 'refs/heads/main'
         uses: marvinpinto/action-automatic-releases@latest
@@ -36,4 +36,4 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             example.pdf
-            atlas.pdf
+            atlas-syllabus
