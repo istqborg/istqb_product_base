@@ -214,6 +214,7 @@
 \ExplSyntaxOn
 \str_new:N \g_istqb_title_str
 \str_new:N \g_istqb_code_str
+\str_new:N \g_istqb_type_str
 \newcommand
   \istqblandingpage
   {
@@ -237,7 +238,7 @@
         \\
       }
     \g_istqb_level_str \\
-    Syllabus
+    \g_istqb_type_str
     \par \vfill
     \normalfont
     \itshape
