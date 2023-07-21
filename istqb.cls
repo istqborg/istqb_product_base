@@ -183,31 +183,42 @@
 
 % Bibliography
 \RequirePackage{csquotes}
-\PassOptionsToPackage{style=iso-authoryear}{biblatex}
+\PassOptionsToPackage{style=iso-authoryear, citetracker=true}{biblatex}
 \RequirePackage{biblatex}
-\defbibheading{bibliography}[Bibliography]{%
-  \normalfont
-  \mdseries
-  \fontsize{14}{16.8}\selectfont
-  #1%
-}
 \urlstyle{same}
 \setlength\bibitemsep{0.5\baselineskip}
 
-%% Entry type filters
-\defbibfilter{standards}{type=report}
-\defbibfilter{istqb-documents}{type=misc and keyword=istqb}
-\defbibfilter{books}{type=book}
-\defbibfilter{articles-and-web-pages}{type=article or type=online}
+%% Bibliographic categories
+\DeclareBibliographyCategory{uncited}
+\AtEveryBibitem{\ifciteseen{}{\addtocategory{uncited}{\thefield{entrykey}}}}
+
+%% Bibliographic filters
+\defbibfilter{standards}{type=report and not category=uncited}
+\defbibfilter{istqb-documents}{type=misc and keyword=istqb and not category=uncited}
+\defbibfilter{books}{type=book and not category=uncited}
+\defbibfilter{articles}{type=article and not category=uncited}
+\defbibfilter{further-reading}{not ( type=report or ( type=misc and keyword=istqb ) or type=book or type=article ) or category=uncited}
 
 %% Reference printing
 \newcommand\printistqbbibliography{%
   \clearpage
-  \section{References}
-  \printbibliography[filter=standards, title=Standards]
-  \printbibliography[filter=istqb-documents, title=ISTQB\textsuperscript{\textregistered} Documents]
-  \printbibliography[filter=books, title=Books]
-  \printbibliography[filter=articles-and-web-pages, title=Articles and Web Pages]
+  \section{References}%
+  \begingroup
+  \defbibheading{bibliography}{%
+    \normalfont
+    \mdseries
+    \fontsize{14}{16.8}\selectfont
+    ##1%
+  }%
+  \printbibliography[filter=standards, title=Standards]%
+  \printbibliography[filter=istqb-documents, title=ISTQB\textsuperscript{\textregistered} Documents]%
+  \printbibliography[filter=books, title=Books]%
+  \printbibliography[filter=articles, title=Articles]%
+  \endgroup
+  \begingroup
+  \defbibheading{bibliography}{\section{##1}}%
+  \printbibliography[filter=further-reading, title=Further Reading]%
+  \endgroup
 }
 
 % Landing Page
