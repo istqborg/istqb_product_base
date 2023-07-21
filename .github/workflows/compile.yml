@@ -27,7 +27,8 @@ jobs:
           name: PDF
           path: |
             example.pdf
-            atlas.pdf
+            atlas-syllabus.tex
+            atlas-bok.pdf
       - name: Create a prerelease
         if: github.ref == 'refs/heads/main'
         uses: marvinpinto/action-automatic-releases@latest
