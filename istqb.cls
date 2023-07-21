@@ -112,6 +112,7 @@
       innerrightmargin=8pt,
       innertopmargin=3pt,
       innerbottommargin=3pt,
+      skipabove=\baselineskip,
       leftmargin=-8pt,
       rightmargin=-8pt,
     ]
@@ -225,6 +226,7 @@
 \ExplSyntaxOn
 \str_new:N \g_istqb_title_str
 \str_new:N \g_istqb_code_str
+\str_new:N \g_istqb_type_str
 \newcommand
   \istqblandingpage
   {
@@ -248,7 +250,7 @@
         \\
       }
     \g_istqb_level_str \\
-    Syllabus
+    \g_istqb_type_str
     \par \vfill
     \normalfont
     \itshape
@@ -393,7 +395,6 @@
 \RequirePackage{xcolor, colortbl}
 \definecolor{istqbtableheader}{HTML}{D9D9D9}
 \long\def\beginistqbtable#1#2\endistqbtable{%
-  \leavevmode \kern 0.08in\relax % Indent the table
   \renewcommand{\arraystretch}{1.5}% Increase line spread
   \begin{tabularx}\linewidth{#1}\hline
   \rowcolor{istqbtableheader}
