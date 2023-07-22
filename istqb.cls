@@ -112,6 +112,7 @@
       innerrightmargin=8pt,
       innertopmargin=3pt,
       innerbottommargin=3pt,
+      skipabove=\baselineskip,
       leftmargin=-8pt,
       rightmargin=-8pt,
     ]
@@ -183,37 +184,49 @@
 
 % Bibliography
 \RequirePackage{csquotes}
-\PassOptionsToPackage{style=iso-authoryear}{biblatex}
+\PassOptionsToPackage{style=iso-authoryear, citetracker=true}{biblatex}
 \RequirePackage{biblatex}
-\defbibheading{bibliography}[Bibliography]{%
-  \normalfont
-  \mdseries
-  \fontsize{14}{16.8}\selectfont
-  #1%
-}
 \urlstyle{same}
 \setlength\bibitemsep{0.5\baselineskip}
 
-%% Entry type filters
-\defbibfilter{standards}{type=report}
-\defbibfilter{istqb-documents}{type=misc and keyword=istqb}
-\defbibfilter{books}{type=book}
-\defbibfilter{articles-and-web-pages}{type=article or type=online}
+%% Bibliographic categories
+\DeclareBibliographyCategory{uncited}
+\AtEveryBibitem{\ifciteseen{}{\addtocategory{uncited}{\thefield{entrykey}}}}
+
+%% Bibliographic filters
+\defbibfilter{standards}{type=report and not category=uncited}
+\defbibfilter{istqb-documents}{type=misc and keyword=istqb and not category=uncited}
+\defbibfilter{books}{type=book and not category=uncited}
+\defbibfilter{articles}{type=article and not category=uncited}
+\defbibfilter{further-reading}{not ( type=report or ( type=misc and keyword=istqb ) or type=book or type=article ) or category=uncited}
 
 %% Reference printing
 \newcommand\printistqbbibliography{%
   \clearpage
-  \section{References}
-  \printbibliography[filter=standards, title=Standards]
-  \printbibliography[filter=istqb-documents, title=ISTQB\textsuperscript{\textregistered} Documents]
-  \printbibliography[filter=books, title=Books]
-  \printbibliography[filter=articles-and-web-pages, title=Articles and Web Pages]
+  \section{References}%
+  \begingroup
+  \defbibheading{bibliography}{%
+    \normalfont
+    \mdseries
+    \fontsize{14}{16.8}\selectfont
+    ##1%
+  }%
+  \printbibliography[filter=standards, title=Standards]%
+  \printbibliography[filter=istqb-documents, title=ISTQB\textsuperscript{\textregistered} Documents]%
+  \printbibliography[filter=books, title=Books]%
+  \printbibliography[filter=articles, title=Articles]%
+  \endgroup
+  \begingroup
+  \defbibheading{bibliography}{\section{##1}}%
+  \printbibliography[filter=further-reading, title=Further Reading]%
+  \endgroup
 }
 
 % Landing Page
 \ExplSyntaxOn
 \str_new:N \g_istqb_title_str
 \str_new:N \g_istqb_code_str
+\str_new:N \g_istqb_type_str
 \newcommand
   \istqblandingpage
   {
@@ -237,7 +250,7 @@
         \\
       }
     \g_istqb_level_str \\
-    Syllabus
+    \g_istqb_type_str
     \par \vfill
     \normalfont
     \itshape
@@ -271,11 +284,11 @@
     linewidth=0.95pt,
     linecolor=black,
     innerleftmargin=0.08in,
-    innerrightmargin=0.08in,
+    innerrightmargin=0.2in,
     innertopmargin=0.05in,
     innerbottommargin=0in,
-    leftmargin=0.06in,
-    rightmargin=-0.1in,
+    leftmargin=0in,
+    rightmargin=0in,
   ]%
     \normalfont
     \bfseries
@@ -292,11 +305,11 @@
     linewidth=0.63pt,
     linecolor=black,
     innerleftmargin=0.08in,
-    innerrightmargin=0.08in,
+    innerrightmargin=0.2in,
     innertopmargin=0.035in,
     innerbottommargin=0in,
-    leftmargin=0.06in,
-    rightmargin=-0.1in,
+    leftmargin=0in,
+    rightmargin=0in,
   ]%
     \normalfont
     \mdseries
@@ -377,15 +390,19 @@
 \PassOptionsToPackage{hidelinks}{hyperref}
 \RequirePackage{hyperref}
 
-% Revision History
+% Tables
 \RequirePackage{tabularx, array}
 \RequirePackage{xcolor, colortbl}
-\definecolor{istqbrevisionhistoryheader}{HTML}{D9D9D9}
-\long\def\beginistqbrevisionhistory#1\endistqbrevisionhistory{%
-  \leavevmode \kern 0.08in\relax % Indent the table
+\definecolor{istqbtableheader}{HTML}{D9D9D9}
+\long\def\beginistqbtable#1#2\endistqbtable{%
   \renewcommand{\arraystretch}{1.5}% Increase line spread
-  \begin{tabularx}\linewidth{|l|l|X|}\hline
-  \rowcolor{istqbrevisionhistoryheader}
-  #1%
+  \begin{tabularx}\linewidth{#1}\hline
+  \rowcolor{istqbtableheader}
+  #2%
   \end{tabularx}%
+}
+
+%% Revision History
+\long\def\beginistqbrevisionhistory#1\endistqbrevisionhistory{%
+  \beginistqbtable{|l|l|X|}#1\endistqbtable
 }
