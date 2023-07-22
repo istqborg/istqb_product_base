@@ -19,12 +19,15 @@ jobs:
         run: latexmk -shell-escape -pdf example.tex
       - name: Compile LaTeX document atlas-syllabus.tex
         run: latexmk -shell-escape -pdf atlas-syllabus.tex
+      - name: Compile LaTeX document atlas-bok.tex
+        run: latexmk -shell-escape -pdf atlas-bok.tex
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
           name: PDF
           path: |
             example.pdf
+            atlas-bok.pdf
             atlas-syllabus.pdf
       - name: Create a prerelease
         if: github.ref == 'refs/heads/main'
@@ -36,4 +39,5 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           files: |
             example.pdf
+            atlas-bok.pdf
             atlas-syllabus.pdf
