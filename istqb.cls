@@ -145,7 +145,17 @@
       \end{minipage}
       \\
       \mbox{\g_istqb_release_str}
-      \\[0.16in]
+    \end{mdframed}
+    \begin{mdframed}[
+      linewidth=0.75pt,
+      linecolor=black!25!white,
+      innerleftmargin=0.08in,
+      innerrightmargin=8pt,
+      innertopmargin=3pt,
+      innerbottommargin=3pt,
+      skipabove=\baselineskip,
+      rightmargin=-8pt,
+    ]
       \fontsize{6}{6}\selectfont
       \textcopyright{}~International~Software~Testing~Qualifications~Board
     \end{mdframed}
