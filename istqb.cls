@@ -44,27 +44,43 @@
 \ExplSyntaxOn
 \str_new:N \g_istqb_schema_str
 \str_new:N \g_istqb_level_str
+\str_new:N \g_istqb_title_str
+\str_new:N \g_istqb_code_str
 \lhead{%
-  \tl_if_empty:NTF
-    \g_istqb_schema_str
-    {
-      \tl_if_empty:NF
+  \kern 0.1in
+  \begin{minipage}[b]{0.7\linewidth}
+    \tl_if_empty:NF
+      \g_istqb_schema_str
+      {
+        \g_istqb_schema_str
+      }
+    \tl_if_empty:NF
+      \g_istqb_level_str
+      {
+        \tl_if_empty:NF
+          \g_istqb_schema_str
+          { ~ }
         \g_istqb_level_str
-        {
-          \kern 0.1in \mbox{\g_istqb_level_str}
-        }
-    }
-    {
-      \tl_if_empty:NTF
-        \g_istqb_level_str
-        {
-          \kern 0.1in \mbox{\g_istqb_schema_str}
-        }
-        {
-          \kern 0.1in \mbox{\g_istqb_schema_str} \\[0.025in] \leavevmode
-          \kern 0.1in \mbox{\g_istqb_level_str}
-        }
-    }
+      }
+    \tl_if_empty:NF
+      \g_istqb_title_str
+      {
+        \tl_if_empty:NTF
+          \g_istqb_schema_str
+          {
+            \tl_if_empty:NF
+              \g_istqb_level_str
+              { ~ }
+          }
+          { ~ }
+        \g_istqb_title_str
+        \tl_if_empty:NF
+          \g_istqb_code_str
+          {
+            {}~(\g_istqb_code_str)
+          }
+      }
+  \end{minipage}
 }
 \ExplSyntaxOff
 \rhead{%
@@ -224,8 +240,6 @@
 
 % Landing Page
 \ExplSyntaxOn
-\str_new:N \g_istqb_title_str
-\str_new:N \g_istqb_code_str
 \str_new:N \g_istqb_type_str
 \newcommand
   \istqblandingpage
