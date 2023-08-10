@@ -52,7 +52,7 @@
     \tl_if_empty:NF
       \g_istqb_schema_str
       {
-        \g_istqb_schema_str
+        \mbox { \g_istqb_schema_str }
       }
     \tl_if_empty:NF
       \g_istqb_level_str
@@ -60,7 +60,7 @@
         \tl_if_empty:NF
           \g_istqb_schema_str
           { ~ }
-        \g_istqb_level_str
+        \mbox { \g_istqb_level_str }
       }
     \tl_if_empty:NF
       \g_istqb_title_str
@@ -77,7 +77,7 @@
         \tl_if_empty:NF
           \g_istqb_code_str
           {
-            {}~(\g_istqb_code_str)
+            \mbox { ~(\g_istqb_code_str) }
           }
       }
   \end{minipage}
