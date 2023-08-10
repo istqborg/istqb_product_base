@@ -75,22 +75,27 @@
     linkAttributes,
     rendererPrototypes = {
       image = {
-        \begin{figure}
-          \centering
-          \includegraphics { #3 }
-          \tl_if_empty:nF
-            { #4 }
-            { \caption { #4 } }
-          \tl_set:Nx
-            \l_tmpa_tl
-            {
-              \str_lowercase:n
-                { figure:#1 }
-            }
-          \exp_args:NV
-            \label
-            \l_tmpa_tl
-        \end{figure}
+        \bool_if:NTF
+          \g_istqb_intable_bool
+          { \includegraphics { #3 } }
+          {
+            \begin{figure}
+              \centering
+              \includegraphics { #3 }
+              \tl_if_empty:nF
+                { #4 }
+                { \caption { #4 } }
+              \tl_set:Nx
+                \l_tmpa_tl
+                {
+                  \str_lowercase:n
+                    { figure:#1 }
+                }
+              \exp_args:NV
+                \label
+                \l_tmpa_tl
+            \end{figure}
+          }
       },
       imageAttributeContextBegin = {
         \group_begin:
@@ -330,10 +335,12 @@
       \expandafter \@gobble
     \fi \markdownLaTeXRenderTableCell
   }
+\bool_new:N \g_istqb_intable_bool
 \markdownSetup
   {
     rendererPrototypes = {
       table = {
+        \bool_gset_true:N \g_istqb_intable_bool
         \markdownLaTeXTable = { }
         \markdownLaTeXTableAlignment = { | }
         \markdownLaTeXTableEnd = { \endistqbtable }
@@ -351,6 +358,7 @@
               {
                 \caption { #1 }
                 \end { table }
+                \bool_gset_false:N \g_istqb_intable_bool
               }
           }
         \addto@hook
