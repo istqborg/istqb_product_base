@@ -193,7 +193,7 @@
 
 % Graphics
 \RequirePackage{graphicx}
-\graphicspath{{./img}{.}}  % Look for images first in ./img and then in ./
+\graphicspath{{.}{./img}}  % Look for images first in ./ and then in ./img/.
 \setkeys{Gin}{width = \columnwidth, keepaspectratio}  % By default, typeset images to maximum width.
 
 % Tables and Figures
