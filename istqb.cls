@@ -48,6 +48,7 @@
 \str_new:N \g_istqb_code_str
 \lhead{%
   \kern 0.1in
+  \fontsize{9}{10.8}\selectfont
   \begin{minipage}[b]{0.7\linewidth}
     \tl_if_empty:NF
       \g_istqb_schema_str
@@ -132,6 +133,7 @@
       leftmargin=-8pt,
       rightmargin=-8pt,
     ]
+      \fontsize{9}{10.8}\selectfont
       \begin{minipage}{0.4\linewidth}
       \mbox{\g_istqb_version_str}
       \end{minipage}
