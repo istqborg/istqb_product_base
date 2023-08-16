@@ -63,6 +63,11 @@
           \g_istqb_release_str
           { #1 }
       },
+      prefix = {
+        \str_gset:Nn
+          \g_istqb_prefix_str
+          { #1 }
+      },
     },
     renderers = {
       jekyllDataEnd = {},

@@ -376,19 +376,23 @@
   \setcounter{istqbobjective}{0}%
   \clearpage
 }
-\newenvironment{istqbsubobjectives}{%
-  \def\istqbsubobjective##1{%
-    \stepcounter{istqbsubobjective}%
-    FL-\thesection.\theistqbobjective.\theistqbsubobjective & ##1 \\[0.07in]
-  }%
+\ExplSyntaxOn
+\str_new:N \g_istqb_prefix_str
+\str_gset:Nn \g_istqb_prefix_str { ?? }
+\newenvironment{istqbsubobjectives}{
+  \def\istqbsubobjective##1{
+    \stepcounter{istqbsubobjective}
+    \g_istqb_prefix_str-\thesection.\theistqbobjective.\theistqbsubobjective & ##1 \\[0.07in]
+  }
   \LTpre=0.08in
   \LTpost=0.12in
-  \begin{longtable}{@{}p{1in}@{}p{\dimexpr(\linewidth - 1in)}@{}}%
-}{%
-  \end{longtable}%
-  \setcounter{istqbsubobjective}{0}%
+  \begin{longtable}{@{}p{1in}@{}p{\dimexpr(\linewidth - 1in)}@{}}
+}{
+  \end{longtable}
+  \setcounter{istqbsubobjective}{0}
   \par\kern -0.2in
 }
+\ExplSyntaxOff
 
 %% Appendices
 \newcounter{istqbappendix}
