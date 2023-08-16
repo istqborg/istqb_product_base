@@ -71,9 +71,9 @@
           {
             \tl_if_empty:NF
               \g_istqb_level_str
-              { ~ }
+              { \\ }
           }
-          { ~ }
+          { \\ }
         \g_istqb_title_str
         \tl_if_empty:NF
           \g_istqb_code_str
