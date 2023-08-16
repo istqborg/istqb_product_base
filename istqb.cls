@@ -44,27 +44,44 @@
 \ExplSyntaxOn
 \str_new:N \g_istqb_schema_str
 \str_new:N \g_istqb_level_str
+\str_new:N \g_istqb_title_str
+\str_new:N \g_istqb_code_str
 \lhead{%
-  \tl_if_empty:NTF
-    \g_istqb_schema_str
-    {
-      \tl_if_empty:NF
-        \g_istqb_level_str
-        {
-          \kern 0.1in \mbox{\g_istqb_level_str}
-        }
-    }
-    {
-      \tl_if_empty:NTF
-        \g_istqb_level_str
-        {
-          \kern 0.1in \mbox{\g_istqb_schema_str}
-        }
-        {
-          \kern 0.1in \mbox{\g_istqb_schema_str} \\[0.025in] \leavevmode
-          \kern 0.1in \mbox{\g_istqb_level_str}
-        }
-    }
+  \kern 0.1in
+  \fontsize{9}{10.8}\selectfont
+  \begin{minipage}[b]{0.7\linewidth}
+    \tl_if_empty:NF
+      \g_istqb_schema_str
+      {
+        \mbox { \g_istqb_schema_str }
+      }
+    \tl_if_empty:NF
+      \g_istqb_level_str
+      {
+        \tl_if_empty:NF
+          \g_istqb_schema_str
+          { ~ }
+        \mbox { \g_istqb_level_str }
+      }
+    \tl_if_empty:NF
+      \g_istqb_title_str
+      {
+        \tl_if_empty:NTF
+          \g_istqb_schema_str
+          {
+            \tl_if_empty:NF
+              \g_istqb_level_str
+              { \\ }
+          }
+          { \\ }
+        \g_istqb_title_str
+        \tl_if_empty:NF
+          \g_istqb_code_str
+          {
+            \mbox { ~(\g_istqb_code_str) }
+          }
+      }
+  \end{minipage}
 }
 \ExplSyntaxOff
 \rhead{%
@@ -116,6 +133,7 @@
       leftmargin=-8pt,
       rightmargin=-8pt,
     ]
+      \fontsize{9}{10.8}\selectfont
       \begin{minipage}{0.4\linewidth}
       \mbox{\g_istqb_version_str}
       \end{minipage}
@@ -129,7 +147,17 @@
       \end{minipage}
       \\
       \mbox{\g_istqb_release_str}
-      \\[0.16in]
+    \end{mdframed}
+    \begin{mdframed}[
+      linewidth=0.75pt,
+      linecolor=black!25!white,
+      innerleftmargin=0.08in,
+      innerrightmargin=8pt,
+      innertopmargin=3pt,
+      innerbottommargin=3pt,
+      skipabove=\baselineskip,
+      rightmargin=-8pt,
+    ]
       \fontsize{6}{6}\selectfont
       \textcopyright{}~International~Software~Testing~Qualifications~Board
     \end{mdframed}
@@ -224,8 +252,6 @@
 
 % Landing Page
 \ExplSyntaxOn
-\str_new:N \g_istqb_title_str
-\str_new:N \g_istqb_code_str
 \str_new:N \g_istqb_type_str
 \newcommand
   \istqblandingpage
