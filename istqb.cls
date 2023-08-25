@@ -374,7 +374,7 @@
   }%
 }{%
   \setcounter{istqbobjective}{0}%
-  \clearpage
+  \par\kern 0.12in
 }
 \ExplSyntaxOn
 \str_new:N \g_istqb_prefix_str
