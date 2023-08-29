@@ -5,7 +5,7 @@ jobs:
   build_latex:
     runs-on: ubuntu-latest
     container:
-      image: witiko/markdown:2.22.0-0-g5a3d0fe-latest
+      image: witiko/markdown:3.0.0-0-gdcaea6c-latest
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3

@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_syllabus}%
-  {2023-06-18}%
-  {0.0.1}%
+  {2023-08-30}%
+  {0.0.2}%
   {LaTeX theme for the Markdown Package that typesets ISTQB Syllabi}
 
 % Hybrid Markdown + LaTeX text
@@ -121,6 +121,11 @@
     },
   }
 
+% Paragraphs
+\cs_gset_eq:NN
+  \markdownRendererParagraphSeparator
+  \markdownRendererInterblockSeparator
+
 % Headings
 \seq_new:N \l_istqb_header_identifiers_seq
 \markdownSetup
@@ -200,7 +205,7 @@
                             \markdownLaTeXColumnTotal = ####3
                             \markdownLaTeXRenderTableRow
                           },
-                          headerAttributeContextEnd = {
+                          sectionEnd = {
                             \group_end:
                           },
                         }
@@ -256,7 +261,7 @@
                                 }
                               }
                           },
-                          headerAttributeContextEnd = {
+                          sectionEnd = {
                             \group_end:
                           },
                         }
@@ -293,6 +298,7 @@
   {
     pipeTables,
     tableCaptions,
+    tableAttributes,
   }
 \def \markdownLaTeXRenderTableRow #1
   {
