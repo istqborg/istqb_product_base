@@ -6,20 +6,30 @@
   {LaTeX theme for the Markdown Package that typesets ISTQB Syllabi}
 
 % Hybrid Markdown + LaTeX text
-\markdownSetup{
-  fencedCode,
-  rawAttribute,
-  renderers = {
-    inputRawInline = {
-      \protect \markdownEscape { #1 }  % Enable the use of raw inlines in headings.
+\markdownSetup
+  {
+    fencedCode,
+    rawAttribute,
+    renderers = {
+      inputRawInline = {
+        \protect \markdownEscape { #1 }  % Enable the use of raw inlines in headings.
+      }
+    },
+  }
+
+% Paragraphs and line breaks
+\markdownSetup
+  {
+    renderers = {
+      hardLineBreak = { \newline },
     }
-  },
-}
+  }
 
 % Lists
-\markdownSetup{
-  hashEnumerators,
-}
+\markdownSetup
+  {
+    hashEnumerators,
+  }
 
 % Metadata
 \markdownSetupSnippet
