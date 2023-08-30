@@ -27,6 +27,7 @@
 \RequirePackage{ragged2e}
 \RaggedRight  % Do not try to justify text by increasing horizontal spaces.
 \usepackage{parskip}  % Put half of line height between paragraphs.
+\sloppy  % Prevent overfull lines.
 
 %% Typefaces
 \RequirePackage{tgheros}
