@@ -9,6 +9,11 @@
 \markdownSetup{
   fencedCode,
   rawAttribute,
+  renderers = {
+    inputRawInline = {
+      \protect \markdownEscape { #1 }  % Enable the use of raw inlines in headings.
+    }
+  },
 }
 
 % Lists
