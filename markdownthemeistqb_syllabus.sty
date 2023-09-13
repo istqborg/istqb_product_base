@@ -298,12 +298,6 @@
   }
 
 % Tables
-\markdownSetup
-  {
-    pipeTables,
-    tableCaptions,
-    tableAttributes,
-  }
 \def \markdownLaTeXRenderTableRow #1
   {
     \markdownLaTeXColumnCounter = 0
@@ -351,9 +345,29 @@
     \fi \markdownLaTeXRenderTableCell
   }
 \bool_new:N \g_istqb_intable_bool
+\tl_new:N \l_istqb_table_identifier_tl
 \markdownSetup
   {
+    pipeTables,
+    tableCaptions,
+    tableAttributes,
     rendererPrototypes = {
+      tableAttributeContextBegin = {
+        \group_begin:
+        \markdownSetup
+          {
+            rendererPrototypes = {
+              attributeIdentifier = {
+                \tl_set:Nx
+                  \l_istqb_table_identifier_tl
+                  {
+                    \str_lowercase:n
+                      { table:##1 }
+                  }
+              },
+            },
+          }
+      },
       table = {
         \bool_gset_true:N \g_istqb_intable_bool
         \markdownLaTeXTable = { }
@@ -372,6 +386,20 @@
               \markdownLaTeXTableEnd
               {
                 \caption { #1 }
+              }
+            \tl_if_empty:NF
+              \l_istqb_table_identifier_tl
+              {
+                \addto@hook
+                  \markdownLaTeXTableEnd
+                  {
+                    \label
+                      { \l_istqb_table_identifier_tl }
+                  }
+              }
+            \addto@hook
+              \markdownLaTeXTableEnd
+              {
                 \end { table }
                 \bool_gset_false:N \g_istqb_intable_bool
               }
@@ -383,6 +411,9 @@
         \markdownLaTeXRowTotal = #2
         \markdownLaTeXColumnTotal = #3
         \markdownLaTeXRenderTableRow
+      },
+      tableAttributeContextEnd = {
+        \group_end:
       },
     }
   }
