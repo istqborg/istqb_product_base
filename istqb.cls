@@ -22,6 +22,30 @@
   \g_istqb_geometry_tl
 \ExplSyntaxOff
 
+%% Landscape content
+\ExplSyntaxOn
+\def \istqblandscapebegin
+  {
+    \group_begin:
+    \paperwidth = \pdfpageheight
+    \paperheight = \pdfpagewidth
+    \edef \Gm@restore@org { \Gm@restore }
+    \exp_args:NV
+      \newgeometry
+      \g_istqb_geometry_tl
+    \fancyhfoffset [ L ] { 0pt }
+    \fancyhfoffset [ R ] { 0pt }
+    \pdfpagewidth = \paperwidth
+    \pdfpageheight = \paperheight
+  }
+\def \istqblandscapeend
+  {
+    \clearpage
+    \group_end:
+    \restoregeometry
+  }
+\ExplSyntaxOff
+
 %% Paragraphs and text alignment
 \raggedbottom  % Do not try to equalize the number of lines on a page by increasing vertical spaces.
 \RequirePackage{ragged2e}
@@ -173,18 +197,14 @@
       \l_istqb_footer_box
       \g_istqb_footer_tl
     %%%% Ensure that the footer is always the 0.8in from the bottom of the page regardless of its contents.
-    \tl_new:N \l_istqb_geometry_tl
-    \tl_gset:NV
-      \l_istqb_geometry_tl
-      \g_istqb_geometry_tl
     \tl_gput_right:Nn
-      \l_istqb_geometry_tl
+      \g_istqb_geometry_tl
       {
         bottom = \dimexpr( 0.8in + \box_ht_plus_dp:N \l_istqb_footer_box ),
       }
     \exp_args:NV
       \newgeometry
-      \l_istqb_geometry_tl
+      \g_istqb_geometry_tl
     \cfoot
       {
         \tl_use:N \g_istqb_footer_tl

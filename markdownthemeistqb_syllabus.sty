@@ -168,6 +168,21 @@
                         }
                       }
                   }
+                %% Landscape sections
+                \tl_if_eq:nnT
+                  { ##1 }
+                  { landscape }
+                  {
+                    \istqblandscapebegin
+                    \markdownSetup
+                      {
+                        rendererPrototypes = {
+                          headerAttributeContextEnd = {
+                            \istqblandscapeend
+                          },
+                        }
+                      }
+                  }
                 %% Revision history
                 \tl_if_eq:nnT
                   { ##1 }
