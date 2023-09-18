@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_syllabus}%
-  {2023-06-18}%
-  {0.0.1}%
+  {2023-09-13}%
+  {0.0.2}%
   {LaTeX theme for the Markdown Package that typesets ISTQB Syllabi}
 
 % Hybrid Markdown + LaTeX text
@@ -139,6 +139,11 @@
     },
   }
 
+% Paragraphs
+\cs_gset_eq:NN
+  \markdownRendererParagraphSeparator
+  \markdownRendererInterblockSeparator
+
 % Headings
 \seq_new:N \l_istqb_header_identifiers_seq
 \markdownSetup
@@ -147,6 +152,10 @@
     tightLists=false,
     startNumber=false,
     rendererPrototypes = {
+      headingFour = {
+        \paragraph { #1 }
+        \leavevmode
+      },
       headerAttributeContextBegin = {
         \markdownSetup
           {
@@ -177,7 +186,18 @@
                     \markdownSetup
                       {
                         rendererPrototypes = {
-                          headerAttributeContextEnd = {
+                          sectionBegin = {
+                            %% Prevent nested sections from ending landscape mode prematurely.
+                            \group_begin:
+                            \markdownSetup
+                              {
+                                rendererPrototypes = {
+                                  sectionBegin = { \group_begin: },
+                                  sectionEnd = { \group_end: },
+                                },
+                              }
+                          },
+                          sectionEnd = {
                             \istqblandscapeend
                           },
                         }
@@ -233,7 +253,7 @@
                             \markdownLaTeXColumnTotal = ####3
                             \markdownLaTeXRenderTableRow
                           },
-                          headerAttributeContextEnd = {
+                          sectionEnd = {
                             \group_end:
                           },
                         }
@@ -289,7 +309,7 @@
                                 }
                               }
                           },
-                          headerAttributeContextEnd = {
+                          sectionEnd = {
                             \group_end:
                           },
                         }
@@ -322,11 +342,6 @@
   }
 
 % Tables
-\markdownSetup
-  {
-    pipeTables,
-    tableCaptions,
-  }
 \def \markdownLaTeXRenderTableRow #1
   {
     \markdownLaTeXColumnCounter = 0
@@ -374,9 +389,29 @@
     \fi \markdownLaTeXRenderTableCell
   }
 \bool_new:N \g_istqb_intable_bool
+\tl_new:N \l_istqb_table_identifier_tl
 \markdownSetup
   {
+    pipeTables,
+    tableCaptions,
+    tableAttributes,
     rendererPrototypes = {
+      tableAttributeContextBegin = {
+        \group_begin:
+        \markdownSetup
+          {
+            rendererPrototypes = {
+              attributeIdentifier = {
+                \tl_set:Nx
+                  \l_istqb_table_identifier_tl
+                  {
+                    \str_lowercase:n
+                      { table:##1 }
+                  }
+              },
+            },
+          }
+      },
       table = {
         \bool_gset_true:N \g_istqb_intable_bool
         \markdownLaTeXTable = { }
@@ -395,6 +430,20 @@
               \markdownLaTeXTableEnd
               {
                 \caption { #1 }
+              }
+            \tl_if_empty:NF
+              \l_istqb_table_identifier_tl
+              {
+                \addto@hook
+                  \markdownLaTeXTableEnd
+                  {
+                    \label
+                      { \l_istqb_table_identifier_tl }
+                  }
+              }
+            \addto@hook
+              \markdownLaTeXTableEnd
+              {
                 \end { table }
                 \bool_gset_false:N \g_istqb_intable_bool
               }
@@ -406,6 +455,9 @@
         \markdownLaTeXRowTotal = #2
         \markdownLaTeXColumnTotal = #3
         \markdownLaTeXRenderTableRow
+      },
+      tableAttributeContextEnd = {
+        \group_end:
       },
     }
   }
