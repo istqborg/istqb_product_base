@@ -296,7 +296,12 @@
           }
         \\
       }
-    \g_istqb_level_str \\
+    \tl_if_empty:NF
+      \g_istqb_level_str
+      {
+        \g_istqb_level_str
+        \\
+      }
     \g_istqb_type_str
     \par \vfill
     \normalfont
