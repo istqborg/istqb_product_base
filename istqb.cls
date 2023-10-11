@@ -286,6 +286,12 @@
     \fontsize { 24 } { 28.8 } \selectfont
     \g_istqb_schema_str \\
     \tl_if_empty:NF
+      \g_istqb_level_str
+      {
+        \g_istqb_level_str
+        \\
+      }
+    \tl_if_empty:NF
       \g_istqb_title_str
       {
         \g_istqb_title_str
@@ -294,12 +300,6 @@
           {
             {}~(\g_istqb_code_str)
           }
-        \\
-      }
-    \tl_if_empty:NF
-      \g_istqb_level_str
-      {
-        \g_istqb_level_str
         \\
       }
     \g_istqb_type_str
