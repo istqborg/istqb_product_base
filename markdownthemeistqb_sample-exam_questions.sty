@@ -1,0 +1,38 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage
+  {markdownthemeistqb_sample-exam_questions}%
+  {2023-10-11}%
+  {0.0.1}%
+  {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Questions documents}
+
+% Import common code
+\markdownSetup
+  { import = istqb/sample-exam }
+
+% Metadata
+\markdownSetupSnippet
+  { metadata }
+  {
+    snippet = istqb/sample-exam/metadata,
+    jekyllDataRenderers = {
+      type = {
+        \tl_gset:Nn
+          \g_istqb_type_tl
+          { #1~--~Questions }
+      },
+    },
+  }
+
+% Questions
+\markdownSetupSnippet
+  { questions }
+  {
+    jekyllData,
+    expectJekyllData,
+    jekyllDataRenderers = {
+      % TODO
+    },
+    renderers = {
+      jekyllDataEnd = {},
+    },
+  }

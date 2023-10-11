@@ -1,0 +1,24 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage
+  {markdownthemeistqb_sample-exam}%
+  {2023-10-11}%
+  {0.0.1}%
+  {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Questions and Answers documents}
+
+% Import common code
+\markdownSetup
+  { import = istqb/common }
+
+% Metadata
+\markdownSetupSnippet
+  { metadata }
+  {
+    snippet = istqb/common/metadata,
+    jekyllDataRenderers = {
+      compatibility = {
+        \tl_gset:Nn
+          \g_istqb_compatibility_tl
+          { #1 }
+      },
+    },
+  }
