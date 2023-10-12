@@ -67,43 +67,43 @@
 
 %%% Header
 \ExplSyntaxOn
-\str_new:N \g_istqb_schema_str
-\str_new:N \g_istqb_level_str
-\str_new:N \g_istqb_title_str
-\str_new:N \g_istqb_code_str
+\tl_new:N \g_istqb_schema_tl
+\tl_new:N \g_istqb_level_tl
+\tl_new:N \g_istqb_title_tl
+\tl_new:N \g_istqb_code_tl
 \lhead{%
   \kern 0.1in
   \fontsize{9}{10.8}\selectfont
   \begin{minipage}[b]{0.7\linewidth}
     \tl_if_empty:NF
-      \g_istqb_schema_str
+      \g_istqb_schema_tl
       {
-        \mbox { \g_istqb_schema_str }
+        \mbox { \g_istqb_schema_tl }
       }
     \tl_if_empty:NF
-      \g_istqb_level_str
+      \g_istqb_level_tl
       {
         \tl_if_empty:NF
-          \g_istqb_schema_str
+          \g_istqb_schema_tl
           { ~ }
-        \mbox { \g_istqb_level_str }
+        \mbox { \g_istqb_level_tl }
       }
     \tl_if_empty:NF
-      \g_istqb_title_str
+      \g_istqb_title_tl
       {
         \tl_if_empty:NTF
-          \g_istqb_schema_str
+          \g_istqb_schema_tl
           {
             \tl_if_empty:NF
-              \g_istqb_level_str
+              \g_istqb_level_tl
               { \\ }
           }
           { \\ }
-        \g_istqb_title_str
+        \g_istqb_title_tl
         \tl_if_empty:NF
-          \g_istqb_code_str
+          \g_istqb_code_tl
           {
-            \mbox { ~(\g_istqb_code_str) }
+            \mbox { ~(\g_istqb_code_tl) }
           }
       }
   \end{minipage}
@@ -131,17 +131,17 @@
 \RequirePackage{mdframed}
 \RequirePackage{lastpage}
 \ExplSyntaxOn
-\str_new:N \g_istqb_version_str
-\str_gset:Nn
-  \g_istqb_version_str
+\tl_new:N \g_istqb_version_tl
+\tl_gset:Nn
+  \g_istqb_version_tl
   { vM.mm }
-\str_new:N \g_istqb_date_str
-\str_gset:Nn
-  \g_istqb_date_str
+\tl_new:N \g_istqb_date_tl
+\tl_gset:Nn
+  \g_istqb_date_tl
   { Development~Phase~or~YYYY/MM/DD }
-\str_new:N \g_istqb_release_str
-\str_gset:Nn
-  \g_istqb_release_str
+\tl_new:N \g_istqb_release_tl
+\tl_gset:Nn
+  \g_istqb_release_tl
   { For~public~release }
 \tl_new:N \g_istqb_footer_tl
 \tl_gset:Nn
@@ -160,7 +160,7 @@
     ]
       \fontsize{9}{10.8}\selectfont
       \begin{minipage}{0.4\linewidth}
-      \mbox{\g_istqb_version_str}
+      \mbox{\g_istqb_version_tl}
       \end{minipage}
       \begin{minipage}{0.2\linewidth}
       \centering
@@ -168,10 +168,10 @@
       \end{minipage}
       \begin{minipage}{0.4\linewidth}
       \hfill
-      \mbox{\g_istqb_date_str}
+      \mbox{\g_istqb_date_tl}
       \end{minipage}
       \\
-      \mbox{\g_istqb_release_str}
+      \mbox{\g_istqb_release_tl}
     \end{mdframed}
     \begin{mdframed}[
       linewidth=0.75pt,
@@ -273,7 +273,7 @@
 
 % Landing Page
 \ExplSyntaxOn
-\str_new:N \g_istqb_type_str
+\tl_new:N \g_istqb_type_tl
 \newcommand
   \istqblandingpage
   {
@@ -284,30 +284,30 @@
     \normalfont
     \bfseries
     \fontsize { 24 } { 28.8 } \selectfont
-    \g_istqb_schema_str \\
+    \g_istqb_schema_tl \\
     \tl_if_empty:NF
-      \g_istqb_title_str
+      \g_istqb_title_tl
       {
-        \g_istqb_title_str
+        \g_istqb_title_tl
         \tl_if_empty:NF
-          \g_istqb_code_str
+          \g_istqb_code_tl
           {
-            {}~(\g_istqb_code_str)
+            {}~(\g_istqb_code_tl)
           }
         \\
       }
     \tl_if_empty:NF
-      \g_istqb_level_str
+      \g_istqb_level_tl
       {
-        \g_istqb_level_str
+        \g_istqb_level_tl
         \\
       }
-    \g_istqb_type_str
+    \g_istqb_type_tl
     \par \vfill
     \normalfont
     \itshape
     \fontsize { 18 } { 21.6 } \selectfont
-    \g_istqb_version_str
+    \g_istqb_version_tl
     \par \vfill \vfill
     \leaders \vrule width \textwidth \vskip 1pt
     \par \vspace { 0.2in }
@@ -403,12 +403,12 @@
   \par\kern 0.12in
 }
 \ExplSyntaxOn
-\str_new:N \g_istqb_prefix_str
-\str_gset:Nn \g_istqb_prefix_str { ?? }
+\tl_new:N \g_istqb_prefix_tl
+\tl_gset:Nn \g_istqb_prefix_tl { ?? }
 \newenvironment{istqbsubobjectives}{
   \def\istqbsubobjective##1{
     \stepcounter{istqbsubobjective}
-    \g_istqb_prefix_str-\thesection.\theistqbobjective.\theistqbsubobjective & ##1 \\[0.07in]
+    \g_istqb_prefix_tl-\thesection.\theistqbobjective.\theistqbsubobjective & ##1 \\[0.07in]
   }
   \LTpre=0.08in
   \LTpost=0.12in
@@ -462,3 +462,7 @@
 \long\def\beginistqbrevisionhistory#1\endistqbrevisionhistory{%
   \beginistqbtable{|l|l|X|}#1\endistqbtable
 }
+
+% Unicode characters
+\RequirePackage{newunicodechar}
+\newunicodechar{®}{\textsuperscript{\textregistered}}
