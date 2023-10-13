@@ -27,12 +27,28 @@
 \markdownSetupSnippet
   { questions }
   {
-    jekyllData,
-    expectJekyllData,
-    jekyllDataRenderers = {
-      % TODO
-    },
+    snippet = { istqb/sample-exam/questions },
+    % TODO
     renderers = {
-      jekyllDataEnd = {},
+      jekyllDataEnd = {
+        \clearpage
+        Duration:~\int_use:N \g_istqb_duration_min_int--\int_use:N \g_istqb_duration_max_int \\
+        Number~of~questions:~\int_use:N \g_istqb_num_questions_int \\
+        Max~score:~\int_use:N \g_istqb_max_score_int \\
+        Passing~score:~\int_use:N \g_istqb_pass_score_int \% \\
+        Questions:
+        \begin{enumerate}
+        \seq_map_inline:Nn
+          \g_istqb_questions_seq
+          {
+            \item[##1)]
+                Learning~objective:~\tl_use:N \g_istqb_prefix_tl - \prop_item:Nn \g_istqb_question_learning_objective_prop { ##1 } \\
+                K-level:~\prop_item:Nn \g_istqb_question_k_level_prop { ##1 } \\
+                Number~of~points:~\prop_item:Nn \g_istqb_question_number_of_points_prop { ##1 } \\
+                Answer~keys:~\prop_item:Nn \g_istqb_answer_keys_prop { ##1 } \\
+                Correct~answers:~\prop_item:Nn \g_istqb_answer_correct_keys_prop { ##1 } \\
+          }
+        \end{enumerate}
+      },
     },
   }
