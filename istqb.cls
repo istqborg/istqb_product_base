@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{istqb}[2023/10/11 LaTeX class for ISTQB Documents]
+\ProvidesClass{istqb}[2023/10/16 LaTeX class for ISTQB Documents]
 \LoadClass[10pt]{article}
 
 % Page layout
@@ -394,6 +394,11 @@
 \titlespacing\section{0pt}{0pt}{*3.2}
 \titlespacing\subsection{0pt}{*5.5}{*0.8}
 \titlespacing\subsubsection{0pt}{*3.25}{*1}
+\newcommand\istqbunnumberedsection[1]{%
+  \section*{#1}%
+  \markboth{#1}{#1}%
+  \addcontentsline{toc}{section}{#1}%
+}
 
 %% Learning objectives
 \RequirePackage{longtable}

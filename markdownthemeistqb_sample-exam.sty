@@ -1,7 +1,7 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_sample-exam}%
-  {2023-10-11}%
+  {2023-10-16}%
   {0.0.1}%
   {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Questions and Answers documents}
 
@@ -35,6 +35,7 @@
 \prop_new:N \g_istqb_question_k_level_prop
 \prop_new:N \g_istqb_question_number_of_points_prop
 \prop_new:N \g_istqb_question_explanation_prop
+\prop_new:N \g_istqb_question_text_prop
 \prop_new:N \g_istqb_answer_keys_prop
 \prop_new:N \g_istqb_answer_correct_keys_prop
 \prop_new:N \g_istqb_answers_prop
@@ -117,6 +118,12 @@
                                   { explanation } {
                                     \prop_gput:Nnn
                                       \g_istqb_question_explanation_prop
+                                      { ##1 }
+                                      { ####2 }
+                                  }
+                                  { question } {
+                                    \prop_gput:Nnn
+                                      \g_istqb_question_text_prop
                                       { ##1 }
                                       { ####2 }
                                   }

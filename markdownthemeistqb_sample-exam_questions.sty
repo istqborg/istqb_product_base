@@ -1,7 +1,7 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_sample-exam_questions}%
-  {2023-10-11}%
+  {2023-10-16}%
   {0.0.1}%
   {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Questions documents}
 
@@ -28,27 +28,111 @@
   { questions }
   {
     snippet = { istqb/sample-exam/questions },
-    % TODO
+    fancyLists = true,
     renderers = {
+      fancyOlBegin = {
+        \group_begin:
+        \medskip
+        \markdownRendererFancyOlBeginPrototype { #1 } { #2 }
+      },
+      fancyOlEnd = {
+        \markdownRendererFancyOlEndPrototype
+        \medskip
+        \group_end:
+      },
       jekyllDataEnd = {
-        \clearpage
-        Duration:~\int_use:N \g_istqb_duration_min_int--\int_use:N \g_istqb_duration_max_int \\
-        Number~of~questions:~\int_use:N \g_istqb_num_questions_int \\
-        Max~score:~\int_use:N \g_istqb_max_score_int \\
-        Passing~score:~\int_use:N \g_istqb_pass_score_int \% \\
-        Questions:
-        \begin{enumerate}
         \seq_map_inline:Nn
           \g_istqb_questions_seq
           {
-            \item[##1)]
-                Learning~objective:~\tl_use:N \g_istqb_prefix_tl - \prop_item:Nn \g_istqb_question_learning_objective_prop { ##1 } \\
-                K-level:~\prop_item:Nn \g_istqb_question_k_level_prop { ##1 } \\
-                Number~of~points:~\prop_item:Nn \g_istqb_question_number_of_points_prop { ##1 } \\
-                Answer~keys:~\prop_item:Nn \g_istqb_answer_keys_prop { ##1 } \\
-                Correct~answers:~\prop_item:Nn \g_istqb_answer_correct_keys_prop { ##1 } \\
+            % Print question heading.
+            \tl_set:Nn
+              \l_tmpa_tl
+              { Question~\# ##1~( }
+            \prop_get:NnN
+              \g_istqb_question_number_of_points_prop
+              { ##1 }
+              \l_tmpb_tl
+            \tl_put_right:NV
+              \l_tmpa_tl
+              \l_tmpb_tl
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { ~Point }
+            \int_compare:VNnF
+              \l_tmpb_tl = { 1 }
+              {
+                \tl_put_right:Nn
+                  \l_tmpa_tl
+                  { s }
+              }
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { ) }
+            \exp_args:NNV
+              \subsection *
+              \l_tmpa_tl
+            \exp_args:NVV
+              \markboth
+              \l_tmpa_tl
+              \l_tmpa_tl
+            \exp_args:NnnV
+              \addcontentsline
+              { toc }
+              { subsection }
+              \l_tmpa_tl
+            % Print question text.
+            \prop_item:Nn
+              \g_istqb_question_text_prop
+              { ##1 }
+            % Print answers.
+            \prop_get:NnN
+              \g_istqb_answer_keys_prop
+              { ##1 }
+              \l_tmpa_clist
+            \medskip
+            \begin { enumerate } [ a) ]
+            \clist_map_inline:Nn
+              \l_tmpa_clist
+              {
+                \item [ ####1 ) ]
+                  \prop_item:Nn
+                    \g_istqb_answers_prop
+                    { ##1 / ####1 }
+              }
+            \end { enumerate }
+            \medskip
+            % Print the number of questions to select.
+            \prop_get:NnN
+              \g_istqb_answer_correct_keys_prop
+              { ##1 }
+              \l_tmpa_clist
+            \int_set:Nn
+              \l_tmpa_int
+              {
+                \clist_count:N
+                  \l_tmpa_clist
+              }
+            Select~\int_case:nnF
+              { \l_tmpa_int }
+              {
+                { 1 } { ONE }
+                { 2 } { TWO }
+                { 3 } { THREE }
+                { 4 } { FOUR }
+                { 5 } { FIVE }
+              }
+              {
+                \int_use:N
+                  \l_tmpa_int
+              }~option\int_compare:VNnF
+              \l_tmpa_int = { 1 }
+              { s }.
           }
-        \end{enumerate}
       },
     },
   }
+
+\prg_generate_conditional_variant:Nnn
+  \int_compare:nNn
+  { VNn }
+  { F }

@@ -5,7 +5,7 @@ jobs:
   build_latex:
     runs-on: ubuntu-latest
     container:
-      image: witiko/markdown:3.1.0-12-g69d3bed-latest
+      image: witiko/markdown:3.1.0-36-gfd548ad-latest
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3
@@ -21,6 +21,8 @@ jobs:
         run: latexmk -shell-escape -pdf atlas-syllabus.tex
       - name: Compile LaTeX document atlas-bok.tex
         run: latexmk -shell-escape -pdf atlas-bok.tex
+      - name: Compile LaTeX document sample-exam-questions.tex
+        run: latexmk -shell-escape -pdf sample-exam-questions.tex
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
@@ -29,6 +31,7 @@ jobs:
             example.pdf
             atlas-bok.pdf
             atlas-syllabus.pdf
+            sample-exam-questions.pdf
       - name: Create a prerelease
         if: github.ref == 'refs/heads/main'
         uses: marvinpinto/action-automatic-releases@latest
@@ -41,3 +44,4 @@ jobs:
             example.pdf
             atlas-bok.pdf
             atlas-syllabus.pdf
+            sample-exam-questions.pdf
