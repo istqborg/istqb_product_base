@@ -32,6 +32,7 @@
 \markdownSetup
   {
     hashEnumerators,
+    tightLists = false,
   }
 
 % Metadata
@@ -149,8 +150,6 @@
 \markdownSetup
   {
     headerAttributes,
-    tightLists=false,
-    startNumber=false,
     rendererPrototypes = {
       headingFour = {
         \paragraph { #1 }
@@ -276,7 +275,7 @@
                                     \markdownSetup
                                       {
                                         rendererPrototypes = {
-                                          olItem = {
+                                          olItemWithNumber = {
                                             \def\next################################1\markdownRendererOlItemEnd
                                               {
                                                 \istqbsubobjective { ################################1 }
@@ -292,7 +291,7 @@
                                       }
                                     \begin { istqb subobjectives }
                                   },
-                                  olItem = {
+                                  olItemWithNumber = {
                                     \def\next################1\markdownRendererInterblockSeparator
                                       {
                                         \istqbobjective { ################1 }
