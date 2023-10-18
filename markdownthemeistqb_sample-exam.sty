@@ -64,7 +64,7 @@
               \markdownSetup
                 {
                   renderers = {
-                    jekyllDataString = {
+                    jekyllData(String|Number) = {
                       \int_case:nn
                         { ##1 }
                         {
@@ -87,7 +87,7 @@
                       \markdownSetup
                         {
                           renderers = {
-                            jekyllDataNumber = {
+                            jekyllData(String|Number) = {
                               \str_case:nn
                                 { ####1 }
                                 {
@@ -97,12 +97,6 @@
                                       { ##1 }
                                       { ####2 }
                                   }
-                                }
-                            },
-                            jekyllDataString = {
-                              \str_case:nn
-                                { ####1 }
-                                {
                                   { learning-objective } {
                                     \prop_gput:Nnn
                                       \g_istqb_question_learning_objective_prop
@@ -152,7 +146,7 @@
                                     \markdownSetup
                                       {
                                         renderers = {
-                                          jekyllDataString = {
+                                          jekyllData(String|Number) = {
                                             \seq_put_right:Nn
                                               \l_istqb_current_answer_correct_keys_seq
                                               { ########2 }
@@ -181,7 +175,7 @@
                                     \markdownSetup
                                       {
                                         renderers = {
-                                          jekyllDataString = {
+                                          jekyllData(String|Number) = {
                                             \seq_put_right:Nn
                                               \l_istqb_current_answer_keys_seq
                                               { ########1 }
@@ -225,7 +219,7 @@
             }
           }
       },
-      jekyllDataNumber = {
+      jekyllData(String|Number) = {
         \str_case:nn
           { #1 }
           {
