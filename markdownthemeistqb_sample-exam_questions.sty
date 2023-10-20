@@ -31,25 +31,9 @@
     snippet = { istqb/sample-exam/questions },
     fancyLists = true,
     renderers = {
-      fancyOlBegin = {
-        \group_begin:
+      interblockSeparator = {
+        \par
         \medskip
-        \markdownRendererFancyOlBeginPrototype { #1 } { #2 }
-      },
-      fancyOlEnd = {
-        \markdownRendererFancyOlEndPrototype
-        \medskip
-        \group_end:
-      },
-      olBegin = {
-        \group_begin:
-        \medskip
-        \markdownRendererOlBeginPrototype
-      },
-      olEnd = {
-        \markdownRendererOlEndPrototype
-        \medskip
-        \group_end:
       },
       jekyllDataEnd = {
         \seq_map_inline:Nn
@@ -158,7 +142,6 @@
       },
     },
   }
-
 \prg_generate_conditional_variant:Nnn
   \int_compare:nNn
   { VNn }
