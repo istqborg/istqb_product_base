@@ -188,7 +188,14 @@
             % Record the question number.
             \tl_put_right:Nn
               \l_tmpa_tl
-              { \textbf { ##1 } & }
+              {
+                \textbf
+                  { ##1 }
+                \addcontentsline
+                  { toc }
+                  { subsection }
+                  { Question~\# ##1 } &
+              }
             % Record the correct answers.
             \prop_get:NnN
               \g_istqb_answer_correct_keys_prop
