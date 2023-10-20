@@ -23,13 +23,124 @@
     },
   }
 
-% Answers
+% Answer key
 \RequirePackage
-  { longtable }
+  { multicol }
+\RequirePackage
+  { supertabular }
 \RequirePackage
   { array }
 \newcolumntype
   { C } [ 1 ] { >{ \centering\arraybackslash } p { #1 } }
+\markdownSetupSnippet
+  { answer-key }
+  {
+    snippet = { istqb/sample-exam/questions },
+    fancyLists = true,
+    renderers = {
+      jekyllDataEnd = {
+        \group_begin:
+        % Prepare the heading of the table.
+        \cs_set:Npn
+          \arraystretch
+          { 1.5 }
+        \tablehead
+          {
+            \hline
+            \textbf { Question~Number~(\#) } &
+            \textbf { Correct~Answer } &
+            \textbf { Learning~Objective~(LO) } &
+            \textbf { K-Level } &
+            \textbf { Number~of~Points } \\
+            \hline
+          }
+        \tabletail
+          { \hline }
+        \tl_set:Nn
+          \l_tmpa_tl
+          {
+            \begin
+              { supertabular }
+              { | C { 1.9cm } | C { 1.5cm } | C { 2.4cm } | C { 1.4cm } | C { 1.9cm } | }
+          }
+        % Prepare the lines of the table
+        \seq_map_inline:Nn
+          \g_istqb_questions_seq
+          {
+            % Record the question number.
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { \textbf { ##1 } & }
+            % Record the correct answers.
+            \prop_get:NnN
+              \g_istqb_answer_correct_keys_prop
+              { ##1 }
+              \l_tmpa_clist
+            \tl_put_right:Ne
+              \l_tmpa_tl
+              {
+                \clist_use:Nn
+                  \l_tmpa_clist
+                  { ,~ } &
+              }
+            % Record the learning objective.
+            \tl_put_right:NV
+              \l_tmpa_tl
+              \g_istqb_prefix_tl
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { - }
+            \prop_get:NnN
+              \g_istqb_question_learning_objective_prop
+              { ##1 }
+              \l_tmpb_tl
+            \tl_put_right:NV
+              \l_tmpa_tl
+              \l_tmpb_tl
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { & }
+            % Record the K-level.
+            \prop_get:NnN
+              \g_istqb_question_k_level_prop
+              { ##1 }
+              \l_tmpb_tl
+            \tl_put_right:NV
+              \l_tmpa_tl
+              \l_tmpb_tl
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { & }
+            % Record the number of points.
+            \prop_get:NnN
+              \g_istqb_question_number_of_points_prop
+              { ##1 }
+              \l_tmpb_tl
+            \tl_put_right:NV
+              \l_tmpa_tl
+              \l_tmpb_tl
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { \\ \hline }
+          }
+        % Typeset the table.
+        \tl_put_right:Nn
+          \l_tmpa_tl
+          {
+            \end { supertabular }
+          }
+        \begin { multicols } { 2 }
+        \tl_use:N
+          \l_tmpa_tl
+        \end { multicols }
+        \group_end:
+      },
+    },
+  }
+
+% Answers
+\RequirePackage
+  { longtable }
 \markdownSetupSnippet
   { answers }
   {
@@ -57,7 +168,7 @@
               { | C { 1.9cm } | C { 1.5cm } | p { \l_tmpa_dim } | C { 2.4cm } | C { 1.4cm } | C { 1.9cm } | }
             \hline
             \textbf { Question~Number~(\#) } &
-            \textbf { Correct~Answers } &
+            \textbf { Correct~Answer } &
             \multicolumn
               { 1 }
               { C { \l_tmpa_dim } | }
