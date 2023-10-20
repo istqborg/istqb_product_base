@@ -1,0 +1,14 @@
+duration: [int(), int()]  # minutes
+num-questions: int()
+max-score: int()
+pass-score: int()  # percent
+questions: map(include('question'), key=any(str(), int()))
+---
+question:
+  learning-objective: str()
+  k-level: str()
+  number-of-points: int()
+  question: str()
+  answers: map(str(), key=str())
+  correct: any(str(), list(str()))
+  explanation: str()
