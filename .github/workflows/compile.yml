@@ -23,6 +23,8 @@ jobs:
         run: latexmk -shell-escape -pdf atlas-bok.tex
       - name: Compile LaTeX document sample-exam-questions.tex
         run: latexmk -shell-escape -pdf sample-exam-questions.tex
+      - name: Compile LaTeX document sample-exam-answers.tex
+        run: latexmk -shell-escape -pdf sample-exam-answers.tex
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
@@ -32,6 +34,7 @@ jobs:
             atlas-bok.pdf
             atlas-syllabus.pdf
             sample-exam-questions.pdf
+            sample-exam-answers.pdf
       - name: Create a prerelease
         if: github.ref == 'refs/heads/main'
         uses: marvinpinto/action-automatic-releases@latest
@@ -45,3 +48,4 @@ jobs:
             atlas-bok.pdf
             atlas-syllabus.pdf
             sample-exam-questions.pdf
+            sample-exam-answers.pdf
