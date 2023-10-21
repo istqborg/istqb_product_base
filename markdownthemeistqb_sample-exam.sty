@@ -1,0 +1,232 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage
+  {markdownthemeistqb_sample-exam}%
+  {2023-10-16}%
+  {0.0.1}%
+  {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Questions and Answers documents}
+
+% Import common code
+\markdownSetup
+  { import = istqb/common }
+
+% Metadata
+\markdownSetupSnippet
+  { metadata }
+  {
+    snippet = istqb/common/metadata,
+    jekyllDataRenderers = {
+      compatibility = {
+        \tl_gset:Nn
+          \g_istqb_compatibility_tl
+          { #1 }
+      },
+    },
+  }
+
+% Questions
+%% Global variables
+\int_new:N \g_istqb_duration_min_int
+\int_new:N \g_istqb_duration_max_int
+\int_new:N \g_istqb_max_score_int
+\int_new:N \g_istqb_num_questions_int
+\int_new:N \g_istqb_pass_score_int
+\seq_new:N \g_istqb_questions_seq
+\prop_new:N \g_istqb_question_learning_objective_prop
+\prop_new:N \g_istqb_question_k_level_prop
+\prop_new:N \g_istqb_question_number_of_points_prop
+\prop_new:N \g_istqb_question_explanation_prop
+\prop_new:N \g_istqb_question_text_prop
+\prop_new:N \g_istqb_answer_keys_prop
+\prop_new:N \g_istqb_answer_correct_keys_prop
+\prop_new:N \g_istqb_answers_prop
+%% Local variables
+\seq_new:N \l_istqb_current_answer_keys_seq
+\clist_new:N \l_istqb_current_answer_keys_clist
+\seq_new:N \l_istqb_current_answer_correct_keys_seq
+\clist_new:N \l_istqb_current_answer_correct_keys_clist
+\markdownSetupSnippet
+  { questions }
+  {
+    jekyllData,
+    expectJekyllData,
+    renderers = {
+      jekyllDataBegin = {
+        \seq_gclear:N  \g_istqb_questions_seq
+        \prop_gclear:N \g_istqb_answer_keys_prop
+        \prop_gclear:N \g_istqb_answers_prop
+      },
+      jekyllDataSequenceBegin = {
+        \str_case:nn
+          { #1 }
+          {
+            { duration } {
+              \group_begin:
+              \markdownSetup
+                {
+                  renderers = {
+                    jekyllData(String|Number) = {
+                      \int_case:nn
+                        { ##1 }
+                        {
+                          { 1 } { \int_gset:Nn \g_istqb_duration_min_int { ##2 } }
+                          { 2 } { \int_gset:Nn \g_istqb_duration_max_int { ##2 } }
+                        }
+                    },
+                    jekyllDataSequenceEnd = { \group_end: },
+                  },
+                }
+            }
+            { questions } {
+              \group_begin:
+              \markdownSetup
+                {
+                  renderers = {
+                    jekyllDataMappingBegin = {
+                      \seq_gput_right:Nn \g_istqb_questions_seq { ##1 }
+                      \group_begin:
+                      \markdownSetup
+                        {
+                          renderers = {
+                            jekyllData(String|Number) = {
+                              \str_case:nn
+                                { ####1 }
+                                {
+                                  { number-of-points } {
+                                    \prop_gput:Nnn
+                                      \g_istqb_question_number_of_points_prop
+                                      { ##1 }
+                                      { ####2 }
+                                  }
+                                  { learning-objective } {
+                                    \prop_gput:Nnn
+                                      \g_istqb_question_learning_objective_prop
+                                      { ##1 }
+                                      { ####2 }
+                                  }
+                                  { k-level } {
+                                    \prop_gput:Nnn
+                                      \g_istqb_question_k_level_prop
+                                      { ##1 }
+                                      { ####2 }
+                                  }
+                                  { explanation } {
+                                    \prop_gput:Nnn
+                                      \g_istqb_question_explanation_prop
+                                      { ##1 }
+                                      { ####2 }
+                                  }
+                                  { question } {
+                                    \prop_gput:Nnn
+                                      \g_istqb_question_text_prop
+                                      { ##1 }
+                                      { ####2 }
+                                  }
+                                  { correct } {
+                                    \group_begin:
+                                    \seq_put_right:Nn
+                                      \l_istqb_current_answer_correct_keys_seq
+                                      { ####2 }
+                                    \clist_set_from_seq:NN
+                                      \l_istqb_current_answer_correct_keys_clist
+                                      \l_istqb_current_answer_correct_keys_seq
+                                    \prop_gput:NnV
+                                      \g_istqb_answer_correct_keys_prop
+                                      { ##1 }
+                                      \l_istqb_current_answer_correct_keys_clist
+                                    \group_end:
+                                  }
+                                }
+                            },
+                            jekyllDataSequenceBegin = {
+                              \str_case:nn
+                                { ####1 }
+                                {
+                                  { correct } {
+                                    \group_begin:
+                                    \markdownSetup
+                                      {
+                                        renderers = {
+                                          jekyllData(String|Number) = {
+                                            \seq_put_right:Nn
+                                              \l_istqb_current_answer_correct_keys_seq
+                                              { ########2 }
+                                          },
+                                          jekyllDataSequenceEnd = {
+                                            \clist_set_from_seq:NN
+                                              \l_istqb_current_answer_correct_keys_clist
+                                              \l_istqb_current_answer_correct_keys_seq
+                                            \prop_gput:NnV
+                                              \g_istqb_answer_correct_keys_prop
+                                              { ##1 }
+                                              \l_istqb_current_answer_correct_keys_clist
+                                            \group_end:
+                                          },
+                                        },
+                                      }
+                                  }
+                                }
+                            },
+                            jekyllDataMappingBegin = {
+                              \str_case:nn
+                                { ####1 }
+                                {
+                                  { answers } {
+                                    \group_begin:
+                                    \markdownSetup
+                                      {
+                                        renderers = {
+                                          jekyllData(String|Number) = {
+                                            \seq_put_right:Nn
+                                              \l_istqb_current_answer_keys_seq
+                                              { ########1 }
+                                            \prop_gput:Nnn
+                                              \g_istqb_answers_prop
+                                              { ##1 / ########1 }
+                                              { ########2 }
+                                          },
+                                          jekyllDataMappingEnd = {
+                                            \seq_sort:Nn
+                                              \l_istqb_current_answer_keys_seq
+                                              {
+                                                \str_compare:nNnTF
+                                                  { ################1 }
+                                                  >
+                                                  { ################2 }
+                                                  { \sort_return_swapped: }
+                                                  { \sort_return_same: }
+                                              }
+                                            \clist_set_from_seq:NN
+                                              \l_istqb_current_answer_keys_clist
+                                              \l_istqb_current_answer_keys_seq
+                                            \prop_gput:NnV
+                                              \g_istqb_answer_keys_prop
+                                              { ##1 }
+                                              \l_istqb_current_answer_keys_clist
+                                            \group_end:
+                                          },
+                                        },
+                                      }
+                                  }
+                                }
+                            },
+                            jekyllDataMappingEnd = { \group_end: },
+                          },
+                        }
+                    },
+                    jekyllDataSequenceEnd = { \group_end: },
+                  },
+                }
+            }
+          }
+      },
+      jekyllData(String|Number) = {
+        \str_case:nn
+          { #1 }
+          {
+            { num-questions } { \int_gset:Nn \g_istqb_num_questions_int { #2 } }
+            { max-score     } { \int_gset:Nn \g_istqb_max_score_int     { #2 } }
+            { pass-score    } { \int_gset:Nn \g_istqb_pass_score_int    { #2 } }
+          }
+      },
+    }
+  }

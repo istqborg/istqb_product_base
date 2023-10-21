@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{istqb}[2023/06/18 LaTeX class for ISTQB Syllabi]
+\ProvidesClass{istqb}[2023/10/16 LaTeX class for ISTQB Documents]
 \LoadClass[10pt]{article}
 
 % Page layout
@@ -274,6 +274,7 @@
 % Landing Page
 \ExplSyntaxOn
 \tl_new:N \g_istqb_type_tl
+\tl_new:N \g_istqb_compatibility_tl
 \newcommand
   \istqblandingpage
   {
@@ -308,6 +309,14 @@
     \itshape
     \fontsize { 18 } { 21.6 } \selectfont
     \g_istqb_version_tl
+    \tl_if_empty:NF
+      \g_istqb_compatibility_tl
+      {
+        \par \vfill
+        \normalfont
+        \fontsize { 18 } { 21.6 } \selectfont
+        \g_istqb_compatibility_tl
+      }
     \par \vfill \vfill
     \leaders \vrule width \textwidth \vskip 1pt
     \par \vspace { 0.2in }
@@ -385,6 +394,11 @@
 \titlespacing\section{0pt}{0pt}{*3.2}
 \titlespacing\subsection{0pt}{*5.5}{*0.8}
 \titlespacing\subsubsection{0pt}{*3.25}{*1}
+\newcommand\istqbunnumberedsection[1]{%
+  \section*{#1}%
+  \markboth{#1}{#1}%
+  \addcontentsline{toc}{section}{#1}%
+}
 
 %% Learning objectives
 \RequirePackage{longtable}

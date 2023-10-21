@@ -1,0 +1,606 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage
+  {markdownthemeistqb_common}%
+  {2023-10-16}%
+  {0.0.1}%
+  {LaTeX theme for the Markdown Package that contains common code for different types of ISTQB documents}
+
+% Hybrid Markdown + LaTeX text
+\markdownSetup
+  {
+    fencedCode,
+    rawAttribute,
+    renderers = {
+      inputRawInline = {
+        \protect  % Enable the use of raw inlines in headings.
+          \texorpdfstring
+            { \protect \markdownEscape { #1 } }
+            { (raw~#2~code) }
+      }
+    },
+  }
+
+% Paragraphs and line breaks
+\markdownSetup
+  {
+    renderers = {
+      hardLineBreak = { \\ },
+    }
+  }
+
+% Lists
+\markdownSetup
+  {
+    hashEnumerators,
+    tightLists = false,
+  }
+
+% Metadata
+\markdownSetupSnippet
+  { metadata }
+  {
+    jekyllData,
+    expectJekyllData,
+    jekyllDataRenderers = {
+      schema = {
+        \tl_gset:Nn
+          \g_istqb_schema_tl
+          { #1 }
+      },
+      level = {
+        \tl_gset:Nn
+          \g_istqb_level_tl
+          { #1 }
+      },
+      type = {
+        \tl_gset:Nn
+          \g_istqb_type_tl
+          { #1 }
+      },
+      title = {
+        \tl_gset:Nn
+          \g_istqb_title_tl
+          { #1 }
+      },
+      code = {
+        \tl_gset:Nn
+          \g_istqb_code_tl
+          { #1 }
+      },
+      version = {
+        \tl_gset:Nn
+          \g_istqb_version_tl
+          { #1 }
+      },
+      date = {
+        \tl_gset:Nn
+          \g_istqb_date_tl
+          { #1 }
+      },
+      release = {
+        \tl_gset:Nn
+          \g_istqb_release_tl
+          { #1 }
+      },
+      prefix = {
+        \tl_gset:Nn
+          \g_istqb_prefix_tl
+          { #1 }
+      },
+    },
+    renderers = {
+      jekyllDataEnd = {},
+    },
+  }
+
+% Images
+\markdownSetup
+  {
+    linkAttributes,
+    rendererPrototypes = {
+      image = {
+        \bool_if:NTF
+          \g_istqb_intable_bool
+          { \includegraphics { #3 } }
+          {
+            \begin{figure}
+              \centering
+              \includegraphics { #3 }
+              \tl_if_empty:nF
+                { #4 }
+                { \caption { #4 } }
+              \tl_set:Nx
+                \l_tmpa_tl
+                {
+                  \str_lowercase:n
+                    { figure:#1 }
+                }
+              \exp_args:NV
+                \label
+                \l_tmpa_tl
+            \end{figure}
+          }
+      },
+      imageAttributeContextBegin = {
+        \group_begin:
+        \markdownSetup
+          {
+            renderers = {
+              attributeKeyValue = {
+                \setkeys  % Pass the key-value
+                { Gin } % to graphicx package
+                { { ##1 } = { ##2 } }
+              },
+            },
+          }
+      },
+      imageAttributeContextEnd = {
+        \group_end:
+      },
+    },
+  }
+
+% Paragraphs
+\cs_gset_eq:NN
+  \markdownRendererParagraphSeparator
+  \markdownRendererInterblockSeparator
+
+% Headings
+\seq_new:N \l_istqb_header_identifiers_seq
+\markdownSetup
+  {
+    headerAttributes,
+    rendererPrototypes = {
+      headingFour = {
+        \paragraph { #1 }
+        \leavevmode
+      },
+      headerAttributeContextBegin = {
+        \markdownSetup
+          {
+            rendererPrototypes = {
+              attributeClassName = {
+                %% Unnumbered sections
+                \tl_if_eq:nnT
+                  { ##1 }
+                  { unnumbered }
+                  {
+                    \markdownSetup
+                      {
+                        rendererPrototypes = {
+                          headingOne = {
+                            \istqbunnumberedsection { ####1 }
+                          },
+                        }
+                      }
+                  }
+                %% Landscape sections
+                \tl_if_eq:nnT
+                  { ##1 }
+                  { landscape }
+                  {
+                    \istqblandscapebegin
+                    \markdownSetup
+                      {
+                        rendererPrototypes = {
+                          sectionBegin = {
+                            %% Prevent nested sections from ending landscape mode prematurely.
+                            \group_begin:
+                            \markdownSetup
+                              {
+                                rendererPrototypes = {
+                                  sectionBegin = { \group_begin: },
+                                  sectionEnd = { \group_end: },
+                                },
+                              }
+                          },
+                          sectionEnd = {
+                            \istqblandscapeend
+                          },
+                        }
+                      }
+                  }
+                %% Revision history
+                \tl_if_eq:nnT
+                  { ##1 }
+                  { revision-history }
+                  {
+                    \group_begin:
+                    \def \markdownLaTeXRenderTableRow ####1
+                      {
+                        \markdownLaTeXColumnCounter = 0
+                        \ifnum \markdownLaTeXRowCounter = 0 \relax
+                          \markdownLaTeXReadAlignments ####1
+                          \markdownLaTeXTable = \expandafter \expandafter \expandafter {
+                            \expandafter \the \expandafter \markdownLaTeXTable \expandafter {
+                              \the \markdownLaTeXTableAlignment } }
+                        \else
+                          \markdownLaTeXRenderTableCell ####1
+                        \fi
+                        \advance \markdownLaTeXRowCounter by 1 \relax
+                        \ifnum \markdownLaTeXRowCounter > \markdownLaTeXRowTotal \relax
+                          \addto@hook
+                            \markdownLaTeXTable
+                            \endistqbrevisionhistory
+                          \the \markdownLaTeXTable
+                          \expandafter \@gobble
+                        \fi \markdownLaTeXRenderTableRow
+                      }
+                    \def \markdownLaTeXReadAlignments ####1
+                      {
+                        \advance \markdownLaTeXColumnCounter by 1 \relax
+                        % Ignore alignment information, since the alignment in revision history is predetermined.
+                        \ifnum\markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal \relax \else
+                          \expandafter \@gobble
+                        \fi \markdownLaTeXReadAlignments
+                      }
+                    \markdownSetup
+                      {
+                        rendererPrototypes = {
+                          table = {
+                            \markdownLaTeXTable = { }
+                            \markdownLaTeXTableAlignment = { }
+                            \addto@hook
+                              \markdownLaTeXTable
+                              {
+                                \beginistqbrevisionhistory
+                              }
+                            \markdownLaTeXRowCounter = 0
+                            \markdownLaTeXRowTotal = ####2
+                            \markdownLaTeXColumnTotal = ####3
+                            \markdownLaTeXRenderTableRow
+                          },
+                          sectionEnd = {
+                            \group_end:
+                          },
+                        }
+                      }
+                  }
+                %% Learning objectives
+                \tl_if_eq:nnT
+                  { ##1 }
+                  { learning-objectives }
+                  {
+                    \group_begin:
+                    \markdownSetup
+                      {
+                        rendererPrototypes = {
+                          olBegin = {
+                            \group_begin:
+                            \markdownSetup
+                              {
+                                rendererPrototypes = {
+                                  olBegin = {
+                                    \group_begin:
+                                    \markdownSetup
+                                      {
+                                        rendererPrototypes = {
+                                          olItemWithNumber = {
+                                            \def\next################################1\markdownRendererOlItemEnd
+                                              {
+                                                \istqbsubobjective { ################################1 }
+                                                \markdownRendererOlItemEnd
+                                              }
+                                            \next
+                                          },
+                                          olEnd = {
+                                            \end { istqb subobjectives }
+                                            \group_end:
+                                          },
+                                        }
+                                      }
+                                    \begin { istqb subobjectives }
+                                  },
+                                  olItemWithNumber = {
+                                    \def\next################1\markdownRendererInterblockSeparator
+                                      {
+                                        \istqbobjective { ################1 }
+                                        \markdownRendererInterblockSeparator
+                                      }
+                                    \next
+                                  },
+                                  olEnd = {
+                                    \end { istqb objectives }
+                                    \group_end:
+                                  },
+                                }
+                              }
+                          },
+                          sectionEnd = {
+                            \clearpage
+                            \group_end:
+                          },
+                        }
+                      }
+                    \begin { istqb objectives }
+                  }
+              },
+              attributeIdentifier = {
+                \group_begin:
+                \def\next####1{
+                  \def####1########1
+                    {
+                      \group_end:
+                      ####1 { ########1 }
+                      \label { section:##1 }
+                    }
+                }
+                \next\markdownRendererHeadingOne
+                \next\markdownRendererHeadingTwo
+                \next\markdownRendererHeadingThree
+                \next\markdownRendererHeadingFour
+                \next\markdownRendererHeadingFive
+                \next\markdownRendererHeadingSix
+              },
+            },
+          }
+      },
+      headerAttributeContextEnd = {},
+    },
+  }
+
+% Tables
+\def \markdownLaTeXRenderTableRow #1
+  {
+    \markdownLaTeXColumnCounter = 0
+    \ifnum \markdownLaTeXRowCounter = 0 \relax
+      \markdownLaTeXReadAlignments #1
+      \markdownLaTeXTable = \expandafter \expandafter \expandafter {
+        \expandafter \the \expandafter \markdownLaTeXTable \expandafter {
+          \the \markdownLaTeXTableAlignment } }
+    \else
+      \markdownLaTeXRenderTableCell #1
+    \fi
+    \advance \markdownLaTeXRowCounter by 1 \relax
+    \ifnum \markdownLaTeXRowCounter > \markdownLaTeXRowTotal \relax
+      \markdownLaTeXTable = \expandafter \expandafter \expandafter {
+        \expandafter \the \expandafter \markdownLaTeXTable
+          \the \markdownLaTeXTableEnd }
+      \the \markdownLaTeXTable
+      \expandafter \@gobble
+    \fi \markdownLaTeXRenderTableRow
+  }
+\def \markdownLaTeXReadAlignments #1
+  {
+    \advance \markdownLaTeXColumnCounter by 1 \relax
+    \if #1 d
+      \addto@hook \markdownLaTeXTableAlignment { X| }
+    \else
+      \addto@hook \markdownLaTeXTableAlignment { #1| }
+    \fi
+    \ifnum\markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal \relax \else
+      \expandafter \@gobble
+    \fi \markdownLaTeXReadAlignments
+  }
+\def \markdownLaTeXRenderTableCell #1
+  {
+    \advance \markdownLaTeXColumnCounter by 1 \relax
+    \ifnum \markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal \relax
+      \addto@hook
+        \markdownLaTeXTable
+        { #1 & }
+    \else
+      \addto@hook
+        \markdownLaTeXTable
+        { #1 \\ \hline }
+      \expandafter \@gobble
+    \fi \markdownLaTeXRenderTableCell
+  }
+\bool_new:N \g_istqb_intable_bool
+\tl_new:N \l_istqb_table_identifier_tl
+\markdownSetup
+  {
+    pipeTables,
+    tableCaptions,
+    tableAttributes,
+    rendererPrototypes = {
+      tableAttributeContextBegin = {
+        \group_begin:
+        \markdownSetup
+          {
+            rendererPrototypes = {
+              attributeIdentifier = {
+                \tl_set:Nx
+                  \l_istqb_table_identifier_tl
+                  {
+                    \str_lowercase:n
+                      { table:##1 }
+                  }
+              },
+            },
+          }
+      },
+      table = {
+        \bool_gset_true:N \g_istqb_intable_bool
+        \markdownLaTeXTable = { }
+        \markdownLaTeXTableAlignment = { | }
+        \markdownLaTeXTableEnd = { \endistqbtable }
+        \tl_if_empty:nF
+          { #1 }
+          {
+            \addto@hook
+              \markdownLaTeXTable
+              {
+                \begin { table }
+                \centering
+              }
+            \addto@hook
+              \markdownLaTeXTableEnd
+              {
+                \caption { #1 }
+              }
+            \tl_if_empty:NF
+              \l_istqb_table_identifier_tl
+              {
+                \addto@hook
+                  \markdownLaTeXTableEnd
+                  {
+                    \label
+                      { \l_istqb_table_identifier_tl }
+                  }
+              }
+            \addto@hook
+              \markdownLaTeXTableEnd
+              {
+                \end { table }
+                \bool_gset_false:N \g_istqb_intable_bool
+              }
+          }
+        \addto@hook
+          \markdownLaTeXTable
+          \beginistqbtable
+        \markdownLaTeXRowCounter = 0
+        \markdownLaTeXRowTotal = #2
+        \markdownLaTeXColumnTotal = #3
+        \markdownLaTeXRenderTableRow
+      },
+      tableAttributeContextEnd = {
+        \group_end:
+      },
+    }
+  }
+
+% Relative references
+\PassOptionsToPackage{nameinlink}{cleveref}
+\RequirePackage{cleveref}
+\markdownSetup
+  {
+    relativeReferences,
+  }
+\renewcommand
+  \markdownLaTeXRendererDirectOrIndirectLink[4]
+  {
+    %% If the URL begins with a hash sign, then we assume that it is a relative
+    %% reference. Otherwise, we assume that it is an absolute URL.
+    \tl_set:Nn
+      \l_tmpa_tl
+      { #3 }
+    \tl_trim_spaces:N
+      \l_tmpa_tl
+    \tl_set:Nx
+      \l_tmpb_tl
+      {
+        \tl_range:Nnn
+          \l_tmpa_tl
+          { 1 }
+          { 1 }
+      }
+    \str_if_eq:NNTF
+      \l_tmpb_tl
+      \c_hash_str
+      {
+        \tl_set:Nx
+          \l_tmpb_tl
+          {
+            \tl_range:Nnn
+              \l_tmpa_tl
+              { 2 }
+              { -1 }
+          }
+        \tl_set:Nx
+          \l_tmpa_tl
+          {
+            [
+              \str_lowercase:V
+                \l_tmpb_tl
+            ]
+          }
+        \emph
+          {
+            \exp_last_unbraced:NV
+              \hyperref
+              \l_tmpa_tl
+              { #1 }
+          }
+      }{
+        \emph { \href { #3 } { #1 } }
+      }
+  }
+\renewcommand
+  \markdownLaTeXRendererAutolink[2]
+  {
+    %% If the URL begins with a hash sign, then we assume that it is a relative
+    %% reference. Otherwise, we assume that it is an absolute URL.
+    \tl_set:Nn
+      \l_tmpa_tl
+      { #2 }
+    \tl_trim_spaces:N
+      \l_tmpa_tl
+    \tl_set:Nx
+      \l_tmpb_tl
+      {
+        \tl_range:Nnn
+          \l_tmpa_tl
+          { 1 }
+          { 1 }
+      }
+    \str_if_eq:NNTF
+      \l_tmpb_tl
+      \c_hash_str
+      {
+        \tl_set:Nx
+          \l_tmpb_tl
+          {
+            \tl_range:Nnn
+              \l_tmpa_tl
+              { 2 }
+              { -1 }
+          }
+        \tl_set:Nx
+          \l_tmpa_tl
+          {
+            \str_lowercase:V
+              \l_tmpb_tl
+          }
+        \emph
+          {
+            \exp_args:NV
+              \Cref
+              \l_tmpa_tl
+          }
+      }{
+        \emph { \url { #2 } }
+      }
+}
+\cs_generate_variant:Nn
+  \str_lowercase:n
+  { V }
+
+% Bibliography
+\markdownSetup
+  {
+    citations,
+  }
+
+% Index
+\markdownSetup
+  {
+    bracketedSpans,
+    rendererPrototypes = {
+      bracketedSpanAttributeContextBegin = {
+        \group_begin:
+        \markdownSetup
+          {
+            rendererPrototypes = {
+              attributeClassName = {
+                \str_if_eq:nnT
+                  { ##1 }
+                  { index }
+                  {
+                    \def\next####1\markdownRendererBracketedSpanAttributeContextEnd
+                      {
+                        \global\index { ####1 }
+                        ####1
+                        \markdownRendererBracketedSpanAttributeContextEnd
+                      }
+                    \next
+                  }
+              },
+            }
+          }
+      },
+      bracketedSpanAttributeContextEnd = {
+        \group_end:
+      },
+    }
+  }

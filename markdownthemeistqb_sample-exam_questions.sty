@@ -1,0 +1,148 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage
+  {markdownthemeistqb_sample-exam_questions}%
+  {2023-10-16}%
+  {0.0.1}%
+  {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Questions documents}
+
+% Import common code
+\markdownSetup
+  { import = istqb/sample-exam }
+
+% Metadata
+\markdownSetupSnippet
+  { metadata }
+  {
+    snippet = istqb/sample-exam/metadata,
+    jekyllDataRenderers = {
+      type = {
+        \tl_gset:Nn
+          \g_istqb_type_tl
+          { #1~--~Questions }
+      },
+    },
+  }
+
+% Questions
+\RequirePackage { paralist }
+\markdownSetupSnippet
+  { questions }
+  {
+    snippet = { istqb/sample-exam/questions },
+    fancyLists = true,
+    renderers = {
+      interblockSeparator = {
+        \par
+        \medskip
+      },
+      jekyllDataEnd = {
+        \seq_map_inline:Nn
+          \g_istqb_questions_seq
+          {
+            \group_begin:
+            % Print question heading.
+            \tl_set:Nn
+              \l_tmpa_tl
+              { Question~\# ##1~( }
+            \prop_get:NnN
+              \g_istqb_question_number_of_points_prop
+              { ##1 }
+              \l_tmpb_tl
+            \tl_put_right:NV
+              \l_tmpa_tl
+              \l_tmpb_tl
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { ~Point }
+            \int_compare:VNnF
+              \l_tmpb_tl = { 1 }
+              {
+                \tl_put_right:Nn
+                  \l_tmpa_tl
+                  { s }
+              }
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { ) }
+            \exp_args:NNV
+              \subsection *
+              \l_tmpa_tl
+            \exp_args:NVV
+              \markboth
+              \l_tmpa_tl
+              \l_tmpa_tl
+            \exp_args:NnnV
+              \addcontentsline
+              { toc }
+              { subsection }
+              \l_tmpa_tl
+            % Print question text.
+            \setdefaultleftmargin
+              { 3.2em }
+              { 2.2em }
+              { 1.87em }
+              { 1.7em }
+              { 1em }
+              { 1em }
+            \prop_item:Nn
+              \g_istqb_question_text_prop
+              { ##1 }
+            % Print answers.
+            \prop_get:NnN
+              \g_istqb_answer_keys_prop
+              { ##1 }
+              \l_tmpa_clist
+            \medskip
+            \setdefaultleftmargin
+              { 0pt }
+              { 0pt }
+              { 0pt }
+              { 0pt }
+              { 0pt }
+              { 0pt }
+            \begin { enumerate }
+            \clist_map_inline:Nn
+              \l_tmpa_clist
+              {
+                \item [ ####1 ) ]
+                  \prop_item:Nn
+                    \g_istqb_answers_prop
+                    { ##1 / ####1 }
+              }
+            \end { enumerate }
+            \medskip
+            % Print the number of questions to select.
+            \prop_get:NnN
+              \g_istqb_answer_correct_keys_prop
+              { ##1 }
+              \l_tmpa_clist
+            \int_set:Nn
+              \l_tmpa_int
+              {
+                \clist_count:N
+                  \l_tmpa_clist
+              }
+            Select~\int_case:nnF
+              { \l_tmpa_int }
+              {
+                { 1 } { ONE }
+                { 2 } { TWO }
+                { 3 } { THREE }
+                { 4 } { FOUR }
+                { 5 } { FIVE }
+              }
+              {
+                \int_use:N
+                  \l_tmpa_int
+              }~option\int_compare:VNnF
+              \l_tmpa_int = { 1 }
+              { s }.
+            \group_end:
+          }
+      },
+    },
+  }
+\prg_generate_conditional_variant:Nnn
+  \int_compare:nNn
+  { VNn }
+  { F }
