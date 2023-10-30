@@ -7,19 +7,20 @@
 
 % Import common code
 \markdownSetup
-  { import = istqb/sample-exam }
+  {
+    import = {
+      istqb/sample-exam = metadata,
+    },
+  }
 
 % Metadata
-\markdownSetupSnippet
-  { metadata }
+\keys_define:nn
+  { istqb/metadata }
   {
-    snippet = istqb/sample-exam/metadata,
-    jekyllDataRenderers = {
-      type = {
-        \tl_gset:Nn
-          \g_istqb_type_tl
-          { #1~--~Questions }
-      },
+    type .code:n = {
+      \tl_gset:Nn
+        \g_istqb_type_tl
+        { #1~--~Questions }
     },
   }
 

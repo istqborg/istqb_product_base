@@ -36,60 +36,94 @@
   }
 
 % Metadata
+\keys_define:nn
+  { istqb/metadata }
+  {
+    schema .tl_gset:N = \g_istqb_schema_tl,
+    level .tl_gset:N = \g_istqb_level_tl,
+    type .tl_gset:N = \g_istqb_type_tl,
+    title .tl_gset:N = \g_istqb_title_tl,
+    code .tl_gset:N = \g_istqb_code_tl,
+    version .tl_gset:N = \g_istqb_version_tl,
+    date .tl_gset:N = \g_istqb_date_tl,
+    release .tl_gset:N = \g_istqb_release_tl,
+    prefix .tl_gset:N = \g_istqb_prefix_tl,
+  }
+\tl_new:N \l_istqb_current_third_party_name_tl
+\tl_new:N \l_istqb_current_third_party_logo_tl
 \markdownSetupSnippet
   { metadata }
   {
     jekyllData,
     expectJekyllData,
-    jekyllDataRenderers = {
-      schema = {
-        \tl_gset:Nn
-          \g_istqb_schema_tl
-          { #1 }
-      },
-      level = {
-        \tl_gset:Nn
-          \g_istqb_level_tl
-          { #1 }
-      },
-      type = {
-        \tl_gset:Nn
-          \g_istqb_type_tl
-          { #1 }
-      },
-      title = {
-        \tl_gset:Nn
-          \g_istqb_title_tl
-          { #1 }
-      },
-      code = {
-        \tl_gset:Nn
-          \g_istqb_code_tl
-          { #1 }
-      },
-      version = {
-        \tl_gset:Nn
-          \g_istqb_version_tl
-          { #1 }
-      },
-      date = {
-        \tl_gset:Nn
-          \g_istqb_date_tl
-          { #1 }
-      },
-      release = {
-        \tl_gset:Nn
-          \g_istqb_release_tl
-          { #1 }
-      },
-      prefix = {
-        \tl_gset:Nn
-          \g_istqb_prefix_tl
-          { #1 }
-      },
-    },
     renderers = {
-      jekyllDataEnd = {},
+      jekyllData(String|Number) = {
+        \keys_set:nn
+          { istqb/metadata }
+          { { #1 } = { #2 } }
+      },
+      jekyllDataSequenceBegin = {
+        \str_case:nn
+          { #1 }
+          {
+            { provided-by } {
+              % A third-party organization
+              \group_begin:
+              \markdownSetup
+                {
+                  renderers = {
+                    jekyllData(String|Number) = {
+                      % A short definition of a third-party organization
+                      \seq_gput_right:Nn
+                        \g_istqb_third_parties_seq
+                        { ##2 }
+                    },
+                    jekyllDataMappingBegin = {
+                      % A verbose definition of a third-party organization
+                      \group_begin:
+                      \markdownSetup
+                        {
+                          renderers = {
+                            jekyllData(String|Number) = {
+                              \str_case:nn
+                                { ####1 }
+                                {
+                                  { name } {
+                                    \tl_set:Nn
+                                      \l_istqb_current_third_party_name_tl
+                                      { ####2 }
+                                  }
+                                  { logo } {
+                                    \tl_set:Nn
+                                      \l_istqb_current_third_party_logo_tl
+                                      { ####2 }
+                                  }
+                                }
+                            },
+                            jekyllDataMappingEnd = {
+                              \seq_gput_right:NV
+                                \g_istqb_third_parties_seq
+                                \l_istqb_current_third_party_name_tl
+                              \tl_if_empty:VF
+                                \l_istqb_current_third_party_logo_tl
+                                {
+                                  \prop_gput:NVV
+                                    \g_istqb_third_party_logos_prop
+                                    \l_istqb_current_third_party_name_tl
+                                    \l_istqb_current_third_party_logo_tl
+                                }
+                              \group_end:
+                            },
+                          },
+                        }
+                    },
+                    jekyllDataSequenceEnd = { \group_end: },
+                  },
+                }
+            }
+          }
+      },
+      jekyllDataEnd = { },
     },
   }
 

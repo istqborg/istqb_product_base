@@ -8,3 +8,10 @@ date: str()
 release: str()
 prefix: str()
 compatibility: str(required=False)
+provided-by: include('third-parties', required=False)
+---
+third-parties: list(any(str(), include('third-party')))
+---
+third-party:
+  name: str()
+  logo: str(required=False)
