@@ -527,7 +527,7 @@
 \apptocmd\theindex{\let\indexspace=\relax}{}{\PatchFailed}
 
 % Hyperlinks
-\PassOptionsToPackage{hidelinks}{hyperref}
+\PassOptionsToPackage{hidelinks, bookmarksnumbered}{hyperref}
 \RequirePackage{hyperref}
 
 % Tables
@@ -545,6 +545,13 @@
 %% Revision History
 \long\def\beginistqbrevisionhistory#1\endistqbrevisionhistory{%
   \beginistqbtable{|l|l|X|}#1\endistqbtable
+}
+
+% Table of Contents
+\newcommand\istqbtableofcontents{%
+  \phantomsection
+  \currentpdfbookmark{\contentsname}{istqbtoc}%
+  \tableofcontents
 }
 
 % Unicode characters
