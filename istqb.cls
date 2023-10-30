@@ -291,6 +291,12 @@
     \fontsize { 24 } { 28.8 } \selectfont
     \g_istqb_schema_tl \\
     \tl_if_empty:NF
+      \g_istqb_level_tl
+      {
+        \g_istqb_level_tl
+        \\
+      }
+    \tl_if_empty:NF
       \g_istqb_title_tl
       {
         \g_istqb_title_tl
@@ -299,12 +305,6 @@
           {
             {}~(\g_istqb_code_tl)
           }
-        \\
-      }
-    \tl_if_empty:NF
-      \g_istqb_level_tl
-      {
-        \g_istqb_level_tl
         \\
       }
     \g_istqb_type_tl
