@@ -477,6 +477,13 @@
   \beginistqbtable{|l|l|X|}#1\endistqbtable
 }
 
+% Table of Contents
+\newcommand\istqbtableofcontents{%
+  \phantomsection
+  \currentpdfbookmark{\contentsname}{istqbtoc}%
+  \tableofcontents
+}
+
 % Unicode characters
 \RequirePackage{newunicodechar}
 \newunicodechar{®}{\textsuperscript{\textregistered}}
