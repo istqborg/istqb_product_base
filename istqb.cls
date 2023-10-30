@@ -457,7 +457,7 @@
 \apptocmd\theindex{\let\indexspace=\relax}{}{\PatchFailed}
 
 % Hyperlinks
-\PassOptionsToPackage{hidelinks}{hyperref}
+\PassOptionsToPackage{hidelinks, bookmarksnumbered}{hyperref}
 \RequirePackage{hyperref}
 
 % Tables
