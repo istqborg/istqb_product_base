@@ -275,13 +275,17 @@
 \ExplSyntaxOn
 \tl_new:N \g_istqb_type_tl
 \tl_new:N \g_istqb_compatibility_tl
+\seq_new:N \g_istqb_third_parties_seq
+\prop_new:N \g_istqb_third_party_logos_prop
+\RequirePackage{graphbox}
 \newcommand
   \istqblandingpage
   {
     \group_begin:
     \parskip=0pt
     \centering
-    \leavevmode \par \vfill
+    \leavevmode
+    \par \vfill \vfill
     \normalfont
     \bfseries
     \fontsize { 24 } { 28.8 } \selectfont
@@ -304,7 +308,7 @@
         \\
       }
     \g_istqb_type_tl
-    \par \vfill
+    \par \vfill \vfill
     \normalfont
     \itshape
     \fontsize { 18 } { 21.6 } \selectfont
@@ -312,12 +316,12 @@
     \tl_if_empty:NF
       \g_istqb_compatibility_tl
       {
-        \par \vfill
+        \par \vfill \vfill
         \normalfont
         \fontsize { 18 } { 21.6 } \selectfont
         \g_istqb_compatibility_tl
       }
-    \par \vfill \vfill
+    \par \vfill \vfill \vfill \vfill
     \leaders \vrule width \textwidth \vskip 1pt
     \par \vspace { 0.2in }
     \normalfont
@@ -325,9 +329,76 @@
     International~Software~Testing~Qualifications~Board
     \par \vspace { 0.3in }
     \leaders \vrule width \textwidth \vskip 1pt
-    \par \vspace { 0.45in }
+    \par \vfill \vfill
     \includegraphics [ height = 1.2in ] { istqb-logo }
-    \par \vspace { 1.45in }
+    \seq_if_empty:NTF
+      \g_istqb_third_parties_seq
+      { \par \vfill \vfill \vfill \vfill \vfill \vfill }
+      {
+        % Display third party organization(s)
+        \par \vfill \vfill
+        \leaders \vrule width \textwidth \vskip 1pt
+        \par \vspace { 0.2in }
+        \normalfont
+        \fontsize { 18 } { 21.6 } \selectfont
+        Provided~by~
+        \int_compare:nNnTF
+          { \seq_count:N \g_istqb_third_parties_seq } = { 1 }
+          {
+            % A single third party organization
+            \seq_get_left:NN
+              \g_istqb_third_parties_seq
+              \l_tmpa_tl
+            \tl_use:N
+              \l_tmpa_tl
+          }
+          {
+            % Several third party organizations
+            \par \vfill
+            \seq_use:Nnnn
+              \g_istqb_third_parties_seq
+              { ~and~ }
+              { ,~ }
+              { ,~and~ }
+          }
+        \par \vspace { 0.3in }
+        \leaders \vrule width \textwidth \vskip 1pt
+        \par \vfill \vfill
+        % Display logo(s) of third party organization(s)
+        \seq_clear:N
+          \l_tmpa_seq
+        \seq_map_inline:Nn
+          \g_istqb_third_parties_seq
+          {
+            \prop_get:NnNT
+              \g_istqb_third_party_logos_prop
+              { ##1 }
+              \l_tmpa_tl
+              {
+                \tl_set:Nn
+                  \l_tmpb_tl
+                  {
+                    \includegraphics
+                      [
+                        align = c,
+                        width = 2in,
+                        height = 0.4in,
+                      ]
+                  }
+                \tl_put_right:Nx
+                  \l_tmpb_tl
+                  { { \l_tmpa_tl } }
+                \seq_put_right:NV
+                  \l_tmpa_seq
+                  \l_tmpb_tl
+              }
+          }
+        \seq_use:Nn
+          \l_tmpa_seq
+          { \qquad }
+        \par \vfill
+      }
+    \par
     \group_end:
     \clearpage
   }

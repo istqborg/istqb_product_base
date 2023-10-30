@@ -7,20 +7,17 @@
 
 % Import common code
 \markdownSetup
-  { import = istqb/common }
+  {
+    import = {
+      istqb/common = metadata,
+    },
+  }
 
 % Metadata
-\markdownSetupSnippet
-  { metadata }
+\keys_define:nn
+  { istqb/metadata }
   {
-    snippet = istqb/common/metadata,
-    jekyllDataRenderers = {
-      compatibility = {
-        \tl_gset:Nn
-          \g_istqb_compatibility_tl
-          { #1 }
-      },
-    },
+    compatibility .tl_gset:N = \g_istqb_compatibility_tl,
   }
 
 % Questions
