@@ -362,8 +362,7 @@
               { ,~and~ }
           }
         \par \vspace { 0.3in }
-        \leaders \vrule width \textwidth \vskip 1pt
-        \par \vfill \vfill
+        \vfill \vfill
         % Display logo(s) of third party organization(s)
         \seq_clear:N
           \l_tmpa_seq
