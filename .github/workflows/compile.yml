@@ -28,11 +28,11 @@ jobs:
         with:
           schema: schema/metadata.yml
           target: release-notes/metadata.yml
-      - name: Validate accreditation-guidelines./metadata.yml
+      - name: Validate accreditation-guidelines/metadata.yml
         uses: nrkno/yaml-schema-validator-github-action@v4
         with:
           schema: schema/metadata.yml
-          target: accreditation-guidelines./metadata.yml
+          target: accreditation-guidelines/metadata.yml
       - name: Validate sample-exam/metadata.yml
         uses: nrkno/yaml-schema-validator-github-action@v4
         with:
