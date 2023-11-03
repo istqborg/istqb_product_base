@@ -78,13 +78,13 @@ jobs:
         with:
           name: PDF
           path: |
-            Example document.pdf
-            CT-ATLaS Syllabus.pdf
-            CT-ATLaS Body of Knowledge.pdf
-            CT-ATLaS Release Notes.pdf
-            CT-ATLaS Accreditation Guidelines.pdf
-            CT-ATLaS Sample Exam Questions.pdf
-            CT-ATLaS Sample Exam Answers.pdf
+            example.pdf
+            atlas-syllabus.pdf
+            atlas-body-of-knowledge.pdf
+            atlas-release-notes.pdf
+            atlas-accreditation-guidelines.pdf
+            aatlas-sample-exam-questions.pdf
+            atlas-sample-exam-answers.pdf
       - name: Create a prerelease
         if: github.ref == 'refs/heads/main'
         uses: marvinpinto/action-automatic-releases@latest
@@ -94,10 +94,10 @@ jobs:
           prerelease: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-            Example document.pdf
-            CT-ATLaS Syllabus.pdf
-            CT-ATLaS Body of Knowledge.pdf
-            CT-ATLaS Release Notes.pdf
-            CT-ATLaS Accreditation Guidelines.pdf
-            CT-ATLaS Sample Exam Questions.pdf
-            CT-ATLaS Sample Exam Answers.pdf
+            example.pdf
+            atlas-syllabus.pdf
+            atlas-body-of-knowledge.pdf
+            atlas-release-notes.pdf
+            atlas-accreditation-guidelines.pdf
+            aatlas-sample-exam-questions.pdf
+            atlas-sample-exam-answers.pdf
