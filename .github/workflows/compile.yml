@@ -8,31 +8,41 @@ jobs:
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3
-      - name: Validate example-md/metadata.yml
+      - name: Validate example/metadata.yml
         uses: nrkno/yaml-schema-validator-github-action@v4
         with:
           schema: schema/metadata.yml
-          target: example-md/metadata.yml
-      - name: Validate syllabus-md/metadata.yml
+          target: example/metadata.yml
+      - name: Validate syllabus/metadata.yml
         uses: nrkno/yaml-schema-validator-github-action@v4
         with:
           schema: schema/metadata.yml
-          target: syllabus-md/metadata.yml
-      - name: Validate bok-md/metadata.yml
+          target: syllabus/metadata.yml
+      - name: Validate body-of-knowledge/metadata.yml
         uses: nrkno/yaml-schema-validator-github-action@v4
         with:
           schema: schema/metadata.yml
-          target: bok-md/metadata.yml
-      - name: Validate sample-exam-md/metadata.yml
+          target: body-of-knowledge/metadata.yml
+      - name: Validate release-notes/metadata.yml
         uses: nrkno/yaml-schema-validator-github-action@v4
         with:
           schema: schema/metadata.yml
-          target: sample-exam-md/metadata.yml
-      - name: Validate sample-exam-md/questions.yml
+          target: release-notes/metadata.yml
+      - name: Validate accreditation-guidelines./metadata.yml
+        uses: nrkno/yaml-schema-validator-github-action@v4
+        with:
+          schema: schema/metadata.yml
+          target: accreditation-guidelines./metadata.yml
+      - name: Validate sample-exam/metadata.yml
+        uses: nrkno/yaml-schema-validator-github-action@v4
+        with:
+          schema: schema/metadata.yml
+          target: sample-exam/metadata.yml
+      - name: Validate sample-exam/questions.yml
         uses: nrkno/yaml-schema-validator-github-action@v4
         with:
           schema: schema/questions.yml
-          target: sample-exam-md/questions.yml
+          target: sample-exam/questions.yml
   build:
     name: Build LaTeX documents
     needs:
@@ -53,22 +63,28 @@ jobs:
         run: latexmk -shell-escape -pdf example.tex
       - name: Compile LaTeX document atlas-syllabus.tex
         run: latexmk -shell-escape -pdf atlas-syllabus.tex
-      - name: Compile LaTeX document atlas-bok.tex
-        run: latexmk -shell-escape -pdf atlas-bok.tex
-      - name: Compile LaTeX document sample-exam-questions.tex
-        run: latexmk -shell-escape -pdf sample-exam-questions.tex
-      - name: Compile LaTeX document sample-exam-answers.tex
-        run: latexmk -shell-escape -pdf sample-exam-answers.tex
+      - name: Compile LaTeX document atlas-body-of-knowledge.tex
+        run: latexmk -shell-escape -pdf atlas-body-of-knowledge.tex
+      - name: Compile LaTeX document atlas-release-notes.tex
+        run: latexmk -shell-escape -pdf atlas-release-notes.tex
+      - name: Compile LaTeX document atlas-accreditation-guidelines.tex
+        run: latexmk -shell-escape -pdf atlas-accreditation-guidelines.tex
+      - name: Compile LaTeX document atlas-sample-exam-questions.tex
+        run: latexmk -shell-escape -pdf atlas-sample-exam-questions.tex
+      - name: Compile LaTeX document atlas-sample-exam-answers.tex
+        run: latexmk -shell-escape -pdf atlas-sample-exam-answers.tex
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
           name: PDF
           path: |
-            example.pdf
-            atlas-bok.pdf
-            atlas-syllabus.pdf
-            sample-exam-questions.pdf
-            sample-exam-answers.pdf
+            Example document.pdf
+            CT-ATLaS Syllabus.pdf
+            CT-ATLaS Body of Knowledge.pdf
+            CT-ATLaS Release Notes.pdf
+            CT-ATLaS Accreditation Guidelines.pdf
+            CT-ATLaS Sample Exam Questions.pdf
+            CT-ATLaS Sample Exam Answers.pdf
       - name: Create a prerelease
         if: github.ref == 'refs/heads/main'
         uses: marvinpinto/action-automatic-releases@latest
@@ -78,8 +94,10 @@ jobs:
           prerelease: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-            example.pdf
-            atlas-bok.pdf
-            atlas-syllabus.pdf
-            sample-exam-questions.pdf
-            sample-exam-answers.pdf
+            Example document.pdf
+            CT-ATLaS Syllabus.pdf
+            CT-ATLaS Body of Knowledge.pdf
+            CT-ATLaS Release Notes.pdf
+            CT-ATLaS Accreditation Guidelines.pdf
+            CT-ATLaS Sample Exam Questions.pdf
+            CT-ATLaS Sample Exam Answers.pdf
