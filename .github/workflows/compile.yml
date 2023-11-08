@@ -50,7 +50,7 @@ jobs:
           apt -qy install --no-install-recommends dos2unix
           find -type f \( -name '*.md' -o -name '*.yml' \) -exec dos2unix {} +
       - name: Compile LaTeX document example.tex
-        run: latexmk -shell-escape -pdf example.tex
+        run: latexmk -shell-escape -pdf -Werror example.tex
       - name: Compile LaTeX document atlas-syllabus.tex
         run: latexmk -shell-escape -pdf atlas-syllabus.tex
       - name: Compile LaTeX document atlas-bok.tex
