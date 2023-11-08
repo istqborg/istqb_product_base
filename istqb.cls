@@ -54,6 +54,7 @@
 \sloppy  % Prevent overfull lines.
 
 %% Typefaces
+\RequirePackage[T1]{fontenc}
 \RequirePackage{tgheros}
 \renewcommand*\familydefault{\sfdefault}
 

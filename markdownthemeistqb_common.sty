@@ -445,10 +445,15 @@
           }
       },
       table = {
-        \bool_gset_true:N \g_istqb_intable_bool
+        \bool_gset_true:N
+          \g_istqb_intable_bool
         \markdownLaTeXTable = { }
         \markdownLaTeXTableAlignment = { | }
-        \markdownLaTeXTableEnd = { \endistqbtable }
+        \markdownLaTeXTableEnd = {
+          \endistqbtable
+          \bool_gset_false:N
+            \g_istqb_intable_bool
+        }
         \tl_if_empty:nF
           { #1 }
           {
@@ -477,7 +482,6 @@
               \markdownLaTeXTableEnd
               {
                 \end { table }
-                \bool_gset_false:N \g_istqb_intable_bool
               }
           }
         \addto@hook

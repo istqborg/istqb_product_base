@@ -48,17 +48,19 @@ jobs:
           set -ex
           apt -qy update
           apt -qy install --no-install-recommends dos2unix
-          find -type f \( -name '*.md' -o -name '*.yml' \) -exec dos2unix {} +
+          find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
+      - name: Convert EPS images to PDF
+        run: find -type f -iregex '.*\.eps$' | parallel epstopdf {} {.}-eps-converted-to.pdf
       - name: Compile LaTeX document example.tex
-        run: latexmk -shell-escape -pdf example.tex
+        run: latexmk -shell-escape -pdf -Werror example.tex
       - name: Compile LaTeX document atlas-syllabus.tex
-        run: latexmk -shell-escape -pdf atlas-syllabus.tex
+        run: latexmk -shell-escape -pdf -Werror atlas-syllabus.tex
       - name: Compile LaTeX document atlas-bok.tex
-        run: latexmk -shell-escape -pdf atlas-bok.tex
+        run: latexmk -shell-escape -pdf -Werror atlas-bok.tex
       - name: Compile LaTeX document sample-exam-questions.tex
-        run: latexmk -shell-escape -pdf sample-exam-questions.tex
+        run: latexmk -shell-escape -pdf -Werror sample-exam-questions.tex
       - name: Compile LaTeX document sample-exam-answers.tex
-        run: latexmk -shell-escape -pdf sample-exam-answers.tex
+        run: latexmk -shell-escape -pdf -Werror sample-exam-answers.tex
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
