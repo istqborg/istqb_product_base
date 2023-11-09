@@ -52,15 +52,15 @@ jobs:
       - name: Convert EPS images to PDF
         run: find -type f -iregex '.*\.eps$' | parallel epstopdf {} {.}-eps-converted-to.pdf
       - name: Compile LaTeX document example.tex
-        run: latexmk -shell-escape -pdf -Werror example.tex
+        run: latexmk example.tex
       - name: Compile LaTeX document atlas-syllabus.tex
-        run: latexmk -shell-escape -pdf -Werror atlas-syllabus.tex
+        run: latexmk atlas-syllabus.tex
       - name: Compile LaTeX document atlas-bok.tex
-        run: latexmk -shell-escape -pdf -Werror atlas-bok.tex
+        run: latexmk atlas-bok.tex
       - name: Compile LaTeX document sample-exam-questions.tex
-        run: latexmk -shell-escape -pdf -Werror sample-exam-questions.tex
+        run: latexmk sample-exam-questions.tex
       - name: Compile LaTeX document sample-exam-answers.tex
-        run: latexmk -shell-escape -pdf -Werror sample-exam-answers.tex
+        run: latexmk sample-exam-answers.tex
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
