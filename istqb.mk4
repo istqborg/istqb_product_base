@@ -1,0 +1,4 @@
+-- Custom make4ht build file
+Make:latexmk {
+  format = "html5",
+}
