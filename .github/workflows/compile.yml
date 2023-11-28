@@ -61,8 +61,8 @@ jobs:
           find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert EPS images to PDF
         run: find -type f -iregex '.*\.eps$' | parallel epstopdf {} {.}-eps-converted-to.pdf
-      - name: Compile LaTeX document example-document.tex.tex
-        run: latexmk -shell-escape -pdf -Werror example-document.tex.tex
+      - name: Compile LaTeX document example-document.tex
+        run: latexmk -shell-escape -pdf -Werror example-document.tex
       - name: Compile LaTeX document atlas-syllabus.tex
         run: latexmk -shell-escape -pdf -Werror atlas-syllabus.tex
       - name: Compile LaTeX document atlas-body-of-knowledge.tex
