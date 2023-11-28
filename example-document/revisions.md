@@ -21,8 +21,8 @@ You can list the revisions as follows:
 vM.mm | YYYY/MM/DD |  Maintenance release with minor updates on chapters 2, 4, 5
 v4.0 | YYYY/MM/DD | General release version
 v3.1.1 | YYYY/MM/DD | Copyright and logo update
-v1.2.3 | YYYY/MM/DD | If remaks are longer, they can be split into more lines by using the percent sign % 
-which serves as a line break.
+v1.2.3 | YYYY/MM/DD | If remaks are longer, they can be split into more lines by using \%
+the percent sign which serves as a line break.
 ```
 
 This will produce the following output:
@@ -32,5 +32,5 @@ This will produce the following output:
 vM.mm | YYYY/MM/DD |  Maintenance release with minor updates on chapters 2, 4, 5
 v4.0 | YYYY/MM/DD | General release version
 v3.1.1 | YYYY/MM/DD | Copyright and logo update
-v1.2.3 | YYYY/MM/DD | If remaks are longer, they can be split into more lines by using the percent sign % 
-which serves as a line break.
+v1.2.3 | YYYY/MM/DD | If remaks are longer, they can be split into more lines by using %
+the percent sign which serves as a line break.

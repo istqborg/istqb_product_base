@@ -102,7 +102,7 @@ To make a section unnumbered, write `{-}` next to the section heading as follows
 ## Unnumbered section {-}
 ```
 
-This is applied e.g. for <#section:revision-history>.
+This is applied e.g. in the Revision History section.
 
 ## Section references {#section-references}
 

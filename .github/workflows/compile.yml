@@ -43,13 +43,13 @@ jobs:
         with:
           schema: schema/questions.yml
           target: sample-exam/questions.yml
-  build:
+    build:
     name: Build LaTeX documents
     needs:
       - validate
     runs-on: ubuntu-latest
     container:
-      image: witiko/markdown:3.2.0-0-g034c66fb-latest
+      image: witiko/markdown:3.2.0-43-gc109d22b-latest
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3
@@ -58,21 +58,23 @@ jobs:
           set -ex
           apt -qy update
           apt -qy install --no-install-recommends dos2unix
-          find -type f \( -name '*.md' -o -name '*.yml' \) -exec dos2unix {} +
+          find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
+      - name: Convert EPS images to PDF
+        run: find -type f -iregex '.*\.eps$' | parallel epstopdf {} {.}-eps-converted-to.pdf
       - name: Compile LaTeX document example.tex
-        run: latexmk -shell-escape -pdf example.tex
+        run: latexmk -shell-escape -pdf -Werror example.tex
       - name: Compile LaTeX document atlas-syllabus.tex
-        run: latexmk -shell-escape -pdf atlas-syllabus.tex
+        run: latexmk -shell-escape -pdf -Werror atlas-syllabus.tex
       - name: Compile LaTeX document atlas-body-of-knowledge.tex
-        run: latexmk -shell-escape -pdf atlas-body-of-knowledge.tex
+        run: latexmk -shell-escape -pdf -Werror atlas-body-of-knowledge.tex
       - name: Compile LaTeX document atlas-release-notes.tex
-        run: latexmk -shell-escape -pdf atlas-release-notes.tex
+        run: latexmk -shell-escape -pdf -Werror atlas-release-notes.tex
       - name: Compile LaTeX document atlas-accreditation-guidelines.tex
-        run: latexmk -shell-escape -pdf atlas-accreditation-guidelines.tex
+        run: latexmk -shell-escape -pdf -Werror atlas-accreditation-guidelines.tex
       - name: Compile LaTeX document atlas-sample-exam-questions.tex
-        run: latexmk -shell-escape -pdf atlas-sample-exam-questions.tex
+        run: latexmk -shell-escape -pdf -Werror atlas-sample-exam-questions.tex
       - name: Compile LaTeX document atlas-sample-exam-answers.tex
-        run: latexmk -shell-escape -pdf atlas-sample-exam-answers.tex
+        run: latexmk -shell-escape -pdf -Werror atlas-sample-exam-answers.tex
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
@@ -83,7 +85,7 @@ jobs:
             atlas-body-of-knowledge.pdf
             atlas-release-notes.pdf
             atlas-accreditation-guidelines.pdf
-            aatlas-sample-exam-questions.pdf
+            atlas-sample-exam-questions.pdf
             atlas-sample-exam-answers.pdf
       - name: Create a prerelease
         if: github.ref == 'refs/heads/main'
@@ -99,5 +101,5 @@ jobs:
             atlas-body-of-knowledge.pdf
             atlas-release-notes.pdf
             atlas-accreditation-guidelines.pdf
-            aatlas-sample-exam-questions.pdf
+            atlas-sample-exam-questions.pdf
             atlas-sample-exam-answers.pdf
