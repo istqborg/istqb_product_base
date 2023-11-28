@@ -43,7 +43,7 @@ jobs:
         with:
           schema: schema/questions.yml
           target: sample-exam/questions.yml
-    build:
+  build:
     name: Build LaTeX documents
     needs:
       - validate
@@ -61,8 +61,8 @@ jobs:
           find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert EPS images to PDF
         run: find -type f -iregex '.*\.eps$' | parallel epstopdf {} {.}-eps-converted-to.pdf
-      - name: Compile LaTeX document example.tex
-        run: latexmk -shell-escape -pdf -Werror example.tex
+      - name: Compile LaTeX document example-document.tex.tex
+        run: latexmk -shell-escape -pdf -Werror example-document.tex.tex
       - name: Compile LaTeX document atlas-syllabus.tex
         run: latexmk -shell-escape -pdf -Werror atlas-syllabus.tex
       - name: Compile LaTeX document atlas-body-of-knowledge.tex
@@ -80,7 +80,7 @@ jobs:
         with:
           name: PDF
           path: |
-            example.pdf
+            example-document.tex.pdf
             atlas-syllabus.pdf
             atlas-body-of-knowledge.pdf
             atlas-release-notes.pdf
@@ -96,7 +96,7 @@ jobs:
           prerelease: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-            example.pdf
+            example-document.tex.pdf
             atlas-syllabus.pdf
             atlas-body-of-knowledge.pdf
             atlas-release-notes.pdf
