@@ -470,6 +470,14 @@
   \markboth{#1}{#1}%
   \addcontentsline{toc}{section}{#1}%
 }
+\newcommand\istqbunnumberedsubsection[1]{%
+  \subsection*{#1}%
+  \addcontentsline{toc}{subsection}{#1}%
+}
+\newcommand\istqbunnumberedsubsubsection[1]{%
+  \subsubsection*{#1}%
+  \addcontentsline{toc}{subsubsection}{#1}%
+}
 
 %% Learning objectives
 \RequirePackage{longtable}
