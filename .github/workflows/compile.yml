@@ -80,7 +80,7 @@ jobs:
         with:
           name: PDF
           path: |
-            example-document.tex.pdf
+            example-document.pdf
             atlas-syllabus.pdf
             atlas-body-of-knowledge.pdf
             atlas-release-notes.pdf
@@ -96,7 +96,7 @@ jobs:
           prerelease: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-            example-document.tex.pdf
+            example-document.pdf
             atlas-syllabus.pdf
             atlas-body-of-knowledge.pdf
             atlas-release-notes.pdf
