@@ -33,6 +33,11 @@ jobs:
         with:
           schema: schema/questions.yml
           target: sample-exam-md/questions.yml
+      - name: Validate exam-structure-tables-md/metadata.yml
+        uses: nrkno/yaml-schema-validator-github-action@v4
+        with:
+          schema: schema/metadata.yml
+          target: exam-structure-tables-md/metadata.yml
   build:
     name: Build LaTeX documents
     needs:
@@ -47,10 +52,12 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix
+          apt -qy install --no-install-recommends dos2unix libreoffice
           find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert EPS images to PDF
         run: find -type f -iregex '.*\.eps$' | parallel epstopdf {} {.}-eps-converted-to.pdf
+      - name: Convert XLSX spreadsheets to PDF
+        run: find -type f -iregex '.*\.xlsx$' | parallel libreoffice --headless --convert-to pdf {} --outdir {//}
       - name: Compile LaTeX document example.tex
         run: latexmk -shell-escape -pdf -Werror example.tex
       - name: Compile LaTeX document atlas-syllabus.tex
@@ -61,6 +68,8 @@ jobs:
         run: latexmk -shell-escape -pdf -Werror sample-exam-questions.tex
       - name: Compile LaTeX document sample-exam-answers.tex
         run: latexmk -shell-escape -pdf -Werror sample-exam-answers.tex
+      - name: Compile LaTeX document exam-structure-tables.tex
+        run: latexmk -shell-escape -pdf -Werror exam-structure-tables.tex
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
@@ -71,6 +80,7 @@ jobs:
             atlas-syllabus.pdf
             sample-exam-questions.pdf
             sample-exam-answers.pdf
+            exam-structure-tables.pdf
       - name: Create a prerelease
         if: github.ref == 'refs/heads/main'
         uses: marvinpinto/action-automatic-releases@latest
@@ -85,3 +95,4 @@ jobs:
             atlas-syllabus.pdf
             sample-exam-questions.pdf
             sample-exam-answers.pdf
+            exam-structure-tables.pdf
