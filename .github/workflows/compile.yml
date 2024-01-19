@@ -33,13 +33,18 @@ jobs:
         with:
           schema: schema/questions.yml
           target: sample-exam-md/questions.yml
+      - name: Validate exam-structure-tables-md/metadata.yml
+        uses: nrkno/yaml-schema-validator-github-action@v4
+        with:
+          schema: schema/metadata.yml
+          target: exam-structure-tables-md/metadata.yml
   produce-pdf:
     name: Produce PDF documents
     needs:
       - validate
     runs-on: ubuntu-latest
     container:
-      image: witiko/markdown:3.2.0-0-g034c66fb-latest
+      image: witiko/markdown:3.2.0-43-gc109d22b-latest
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3
@@ -47,11 +52,13 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix
+          apt -qy install --no-install-recommends dos2unix libreoffice
       - name: Ensure correct encoding of input files
         run: find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert EPS images to PDF
         run: find -type f -iregex '.*\.eps$' | parallel epstopdf {} {.}-eps-converted-to.pdf
+      - name: Convert XLSX spreadsheets to PDF
+        run: find -type f -iregex '.*\.xlsx$' | parallel libreoffice --headless --convert-to pdf {} --outdir {//}
       - name: Compile LaTeX document example.tex to PDF
         run: latexmk example.tex
       - name: Compile LaTeX document atlas-syllabus.tex to PDF
@@ -62,6 +69,8 @@ jobs:
         run: latexmk sample-exam-questions.tex
       - name: Compile LaTeX document sample-exam-answers.tex to PDF
         run: latexmk sample-exam-answers.tex
+      - name: Compile LaTeX document exam-structure-tables.tex to PDF
+        run: latexmk exam-structure-tables.tex
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
@@ -81,9 +90,11 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix tidy
+          apt -qy install --no-install-recommends dos2unix libreoffice tidy
       - name: Ensure correct encoding of input files
         run: find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
+      - name: Convert XLSX spreadsheets to PDF
+        run: find -type f -iregex '.*\.xlsx$' | parallel libreoffice --headless --convert-to pdf {} --outdir {//}
       - name: Create output directory html/
         run: mkdir html
       - name: Compile LaTeX document example.tex to HTML
@@ -115,9 +126,11 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix tidy
+          apt -qy install --no-install-recommends dos2unix libreoffice tidy
       - name: Ensure correct encoding of input files
         run: find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
+      - name: Convert XLSX spreadsheets to PDF
+        run: find -type f -iregex '.*\.xlsx$' | parallel libreoffice --headless --convert-to pdf {} --outdir {//}
       - name: Create output directory epub/
         run: mkdir epub
       - name: Compile LaTeX document example.tex to EPUB

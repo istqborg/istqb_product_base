@@ -133,17 +133,8 @@
 \RequirePackage{lastpage}
 \ExplSyntaxOn
 \tl_new:N \g_istqb_version_tl
-\tl_gset:Nn
-  \g_istqb_version_tl
-  { vM.mm }
 \tl_new:N \g_istqb_date_tl
-\tl_gset:Nn
-  \g_istqb_date_tl
-  { Development~Phase~or~YYYY/MM/DD }
 \tl_new:N \g_istqb_release_tl
-\tl_gset:Nn
-  \g_istqb_release_tl
-  { For~public~release }
 \tl_new:N \g_istqb_footer_tl
 \tl_gset:Nn
   \g_istqb_footer_tl
@@ -290,7 +281,12 @@
     \normalfont
     \bfseries
     \fontsize { 24 } { 28.8 } \selectfont
-    \g_istqb_schema_tl \\
+    \tl_if_empty:NF
+      \g_istqb_schema_tl
+      {
+        \g_istqb_schema_tl
+        \\
+      }
     \tl_if_empty:NF
       \g_istqb_level_tl
       {
@@ -535,13 +531,30 @@
 \RequirePackage{tabularx, array}
 \RequirePackage{xcolor, colortbl}
 \definecolor{istqbtableheader}{HTML}{D9D9D9}
-\long\def\beginistqbtable#1#2\endistqbtable{%
-  \renewcommand{\arraystretch}{1.5}% Increase line spread
-  \begin{tabularx}\linewidth{#1}\hline
-  \rowcolor{istqbtableheader}
-  #2%
-  \end{tabularx}%
+\ExplSyntaxOn
+\long\def\beginistqbtable#1#2\endistqbtable{
+  \renewcommand{\arraystretch}{1.5}  % Increase line spread
+  \str_if_in:nnTF
+    { #1 }
+    { X }
+    {
+      \begin{tabularx}\linewidth{#1}\hline
+      \rowcolor{istqbtableheader}
+      #2
+      \end{tabularx}
+    }
+    {
+      \group_begin:
+      \centering
+      \begin{tabular}{#1}\hline
+      \rowcolor{istqbtableheader}
+      #2
+      \end{tabular}
+      \par
+      \group_end:
+    }
 }
+\ExplSyntaxOff
 
 %% Revision History
 \long\def\beginistqbrevisionhistory#1\endistqbrevisionhistory{%
