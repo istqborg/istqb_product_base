@@ -133,17 +133,8 @@
 \RequirePackage{lastpage}
 \ExplSyntaxOn
 \tl_new:N \g_istqb_version_tl
-\tl_gset:Nn
-  \g_istqb_version_tl
-  { vM.mm }
 \tl_new:N \g_istqb_date_tl
-\tl_gset:Nn
-  \g_istqb_date_tl
-  { Development~Phase~or~YYYY/MM/DD }
 \tl_new:N \g_istqb_release_tl
-\tl_gset:Nn
-  \g_istqb_release_tl
-  { For~public~release }
 \tl_new:N \g_istqb_footer_tl
 \tl_gset:Nn
   \g_istqb_footer_tl
@@ -290,7 +281,12 @@
     \normalfont
     \bfseries
     \fontsize { 24 } { 28.8 } \selectfont
-    \g_istqb_schema_tl \\
+    \tl_if_empty:NF
+      \g_istqb_schema_tl
+      {
+        \g_istqb_schema_tl
+        \\
+      }
     \tl_if_empty:NF
       \g_istqb_level_tl
       {
