@@ -111,7 +111,7 @@
 }
 \ExplSyntaxOff
 \rhead{%
-  \includegraphics[height=\headheight]{istqb-logo}%
+  \includegraphics[height=\headheight]{ISTQB-original}%
 }
 \renewcommand{\headrule}{%
   \kern -0.1in
@@ -327,7 +327,7 @@
     \par \vspace { 0.3in }
     \leaders \vrule width \textwidth \vskip 1pt
     \par \vfill \vfill
-    \includegraphics [ height = 1.2in ] { istqb-logo }
+    \includegraphics [ height = 1.2in ] { ISTQB-original }
     \seq_if_empty:NTF
       \g_istqb_third_parties_seq
       { \par \vfill \vfill \vfill \vfill \vfill \vfill }
