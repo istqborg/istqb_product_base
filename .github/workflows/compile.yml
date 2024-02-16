@@ -3,7 +3,7 @@ on: [push]
 permissions: {contents: write}
 jobs:
   validate:
-    name: Validate YAML files
+    name: Validate YAML documents
     runs-on: ubuntu-latest
     steps:
       - name: Set up Git repository
@@ -53,12 +53,13 @@ jobs:
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3
-      - name: Ensure correct encoding of input files
+      - name: Install required packages
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix
-          find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
+          apt -qy install --no-install-recommends dos2unix libreoffice
+      - name: Ensure correct encoding of input files
+        run: find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert EPS images to PDF
         run: find -type f -iregex '.*\.eps$' | parallel epstopdf {} {.}-eps-converted-to.pdf
       - name: Compile LaTeX document example-document.tex
