@@ -148,3 +148,33 @@ jobs:
         with:
           name: EPUB
           path: epub
+  produce-docx:
+    name: Produce DOCX documents
+    needs:
+      - validate
+    runs-on: ubuntu-latest
+    container:
+      image: pandoc/core:3.1.1.0-ubuntu
+    env:
+      PANDOC_EXTENSIONS: commonmark+bracketed_spans+fancy_lists+pipe_tables+raw_attribute
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@v3
+      - name: Install required packages
+        run: |
+          set -ex
+          apt -qy update
+          apt -qy install --no-install-recommends parallel
+      - name: Create output directory docx/
+        run: mkdir docx
+      - name: Convert MD documents to DOCX
+        run: find -type f -iregex '.*\.md$'  | parallel 'mkdir -p docx/{//} && pandoc -f ${PANDOC_EXTENSIONS} -i {} -o docx/{}.docx'
+      - name: Convert YAML documents to DOCX
+        run: find -type f -iregex '.*\.yml$' | parallel 'mkdir -p docx/{//} && pandoc -f ${PANDOC_EXTENSIONS}+hard_line_breaks -i {} -o docx/{}.docx'
+      - name: Convert BIB documents to DOCX
+        run: find -type f -iregex '.*\.bib$' | parallel 'mkdir -p docx/{//} && sed -e "1s/^/\`\`\` bib\n/" -e "\$s/\$/\\n\`\`\`/" {} | pandoc -f ${PANDOC_EXTENSIONS}+hard_line_breaks -i - -o docx/{}.docx'
+      - name: Upload DOCX documents
+        uses: actions/upload-artifact@v3
+        with:
+          name: DOCX
+          path: docx
