@@ -104,7 +104,12 @@ jobs:
       - name: Create output directory epub/
         run: mkdir epub
       - name: Compile LaTeX documents to EPUB
-        run: find -type f -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' tex4ebook -s -c istqb.cfg -e istqb.mk4 -d epub {}
+        shell: bash
+        run: |
+          set -ex
+          shopt -s extglob
+          find -type f -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' '(' mkdir -p epub/build/{.} '&&' cp -ar !(epub) epub/build/{.}/ '&&' cd epub/build/{.} '&&' tex4ebook -s -c istqb.cfg -e istqb.mk4 -d ../.. {} ')'
+          rm -rf epub/build
       - name: Upload EPUB documents
         uses: actions/upload-artifact@v3
         with:
