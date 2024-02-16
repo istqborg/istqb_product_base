@@ -42,7 +42,7 @@ jobs:
           apt -qy update
           apt -qy install --no-install-recommends dos2unix libreoffice parallel
       - name: Ensure correct encoding of input files
-        run: find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
+        run: find -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert EPS images to PDF
         run: find -type f -iregex '.*\.eps$' | parallel --halt now,fail=1 epstopdf {} {.}-eps-converted-to.pdf
       - name: Convert XLSX spreadsheets to PDF
@@ -70,7 +70,7 @@ jobs:
           apt -qy update
           apt -qy install --no-install-recommends dos2unix libreoffice parallel tidy
       - name: Ensure correct encoding of input files
-        run: find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
+        run: find -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
         run: find -type f -iregex '.*\.xlsx$' | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
       - name: Create output directory html/
@@ -98,7 +98,7 @@ jobs:
           apt -qy update
           apt -qy install --no-install-recommends dos2unix libreoffice parallel tidy
       - name: Ensure correct encoding of input files
-        run: find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
+        run: find -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
         run: find -type f -iregex '.*\.xlsx$' | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
       - name: Create output directory epub/
