@@ -263,7 +263,7 @@ For further instructions on defining references, see the `Bib\LaTeX`{=tex} manua
 
 ## Indexing
 
-You can index terms by writing `[0-switch coverage]{.index}`, `[functional appropriateness]{.index}`, or `[component integration testing]{.index}`. This will produce the following output: [0-switch coverage]{.index}, [functional appropriateness]{.index}, or `[component integration testing]{.index}.
+You can index terms by writing `[0-switch coverage]{.index}`, `[functional appropriateness]{.index}`, or `[component integration testing]{.index}`. This will produce the following output: [0-switch coverage]{.index}, [functional appropriateness]{.index}, or [component integration testing]{.index}.
 
 Indexed terms are placed in section *Index* at the end of the document together with the page numbers on which the terms appeared.
 
