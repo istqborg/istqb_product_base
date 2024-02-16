@@ -5,46 +5,29 @@ jobs:
   validate:
     name: Validate YAML documents
     runs-on: ubuntu-latest
+    container:
+      image: ubuntu:latest
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3
-      - name: Validate example-document/metadata.yml
-        uses: nrkno/yaml-schema-validator-github-action@v4
-        with:
-          schema: schema/metadata.yml
-          target: example-document/metadata.yml
-      - name: Validate syllabus/metadata.yml
-        uses: nrkno/yaml-schema-validator-github-action@v4
-        with:
-          schema: schema/metadata.yml
-          target: syllabus/metadata.yml
-      - name: Validate body-of-knowledge/metadata.yml
-        uses: nrkno/yaml-schema-validator-github-action@v4
-        with:
-          schema: schema/metadata.yml
-          target: body-of-knowledge/metadata.yml
-      - name: Validate release-notes/metadata.yml
-        uses: nrkno/yaml-schema-validator-github-action@v4
-        with:
-          schema: schema/metadata.yml
-          target: release-notes/metadata.yml
-      - name: Validate accreditation-guidelines/metadata.yml
-        uses: nrkno/yaml-schema-validator-github-action@v4
-        with:
-          schema: schema/metadata.yml
-          target: accreditation-guidelines/metadata.yml
-      - name: Validate sample-exam/metadata.yml
-        uses: nrkno/yaml-schema-validator-github-action@v4
-        with:
-          schema: schema/metadata.yml
-          target: sample-exam/metadata.yml
-      - name: Validate sample-exam/questions.yml
-        uses: nrkno/yaml-schema-validator-github-action@v4
-        with:
-          schema: schema/questions.yml
-          target: sample-exam/questions.yml
-  build:
-    name: Build LaTeX documents
+      - name: Install required packages
+        run: |
+          set -ex
+          apt -qy update
+          apt -qy install --no-install-recommends parallel python3 python3-pip
+          pip3 install yamale~=4.0.4
+      - name: Validate metadata.yml
+        shell: bash
+        run: |
+          shopt -s extglob
+          find !(schema)/ -type f -iregex '.*/metadata\.yml$' | parallel yamale --schema=schema/metadata.yml {}
+      - name: Validate questions.yml
+        shell: bash
+        run: |
+          shopt -s extglob
+          find !(schema)/ -type f -iregex '.*/questions\.yml$' | parallel yamale --schema=schema/questions.yml {}
+  produce-pdf:
+    name: Produce PDF documents
     needs:
       - validate
     runs-on: ubuntu-latest
@@ -57,50 +40,73 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix libreoffice
+          apt -qy install --no-install-recommends dos2unix libreoffice parallel
       - name: Ensure correct encoding of input files
         run: find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert EPS images to PDF
         run: find -type f -iregex '.*\.eps$' | parallel epstopdf {} {.}-eps-converted-to.pdf
-      - name: Compile LaTeX document example-document.tex
-        run: latexmk -shell-escape -pdf -Werror example-document.tex
-      - name: Compile LaTeX document atlas-syllabus.tex
-        run: latexmk -shell-escape -pdf -Werror atlas-syllabus.tex
-      - name: Compile LaTeX document atlas-body-of-knowledge.tex
-        run: latexmk -shell-escape -pdf -Werror atlas-body-of-knowledge.tex
-      - name: Compile LaTeX document atlas-release-notes.tex
-        run: latexmk -shell-escape -pdf -Werror atlas-release-notes.tex
-      - name: Compile LaTeX document atlas-accreditation-guidelines.tex
-        run: latexmk -shell-escape -pdf -Werror atlas-accreditation-guidelines.tex
-      - name: Compile LaTeX document atlas-sample-exam-questions.tex
-        run: latexmk -shell-escape -pdf -Werror atlas-sample-exam-questions.tex
-      - name: Compile LaTeX document atlas-sample-exam-answers.tex
-        run: latexmk -shell-escape -pdf -Werror atlas-sample-exam-answers.tex
+      - name: Convert XLSX spreadsheets to PDF
+        run: find -type f -iregex '.*\.xlsx$' | parallel libreoffice --headless --convert-to pdf {} --outdir {//}
+      - name: Compile LaTeX documents to PDF
+        run: find -type f -iregex '.*\.tex$' | parallel latexmk {}
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
           name: PDF
-          path: |
-            example-document.pdf
-            atlas-syllabus.pdf
-            atlas-body-of-knowledge.pdf
-            atlas-release-notes.pdf
-            atlas-accreditation-guidelines.pdf
-            atlas-sample-exam-questions.pdf
-            atlas-sample-exam-answers.pdf
-      - name: Create a prerelease
-        if: github.ref == 'refs/heads/main'
-        uses: marvinpinto/action-automatic-releases@latest
+          path: '*.pdf'
+  produce-html:
+    name: Produce HTML documents
+    needs:
+      - validate
+    runs-on: ubuntu-latest
+    container:
+      image: witiko/markdown:3.2.0-0-g034c66fb-latest
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@v3
+      - name: Install required packages
+        run: |
+          set -ex
+          apt -qy update
+          apt -qy install --no-install-recommends dos2unix libreoffice parallel tidy
+      - name: Ensure correct encoding of input files
+        run: find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
+      - name: Convert XLSX spreadsheets to PDF
+        run: find -type f -iregex '.*\.xlsx$' | parallel libreoffice --headless --convert-to pdf {} --outdir {//}
+      - name: Create output directory html/
+        run: mkdir html
+      - name: Compile LaTeX documents to HTML
+        run: find -type f -iregex '.*\.tex$' | parallel make4ht -s -c istqb.cfg -e istqb.mk4 -d html/{.} {}
+      - name: Upload HTML documents
+        uses: actions/upload-artifact@v3
         with:
-          title: The latest version
-          automatic_release_tag: latest
-          prerelease: true
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          files: |
-            example-document.pdf
-            atlas-syllabus.pdf
-            atlas-body-of-knowledge.pdf
-            atlas-release-notes.pdf
-            atlas-accreditation-guidelines.pdf
-            atlas-sample-exam-questions.pdf
-            atlas-sample-exam-answers.pdf
+          name: HTML
+          path: html
+  produce-ebooks:
+    name: Produce EPUB documents
+    needs:
+      - validate
+    runs-on: ubuntu-latest
+    container:
+      image: witiko/markdown:3.2.0-0-g034c66fb-latest
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@v3
+      - name: Install required packages
+        run: |
+          set -ex
+          apt -qy update
+          apt -qy install --no-install-recommends dos2unix libreoffice parallel tidy
+      - name: Ensure correct encoding of input files
+        run: find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
+      - name: Convert XLSX spreadsheets to PDF
+        run: find -type f -iregex '.*\.xlsx$' | parallel libreoffice --headless --convert-to pdf {} --outdir {//}
+      - name: Create output directory epub/
+        run: mkdir epub
+      - name: Compile LaTeX documents to EPUB
+        run: find -type f -iregex '.*\.tex$' | parallel tex4ebook -s -c istqb.cfg -e istqb.mk4 -d epub {}
+      - name: Upload EPUB documents
+        uses: actions/upload-artifact@v3
+        with:
+          name: EPUB
+          path: epub
