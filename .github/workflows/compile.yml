@@ -48,7 +48,7 @@ jobs:
       - name: Convert XLSX spreadsheets to PDF
         run: find -type f -iregex '.*\.xlsx$' | parallel libreoffice --headless --convert-to pdf {} --outdir {//}
       - name: Compile LaTeX documents to PDF
-        run: find -type f -iregex '.*\.tex$' | parallel latexmk {}
+        run: find -type f -iregex '.*\.tex$' | parallel test -e {//}/NO_PDF '||' latexmk {}
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
@@ -76,7 +76,7 @@ jobs:
       - name: Create output directory html/
         run: mkdir html
       - name: Compile LaTeX documents to HTML
-        run: find -type f -iregex '.*\.tex$' | parallel make4ht -s -c istqb.cfg -e istqb.mk4 -d html/{.} {}
+        run: find -type f -iregex '.*\.tex$' | parallel test -e {.}/NO_HTML '||' make4ht -s -c istqb.cfg -e istqb.mk4 -d html/{.} {}
       - name: Upload HTML documents
         uses: actions/upload-artifact@v3
         with:
@@ -104,7 +104,7 @@ jobs:
       - name: Create output directory epub/
         run: mkdir epub
       - name: Compile LaTeX documents to EPUB
-        run: find -type f -iregex '.*\.tex$' | parallel tex4ebook -s -c istqb.cfg -e istqb.mk4 -d epub {}
+        run: find -type f -iregex '.*\.tex$' | parallel test -e {.}/NO_HTML '||' tex4ebook -s -c istqb.cfg -e istqb.mk4 -d epub {}
       - name: Upload EPUB documents
         uses: actions/upload-artifact@v3
         with:
