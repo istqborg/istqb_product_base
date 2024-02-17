@@ -5,39 +5,27 @@ jobs:
   validate:
     name: Validate YAML documents
     runs-on: ubuntu-latest
+    container:
+      image: ubuntu:latest
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3
-      - name: Validate example-md/metadata.yml
-        uses: nrkno/yaml-schema-validator-github-action@v4
-        with:
-          schema: schema/metadata.yml
-          target: example-md/metadata.yml
-      - name: Validate syllabus-md/metadata.yml
-        uses: nrkno/yaml-schema-validator-github-action@v4
-        with:
-          schema: schema/metadata.yml
-          target: syllabus-md/metadata.yml
-      - name: Validate bok-md/metadata.yml
-        uses: nrkno/yaml-schema-validator-github-action@v4
-        with:
-          schema: schema/metadata.yml
-          target: bok-md/metadata.yml
-      - name: Validate sample-exam-md/metadata.yml
-        uses: nrkno/yaml-schema-validator-github-action@v4
-        with:
-          schema: schema/metadata.yml
-          target: sample-exam-md/metadata.yml
-      - name: Validate sample-exam-md/questions.yml
-        uses: nrkno/yaml-schema-validator-github-action@v4
-        with:
-          schema: schema/questions.yml
-          target: sample-exam-md/questions.yml
-      - name: Validate exam-structure-tables-md/metadata.yml
-        uses: nrkno/yaml-schema-validator-github-action@v4
-        with:
-          schema: schema/metadata.yml
-          target: exam-structure-tables-md/metadata.yml
+      - name: Install required packages
+        run: |
+          set -ex
+          apt -qy update
+          apt -qy install --no-install-recommends parallel python3 python3-pip
+          pip3 install yamale~=4.0.4
+      - name: Validate metadata.yml
+        shell: bash
+        run: |
+          shopt -s extglob
+          find !(schema)/ -type f -iregex '.*/metadata\.yml$' | parallel --halt now,fail=1 yamale --schema=schema/metadata.yml {}
+      - name: Validate questions.yml
+        shell: bash
+        run: |
+          shopt -s extglob
+          find !(schema)/ -type f -iregex '.*/questions\.yml$' | parallel --halt now,fail=1 yamale --schema=schema/questions.yml {}
   produce-pdf:
     name: Produce PDF documents
     needs:
@@ -52,25 +40,15 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix libreoffice
+          apt -qy install --no-install-recommends dos2unix libreoffice parallel
       - name: Ensure correct encoding of input files
-        run: find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
+        run: find -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert EPS images to PDF
-        run: find -type f -iregex '.*\.eps$' | parallel epstopdf {} {.}-eps-converted-to.pdf
+        run: find -type f -iregex '.*\.eps$' | parallel --halt now,fail=1 epstopdf {} {.}-eps-converted-to.pdf
       - name: Convert XLSX spreadsheets to PDF
-        run: find -type f -iregex '.*\.xlsx$' | parallel libreoffice --headless --convert-to pdf {} --outdir {//}
-      - name: Compile LaTeX document example.tex to PDF
-        run: latexmk example.tex
-      - name: Compile LaTeX document atlas-syllabus.tex to PDF
-        run: latexmk atlas-syllabus.tex
-      - name: Compile LaTeX document atlas-bok.tex to PDF
-        run: latexmk atlas-bok.tex
-      - name: Compile LaTeX document sample-exam-questions.tex to PDF
-        run: latexmk sample-exam-questions.tex
-      - name: Compile LaTeX document sample-exam-answers.tex to PDF
-        run: latexmk sample-exam-answers.tex
-      - name: Compile LaTeX document exam-structure-tables.tex to PDF
-        run: latexmk exam-structure-tables.tex
+        run: find -type f -iregex '.*\.xlsx$' | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
+      - name: Compile LaTeX documents to PDF
+        run: find -type f -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk {}
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
@@ -90,28 +68,20 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix libreoffice tidy
+          apt -qy install --no-install-recommends dos2unix libreoffice parallel tidy
       - name: Ensure correct encoding of input files
-        run: find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
+        run: find -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
-        run: find -type f -iregex '.*\.xlsx$' | parallel libreoffice --headless --convert-to pdf {} --outdir {//}
+        run: find -type f -iregex '.*\.xlsx$' | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
       - name: Create output directory html/
         run: mkdir html
-      - name: Compile LaTeX document example.tex to HTML
-        run: make4ht -s -c istqb.cfg -e istqb.mk4 -d html/example example.tex
-      - name: Compile LaTeX document atlas-syllabus.tex to HTML
-        run: make4ht -s -c istqb.cfg -e istqb.mk4 -d html/atlas-syllabus atlas-syllabus.tex
-      - name: Compile LaTeX document atlas-bok.tex to HTML
-        run: make4ht -s -c istqb.cfg -e istqb.mk4 -d html/atlas-bok atlas-bok.tex
-      - name: Compile LaTeX document sample-exam-questions.tex to HTML
-        run: make4ht -s -c istqb.cfg -e istqb.mk4 -d html/sample-exam-questions sample-exam-questions.tex
-      - name: Compile LaTeX document sample-exam-answers.tex to HTML
-        run: make4ht -s -c istqb.cfg -e istqb.mk4 -d html/sample-exam-answers sample-exam-answers.tex
+      - name: Compile LaTeX documents to HTML
+        run: find -type f -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' make4ht -s -c istqb.cfg -e istqb.mk4 -d html/{.} {}
       - name: Upload HTML documents
         uses: actions/upload-artifact@v3
         with:
           name: HTML
-          path: html/
+          path: html
   produce-ebooks:
     name: Produce EPUB documents
     needs:
@@ -126,23 +96,20 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix libreoffice tidy
+          apt -qy install --no-install-recommends dos2unix libreoffice parallel tidy
       - name: Ensure correct encoding of input files
-        run: find -type f \( -iregex '.*\.md$' -o -name '.*\.yml$' \) -exec dos2unix {} +
+        run: find -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
-        run: find -type f -iregex '.*\.xlsx$' | parallel libreoffice --headless --convert-to pdf {} --outdir {//}
+        run: find -type f -iregex '.*\.xlsx$' | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
       - name: Create output directory epub/
         run: mkdir epub
-      - name: Compile LaTeX document example.tex to EPUB
-        run: tex4ebook -s -c istqb.cfg -e istqb.mk4 -d epub example.tex
-      - name: Compile LaTeX document atlas-syllabus.tex to EPUB
-        run: tex4ebook -s -c istqb.cfg -e istqb.mk4 -d epub atlas-syllabus.tex
-      - name: Compile LaTeX document atlas-bok.tex to EPUB
-        run: tex4ebook -s -c istqb.cfg -e istqb.mk4 -d epub atlas-bok.tex
-      - name: Compile LaTeX document sample-exam-questions.tex to EPUB
-        run: tex4ebook -s -c istqb.cfg -e istqb.mk4 -d epub sample-exam-questions.tex
-      - name: Compile LaTeX document sample-exam-answers.tex to EPUB
-        run: tex4ebook -s -c istqb.cfg -e istqb.mk4 -d epub sample-exam-answers.tex
+      - name: Compile LaTeX documents to EPUB
+        shell: bash
+        run: |
+          set -ex
+          shopt -s extglob
+          find -type f -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' '(' mkdir -p epub/build/{.} '&&' cp -ar !(epub) epub/build/{.}/ '&&' cd epub/build/{.} '&&' tex4ebook -s -c istqb.cfg -e istqb.mk4 -d ../.. {} ')'
+          rm -rf epub/build
       - name: Upload EPUB documents
         uses: actions/upload-artifact@v3
         with:
