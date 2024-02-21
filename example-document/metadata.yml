@@ -7,6 +7,7 @@ type: Syllabus
 version: Version v0.1
 date: 31 October 2023
 release: For internal use only
+logo: istqb-logo-default
 provided-by:
 # 3rd-party organizations with logos
 - name: Alliance for Qualification
