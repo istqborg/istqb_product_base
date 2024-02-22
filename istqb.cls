@@ -72,6 +72,10 @@
 \tl_new:N \g_istqb_level_tl
 \tl_new:N \g_istqb_title_tl
 \tl_new:N \g_istqb_code_tl
+\tl_new:N \g_istqb_logo_tl
+\tl_gset:Nn
+  \g_istqb_logo_tl
+  { istqb-logo-default }
 \lhead{%
   \kern 0.1in
   \fontsize{9}{10.8}\selectfont
@@ -109,10 +113,10 @@
       }
   \end{minipage}
 }
-\ExplSyntaxOff
 \rhead{%
-  \includegraphics[height=\headheight]{ISTQB-original}%
+  \includegraphics[height=\headheight]{\g_istqb_logo_tl}%
 }
+\ExplSyntaxOff
 \renewcommand{\headrule}{%
   \kern -0.1in
   \leavevmode
@@ -327,7 +331,7 @@
     \par \vspace { 0.3in }
     \leaders \vrule width \textwidth \vskip 1pt
     \par \vfill \vfill
-    \includegraphics [ height = 1.2in ] { ISTQB-original }
+    \includegraphics [ height = 1.2in ] { \g_istqb_logo_tl }
     \seq_if_empty:NTF
       \g_istqb_third_parties_seq
       { \par \vfill \vfill \vfill \vfill \vfill \vfill }

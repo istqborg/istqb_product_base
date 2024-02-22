@@ -123,24 +123,24 @@ You can also create a clickable link to the section by writing `[displayed text]
 You can display a figure from the `img/` folder as follows:
 
 ``` md
-![label](ISTQB-original){width=3cm}
+![label](istqb-logo-default){width=3cm}
 ```
 
 This will produce the following output:
 
-![label](ISTQB-original){width=3cm}
+![label](istqb-logo-default){width=3cm}
 
 Notice that we did't need to specify the suffix of the figure, it was guessed automatically.
 
 You can add a caption to the figure as follows:
 
 ``` md
-![another-label](ISTQB-original "Here is a caption describing the image."){width=3cm}
+![another-label](istqb-logo-default "Here is a caption describing the image."){width=3cm}
 ```
 
 This will produce the following output:
 
-![another-label](ISTQB-original "Here is a caption describing the image."){width=3cm}
+![another-label](istqb-logo-default "Here is a caption describing the image."){width=3cm}
 
 You can reference a captioned figure from the text of the document by writing `<#figure:another-label>`. This will produce the following output: <#figure:another-label>.
 
