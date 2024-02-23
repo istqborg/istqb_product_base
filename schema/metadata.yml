@@ -1,5 +1,6 @@
 schema: str(required=False)
 level: str(required=False)
+logo: str(required=False)
 type: str(required=False)
 title: str()
 code: str(required=False)
