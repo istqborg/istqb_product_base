@@ -148,7 +148,7 @@ jobs:
       - name: Convert MD documents to DOCX
         run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) -iregex '.*\.md$'  | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' pandoc -f "${PANDOC_EXTENSIONS}" -i {} -o docx/{}.docx
       - name: Convert YAML documents to DOCX
-        run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) -iregex '.*\.yml$' | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` yml\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
+        run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) \( -not -regex '^\./\.github/.*' \) -iregex '.*\.yml$' | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` yml\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
       - name: Convert BIB documents to DOCX
         run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) -iregex '.*\.bib$' | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` bib\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
       - name: Upload DOCX documents
