@@ -13,16 +13,16 @@ jobs:
     container:
       image: ubuntu:latest
     steps:
-      - name: Set up Git repository
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
       - name: Install required packages
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends parallel python3 python3-pip
+          apt -qy install --no-install-recommends git parallel python3 python3-pip
           pip3 install yamale~=4.0.4
+      - name: Set up Git repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - name: Validate metadata.yml
         shell: bash
         run: find -follow \( -not -regex '^\./istqb_product_base/.*' \) -type f -iregex '.*/metadata\.yml$' | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/metadata.yml {}
@@ -37,15 +37,15 @@ jobs:
     container:
       image: witiko/markdown:3.2.0-43-gc109d22b-latest
     steps:
-      - name: Set up Git repository
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
       - name: Install required packages
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix libreoffice parallel
+          apt -qy install --no-install-recommends dos2unix git libreoffice parallel
+      - name: Set up Git repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - name: Ensure correct encoding of input files
         run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert EPS images to PDF
@@ -67,15 +67,15 @@ jobs:
     container:
       image: witiko/markdown:3.2.0-0-g034c66fb-latest
     steps:
-      - name: Set up Git repository
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
       - name: Install required packages
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix libreoffice parallel tidy
+          apt -qy install --no-install-recommends dos2unix git libreoffice parallel tidy
+      - name: Set up Git repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - name: Ensure correct encoding of input files
         run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
@@ -97,15 +97,15 @@ jobs:
     container:
       image: witiko/markdown:3.2.0-0-g034c66fb-latest
     steps:
-      - name: Set up Git repository
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
       - name: Install required packages
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix libreoffice parallel tidy
+          apt -qy install --no-install-recommends dos2unix git libreoffice parallel tidy
+      - name: Set up Git repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - name: Ensure correct encoding of input files
         run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
@@ -134,15 +134,15 @@ jobs:
     env:
       PANDOC_EXTENSIONS: commonmark+bracketed_spans+fancy_lists+pipe_tables+raw_attribute
     steps:
-      - name: Set up Git repository
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
       - name: Install required packages
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends parallel
+          apt -qy install --no-install-recommends git parallel
+      - name: Set up Git repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - name: Create output directory docx/
         run: mkdir docx
       - name: Convert MD documents to DOCX
