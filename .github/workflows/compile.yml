@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - name: Install required packages
         run: |
           set -ex
@@ -23,14 +25,10 @@ jobs:
           pip3 install yamale~=4.0.4
       - name: Validate metadata.yml
         shell: bash
-        run: |
-          shopt -s extglob
-          find !(schema)/ -type f -iregex '.*/metadata\.yml$' | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/metadata.yml {}
+        run: find -follow \( -not -regex '^\./istqb_product_base/.*' \) -type f -iregex '.*/metadata\.yml$' | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/metadata.yml {}
       - name: Validate questions.yml
         shell: bash
-        run: |
-          shopt -s extglob
-          find !(schema)/ -type f -iregex '.*/questions\.yml$' | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/questions.yml {}
+        run: find -follow \( -not -regex '^\./istqb_product_base/.*' \) -type f -iregex '.*/questions\.yml$' | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/questions.yml {}
   produce-pdf:
     name: Produce PDF documents
     needs:
@@ -41,19 +39,21 @@ jobs:
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - name: Install required packages
         run: |
           set -ex
           apt -qy update
           apt -qy install --no-install-recommends dos2unix libreoffice parallel
       - name: Ensure correct encoding of input files
-        run: find -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
+        run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert EPS images to PDF
-        run: find -type f -iregex '.*\.eps$' | parallel --halt now,fail=1 epstopdf {} {.}-eps-converted-to.pdf
+        run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) -iregex '.*\.eps$' | parallel --halt now,fail=1 epstopdf {} {.}-eps-converted-to.pdf
       - name: Convert XLSX spreadsheets to PDF
-        run: find -type f -iregex '.*\.xlsx$' | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
+        run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) -iregex '.*\.xlsx$' | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
       - name: Compile LaTeX documents to PDF
-        run: find -type f -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk -r istqb_product_base/latexmkrc {}
+        run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk -r istqb_product_base/latexmkrc {}
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
@@ -69,19 +69,21 @@ jobs:
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - name: Install required packages
         run: |
           set -ex
           apt -qy update
           apt -qy install --no-install-recommends dos2unix libreoffice parallel tidy
       - name: Ensure correct encoding of input files
-        run: find -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
+        run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
-        run: find -type f -iregex '.*\.xlsx$' | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
+        run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) -iregex '.*\.xlsx$' | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
       - name: Create output directory html/
         run: mkdir html
       - name: Compile LaTeX documents to HTML
-        run: find -type f -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' make4ht -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d html/{.} {}
+        run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' make4ht -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d html/{.} {}
       - name: Upload HTML documents
         uses: actions/upload-artifact@v3
         with:
@@ -97,15 +99,17 @@ jobs:
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - name: Install required packages
         run: |
           set -ex
           apt -qy update
           apt -qy install --no-install-recommends dos2unix libreoffice parallel tidy
       - name: Ensure correct encoding of input files
-        run: find -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
+        run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
-        run: find -type f -iregex '.*\.xlsx$' | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
+        run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) -iregex '.*\.xlsx$' | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
       - name: Create output directory epub/
         run: mkdir epub
       - name: Compile LaTeX documents to EPUB
@@ -113,7 +117,7 @@ jobs:
         run: |
           set -ex
           shopt -s extglob
-          find -type f -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' '(' mkdir -p epub/build/{.} '&&' cp -ar !(epub) epub/build/{.}/ '&&' cd epub/build/{.} '&&' tex4ebook -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d ../.. {} ')'
+          find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' '(' mkdir -p epub/build/{.} '&&' cp -ar !(epub) epub/build/{.}/ '&&' cd epub/build/{.} '&&' tex4ebook -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d ../.. {} ')'
           rm -rf epub/build
       - name: Upload EPUB documents
         uses: actions/upload-artifact@v3
@@ -132,6 +136,8 @@ jobs:
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - name: Install required packages
         run: |
           set -ex
@@ -140,11 +146,11 @@ jobs:
       - name: Create output directory docx/
         run: mkdir docx
       - name: Convert MD documents to DOCX
-        run: find -type f -iregex '.*\.md$'  | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' pandoc -f "${PANDOC_EXTENSIONS}" -i {} -o docx/{}.docx
+        run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) -iregex '.*\.md$'  | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' pandoc -f "${PANDOC_EXTENSIONS}" -i {} -o docx/{}.docx
       - name: Convert YAML documents to DOCX
-        run: find -type f -iregex '.*\.yml$' | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' sed -e '1s/^/``` yml\n/' -e '$s/$/\n```/' {} | pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
+        run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) -iregex '.*\.yml$' | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' sed -e '1s/^/``` yml\n/' -e '$s/$/\n```/' {} | pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
       - name: Convert BIB documents to DOCX
-        run: find -type f -iregex '.*\.bib$' | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' sed -e '1s/^/``` bib\n/' -e '$s/$/\n```/' {} | pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
+        run: find -type f -follow \( -not -regex '^\./istqb_product_base/.*' \) -iregex '.*\.bib$' | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' sed -e '1s/^/``` bib\n/' -e '$s/$/\n```/' {} | pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
       - name: Upload DOCX documents
         uses: actions/upload-artifact@v3
         with:
