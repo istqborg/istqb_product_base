@@ -1,6 +1,8 @@
 name: Build LaTeX documents
-on: [push, workflow_call]
-permissions: {contents: write}
+on:
+  - workflow_call
+permissions:
+  contents: write
 env:
   DEBIAN_FRONTEND: noninteractive
   TEXINPUTS: '.:./istqb_product_base/template:'
