@@ -1,5 +1,5 @@
 name: Build LaTeX documents
-on: [push]
+on: [push, workflow_call]
 permissions: {contents: write}
 env:
   DEBIAN_FRONTEND: noninteractive
