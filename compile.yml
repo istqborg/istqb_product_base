@@ -1,6 +1,9 @@
 name: Build LaTeX documents
 on: [push]
 permissions: {contents: write}
+env:
+  DEBIAN_FRONTEND: noninteractive
+  TEXINPUTS: '.:./istqb_product_base/template:'
 jobs:
   validate:
     name: Validate YAML documents
@@ -20,12 +23,12 @@ jobs:
         shell: bash
         run: |
           shopt -s extglob
-          find !(schema)/ -type f -iregex '.*/metadata\.yml$' | parallel --halt now,fail=1 yamale --schema=schema/metadata.yml {}
+          find !(schema)/ -type f -iregex '.*/metadata\.yml$' | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/metadata.yml {}
       - name: Validate questions.yml
         shell: bash
         run: |
           shopt -s extglob
-          find !(schema)/ -type f -iregex '.*/questions\.yml$' | parallel --halt now,fail=1 yamale --schema=schema/questions.yml {}
+          find !(schema)/ -type f -iregex '.*/questions\.yml$' | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/questions.yml {}
   produce-pdf:
     name: Produce PDF documents
     needs:
@@ -48,7 +51,7 @@ jobs:
       - name: Convert XLSX spreadsheets to PDF
         run: find -type f -iregex '.*\.xlsx$' | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
       - name: Compile LaTeX documents to PDF
-        run: find -type f -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk {}
+        run: find -type f -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk -r istqb_product_base/latexmkrc {}
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
@@ -76,7 +79,7 @@ jobs:
       - name: Create output directory html/
         run: mkdir html
       - name: Compile LaTeX documents to HTML
-        run: find -type f -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' make4ht -s -c istqb.cfg -e istqb.mk4 -d html/{.} {}
+        run: find -type f -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' make4ht -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d html/{.} {}
       - name: Upload HTML documents
         uses: actions/upload-artifact@v3
         with:
@@ -108,7 +111,7 @@ jobs:
         run: |
           set -ex
           shopt -s extglob
-          find -type f -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' '(' mkdir -p epub/build/{.} '&&' cp -ar !(epub) epub/build/{.}/ '&&' cd epub/build/{.} '&&' tex4ebook -s -c istqb.cfg -e istqb.mk4 -d ../.. {} ')'
+          find -type f -iregex '.*\.tex$' | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' '(' mkdir -p epub/build/{.} '&&' cp -ar !(epub) epub/build/{.}/ '&&' cd epub/build/{.} '&&' tex4ebook -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d ../.. {} ')'
           rm -rf epub/build
       - name: Upload EPUB documents
         uses: actions/upload-artifact@v3

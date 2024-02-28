@@ -210,7 +210,7 @@
 
 % Graphics
 \RequirePackage{graphicx}
-\graphicspath{{.}{./img}}  % Look for images first in ./ and then in ./img/.
+\graphicspath{{.}{./img}{./istqb_product_base/img/}}  % Look for images first in ./, then in ./img/ and ./istqb_product_base/img/.
 \setkeys{Gin}{width = \columnwidth, keepaspectratio}  % By default, typeset images to maximum width.
 
 % Tables and Figures
