@@ -1,0 +1,32 @@
+\documentclass{istqb}
+\usepackage{markdown}
+\markdownSetup{
+  import = {
+    istqb/syllabus = metadata
+  }
+}
+
+% Metadata
+\markdownInput[snippet=metadata]{business-case/metadata.yml}
+
+\begin{document}
+
+% Landing Page
+\istqblandingpage
+
+% Revision History
+\markdownInput[texComments]{business-case/info-and-review.md}
+\markdownInput[texComments]{business-case/revisions.md}
+
+% Table of Contents
+\istqbtableofcontents
+
+% Document Text
+\markdownInput{business-case/business-case.md}
+
+% Appendices
+\begin{istqbappendices}
+  \markdownInput{business-case/apx-a-business-outcomes.md}
+\end{istqbappendices}
+
+\end{document}
