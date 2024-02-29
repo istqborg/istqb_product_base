@@ -1,11 +1,11 @@
-schema: ISTQB® Certified Tester
+schema: Certified Tester
 level: Foundation Level
-title: Syllabus Template
-code: CT-TEMP
-prefix: TEMP
+title: Example Document
+prefix: EXMPL
+code: CT-EXMPL
 type: Syllabus
 version: Version v0.1
-date: 1 Januray 2024
+date: 31 October 2023
 release: For internal use only
 logo: istqb-logo-default
 provided-by:
