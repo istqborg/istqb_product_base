@@ -46,9 +46,9 @@ This section lists the Business Outcomes expected of a candidate who has achieve
 
 An \<module-code\> Certified Test Leader can…
 
-* \<module-code\>-BO1 Promote efficient and effective communication by using a common vocabulary for software testing
-* \<module-code\>-BO2 Understand fundamental concepts of software testing
-* \<module-code\>-BO3 Demonstrate understanding of how different development and testing practices, and different constraints on testing may apply in optimizing testing to different contexts
+* \<module-code\>-BO1 Business Outcomes 1 details
+* \<module-code\>-BO2 Business Outcomes 2 details
+* \<module-code\>-BO3 Business Outcomes 3 details
 
 ### BO 1 Promote efficient and effective communication by using a common vocabulary for software testinge
 
@@ -139,20 +139,11 @@ The syllabus content is not a description of the entire knowledge area of softwa
 
 ## How this Syllabus is Organized {#how-this-syllabus-is-organized}
 
-There are five chapters with examinable content. The top-level heading for each chapter specifies the time for the chapter; timing is not provided below chapter level. For accredited training courses, the syllabus requires a minimum of 11.5 hours of instruction divided over at least two days. The minimum training time distributed across the five chapters as follows:
+There are five chapters with examinable content. The top-level heading for each chapter specifies the time for the chapter; timing is not provided below chapter level. For accredited training courses, the syllabus requires a minimum of XX hours of instruction divided over at least two days. The minimum training time distributed across the five chapters as follows:
 
-* Chapter 1: 60 minutes, Quality Assistance
-  * ISTQB’s definition of quality assistance and how it relates to different quality and testing concepts.
-  * Essential skills to foster a quality mindset and culture.
-* Chapter 2: 120 minutes, Improve Quality and Flow in a Value-Driven Organization
-  * Value stream mapping.
-  * Identifying waste as defined in lean methodology.
-  * Chapter 3: 150 minutes, Continuous Improvement of Quality and Testing
-  * Improvement as experiments and learning cycles.
-* Chapter 4: 165 minutes, Organizational Test Strategy in a Value-Driven Organization
-  * Important DevOps practices influencing an organization test strategy.
-  * Aligning test strategy with business and technology strategies.
-  * Collaborative creation and implementation of an organizational test strategy
-* Chapter 5: 195 minutes, Test Process in a Value-Driven Organization Syllabus
-  * Challenging test processes.
-  * Organizing test processes.
+* Chapter 1: X minutes, Chapter 1 Name
+  * Chapter 1 details.
+  * Chapter 1 details.
+* Chapter 2: X minutes, Chapter 2 Name
+  * Chapter 2 details.
+  * Chapter 2 details.

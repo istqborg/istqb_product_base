@@ -1,0 +1,34 @@
+\documentclass{istqb}
+\usepackage{markdown}
+\markdownSetup{
+  import = {
+    istqb/sample-exam/answers = {metadata, answer-key, answers}
+  }
+}
+
+% Metadata
+\markdownInput[snippet=metadata]{sample-exam-answers/metadata.yml}
+
+\begin{document}
+
+% Landing Page
+\istqblandingpage
+
+% Copyright Notice
+\markdownInput{sample-exam-answers/copyright.md}
+
+% Revision History
+\markdownInput{sample-exam-answers/revisions.md}
+
+% Table of Contents
+\istqbtableofcontents
+
+% Document Text
+\istqblandscapebegin
+\istqbunnumberedsection{Answer Key}
+\markdownInput[snippet=answer-key]{sample-exam-answers/questions.yml}
+\istqbunnumberedsection{Answers}
+\markdownInput[snippet=answers]{sample-exam-answers/questions.yml}
+\istqblandscapeend
+
+\end{document}

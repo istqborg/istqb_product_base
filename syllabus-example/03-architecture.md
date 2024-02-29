@@ -24,33 +24,33 @@ Here is the structure of file `example.tex`:
      }
      ```
 
-  2. The file `example-document/metadata.yml` with the document metadata is loaded:
+  2. The file `syllabus-example/metadata.yml` with the document metadata is loaded:
 
      ``` tex
      % Metadata
-     \markdownInput[snippet=metadata]{example-document/metadata.yml}
+     \markdownInput[snippet=metadata]{syllabus-example/metadata.yml}
      ```
 
-  3. The file `example-document/bibliography.bib` with references is loaded:
+  3. The file `syllabus-example/bibliography.bib` with references is loaded:
 
      ``` tex
      % References
-     \addbibresource{example-document/bibliography.bib}
+     \addbibresource{syllabus-example/bibliography.bib}
      ```
 
      You may use more `\addbibresource` `\LaTeX`{=tex} commands to include additional `Bíb\LaTeX`{=tex} databases.
 
-  4. The front matter is typeset, including the markdown documents `example-document/copyright.md` and `example-document/revisions.md`:
+  4. The front matter is typeset, including the markdown documents `syllabus-example/copyright.md` and `syllabus-example/revisions.md`:
 
      ``` tex
      % Landing Page
      \istqblandingpage
     
      % Copyright Notice
-     \markdownInput{example-document/copyright.md}
+     \markdownInput{syllabus-example/copyright.md}
     
      % Revision History
-     \markdownInput[texComments]{example-document/revisions.md}
+     \markdownInput[texComments]{syllabus-example/revisions.md}
     
      % Table of Contents
      \tableofcontents
@@ -61,16 +61,16 @@ Here is the structure of file `example.tex`:
      command, you may provide options supported by the Markdown package for `\TeX`{=tex} [@novotny:2023] like `texComments` to alter the flavor
      of markdown used in the markdown document.
 
-  5. The main matter of the document is typeset, including the markdown documents `example-document/intro.md` and `example-document/content.md`:
+  5. The main matter of the document is typeset, including the markdown documents `syllabus-example/intro.md` and `syllabus-example/content.md`:
 
      ``` tex
      % Document Text
-     \markdownInput{example-document/acknowledgments.md}
-     \markdownInput{example-document/00-introduction.md}
-     \markdownInput{example-document/01-writing-guidelines.md}
-     \markdownInput{example-document/02-intro.md}
-     \markdownInput{example-document/02-markdown-guidelines.md}
-     \markdownInput{example-document/03-architecture.md}
+     \markdownInput{syllabus-example/acknowledgments.md}
+     \markdownInput{syllabus-example/00-introduction.md}
+     \markdownInput{syllabus-example/01-writing-guidelines.md}
+     \markdownInput{syllabus-example/02-intro.md}
+     \markdownInput{syllabus-example/02-markdown-guidelines.md}
+     \markdownInput{syllabus-example/03-architecture.md}
      ```
 
      You may use more `\markdownInput` `\LaTeX`{=tex} commands to include additional markdown documents.

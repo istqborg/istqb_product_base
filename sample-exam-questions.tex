@@ -1,0 +1,30 @@
+\documentclass{istqb}
+\usepackage{markdown}
+\markdownSetup{
+  import = {
+    istqb/sample-exam/questions = {metadata, questions}
+  }
+}
+
+% Metadata
+\markdownInput[snippet=metadata]{sample-exam-questions/metadata.yml}
+
+\begin{document}
+
+% Landing Page
+\istqblandingpage
+
+% Copyright Notice
+\markdownInput{sample-exam-questions/copyright.md}
+
+% Revision History
+\markdownInput{sample-exam-questions/revisions.md}
+
+% Table of Contents
+\istqbtableofcontents
+
+% Document Text
+\istqbunnumberedsection{Questions}
+\markdownInput[snippet=questions]{sample-exam-questions/questions.yml}
+
+\end{document}
