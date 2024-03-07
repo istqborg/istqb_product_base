@@ -4,7 +4,6 @@ on:
     inputs:
       base-version:
         description: 'A Git ref in the repository istqb_product_base, which should be used for the LaTeX+Markdown template'
-        default: "$GITHUB_SHA"  # A default to be used when the workflow is used from inside the repository istqb_product_base
         required: false
         type: string
   push:
@@ -33,7 +32,7 @@ jobs:
           set -ex
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
-          git checkout ${{ inputs.base-version }}
+          git checkout ${{ inputs.base-version || github.sha }}
       - name: Validate metadata.yml
         shell: bash
         run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*/metadata\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/metadata.yml {}
@@ -60,7 +59,7 @@ jobs:
           set -ex
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
-          git checkout ${{ inputs.base-version }}
+          git checkout ${{ inputs.base-version || github.sha }}
       - name: Ensure correct encoding of input files
         run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert EPS images to PDF
@@ -94,7 +93,7 @@ jobs:
           set -ex
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
-          git checkout ${{ inputs.base-version }}
+          git checkout ${{ inputs.base-version || github.sha }}
       - name: Ensure correct encoding of input files
         run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
@@ -128,7 +127,7 @@ jobs:
           set -ex
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
-          git checkout ${{ inputs.base-version }}
+          git checkout ${{ inputs.base-version || github.sha }}
       - name: Ensure correct encoding of input files
         run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
@@ -169,7 +168,7 @@ jobs:
           set -ex
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
-          git checkout ${{ inputs.base-version }}
+          git checkout ${{ inputs.base-version || github.sha }}
       - name: Create output directory docx/
         run: mkdir docx
       - name: Convert MD documents to DOCX
