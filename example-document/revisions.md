@@ -18,9 +18,10 @@ You can list the revisions as follows:
 ``` md
 | Version | Date | Remarks |
 |---------|------|---------|
-v0.1 | YYYY/MM/DD | Current internal template version
-v0.0.2 | YYYY/MM/DD | Remaks can be split into more lines by using \% the percent sign which serves as a line break.
-v0.0.1 | YYYY/MM/DD | Name of the version
+vM.mm | YYYY/MM/DD |  Maintenance release with minor updates on chapters 2, 4, 5
+v4.0 | YYYY/MM/DD | General release version
+v3.1.1 | YYYY/MM/DD | Copyright and logo update
+v1.2.3 | YYYY/MM/DD | If remaks are longer, they can be split into more lines by using \%
 the percent sign which serves as a line break.
 ```
 
@@ -28,7 +29,8 @@ This will produce the following output:
 
 | Version | Date | Remarks |
 |---------|------|---------|
-v0.1 | YYYY/MM/DD | Current internal template version
-v0.0.2 | YYYY/MM/DD | Remaks can be split into more lines by using \% the percent sign which serves as a line break.
-v0.0.1 | YYYY/MM/DD | Name of the version
+vM.mm | YYYY/MM/DD |  Maintenance release with minor updates on chapters 2, 4, 5
+v4.0 | YYYY/MM/DD | General release version
+v3.1.1 | YYYY/MM/DD | Copyright and logo update
+v1.2.3 | YYYY/MM/DD | If remaks are longer, they can be split into more lines by using %
 the percent sign which serves as a line break.

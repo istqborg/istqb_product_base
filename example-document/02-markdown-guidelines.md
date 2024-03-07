@@ -197,7 +197,7 @@ You can reference a captioned table from the text of the document by writing `<#
 
 You can add five types of references to your documents: standards, ISTQB documents, books, journal articles, and web pages.
 
-First, you would define the references in file `syllabus-example/bibliography.bib` as follows:
+First, you would define the references in file `example-document/bibliography.bib` as follows:
 
 ``` bib
 % Standards
@@ -293,33 +293,33 @@ Here is the structure of file `example.tex`:
      }
      ```
 
-  2. The file `syllabus-example/metadata.yml` with the document metadata is loaded:
+  2. The file `example-document/metadata.yml` with the document metadata is loaded:
 
      ``` tex
      % Metadata
-     \markdownInput[snippet=metadata]{syllabus-example/metadata.yml}
+     \markdownInput[snippet=metadata]{example-document/metadata.yml}
      ```
 
-  3. The file `syllabus-example/bibliography.bib` with references is loaded:
+  3. The file `example-document/bibliography.bib` with references is loaded:
 
      ``` tex
      % References
-     \addbibresource{syllabus-example/bibliography.bib}
+     \addbibresource{example-document/bibliography.bib}
      ```
 
      You may use more `\addbibresource` `\LaTeX`{=tex} commands to include additional `Bíb\LaTeX`{=tex} databases.
 
-  4. The front matter is typeset, including the markdown documents `syllabus-example/copyright.md` and `syllabus-example/revisions.md`:
+  4. The front matter is typeset, including the markdown documents `example-document/copyright.md` and `example-document/revisions.md`:
 
      ``` tex
      % Landing Page
      \istqblandingpage
     
      % Copyright Notice
-     \markdownInput{syllabus-example/copyright.md}
+     \markdownInput{example-document/copyright.md}
     
      % Revision History
-     \markdownInput[texComments]{syllabus-example/revisions.md}
+     \markdownInput[texComments]{example-document/revisions.md}
     
      % Table of Contents
      \istqbtableofcontents
@@ -330,12 +330,12 @@ Here is the structure of file `example.tex`:
      command, you may provide options supported by the Markdown package for `\TeX`{=tex} [@novotny:2023] like `texComments` to alter the flavor
      of markdown used in the markdown document.
 
-  5. The main matter of the document is typeset, including the markdown documents `syllabus-example/intro.md` and `syllabus-example/content.md`:
+  5. The main matter of the document is typeset, including the markdown documents `example-document/intro.md` and `example-document/content.md`:
 
      ``` tex
      % Document Text
-     \markdownInput{syllabus-example/intro.md}
-     \markdownInput{syllabus-example/content.md}
+     \markdownInput{example-document/intro.md}
+     \markdownInput{example-document/content.md}
      ```
 
      You may use more `\markdownInput` `\LaTeX`{=tex} commands to include additional markdown documents.
