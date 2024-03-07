@@ -1,7 +1,13 @@
 name: Build LaTeX documents
 on:
-  - workflow_call
-  - push
+  workflow_call:
+    inputs:
+      base-version:
+        description: 'A Git ref in the repository istqb_product_base, which should be used for the LaTeX+Markdown template'
+        default: ${{ github.sha }}  # A default to be used when the workflow is used from inside the repository istqb_product_base
+        required: false
+        type: string
+  push:
 permissions:
   contents: write
 env:
@@ -22,6 +28,12 @@ jobs:
           pip3 install yamale~=4.0.4
       - name: Set up Git repository
         uses: actions/checkout@v3
+      - name: Clone repository istqb_product_base
+        run: |
+          set -ex
+          git clone https://github.com/istqborg/istqb_product_base.git
+          cd istqb_product_base
+          git checkout ${{ inputs.base-version }}
       - name: Validate metadata.yml
         shell: bash
         run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*/metadata\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/metadata.yml {}
@@ -43,6 +55,12 @@ jobs:
           apt -qy install --no-install-recommends dos2unix git libreoffice parallel
       - name: Set up Git repository
         uses: actions/checkout@v3
+      - name: Clone repository istqb_product_base
+        run: |
+          set -ex
+          git clone https://github.com/istqborg/istqb_product_base.git
+          cd istqb_product_base
+          git checkout ${{ inputs.base-version }}
       - name: Ensure correct encoding of input files
         run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert EPS images to PDF
@@ -71,6 +89,12 @@ jobs:
           apt -qy install --no-install-recommends dos2unix git libreoffice parallel tidy
       - name: Set up Git repository
         uses: actions/checkout@v3
+      - name: Clone repository istqb_product_base
+        run: |
+          set -ex
+          git clone https://github.com/istqborg/istqb_product_base.git
+          cd istqb_product_base
+          git checkout ${{ inputs.base-version }}
       - name: Ensure correct encoding of input files
         run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
@@ -99,6 +123,12 @@ jobs:
           apt -qy install --no-install-recommends dos2unix git libreoffice parallel tidy
       - name: Set up Git repository
         uses: actions/checkout@v3
+      - name: Clone repository istqb_product_base
+        run: |
+          set -ex
+          git clone https://github.com/istqborg/istqb_product_base.git
+          cd istqb_product_base
+          git checkout ${{ inputs.base-version }}
       - name: Ensure correct encoding of input files
         run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
@@ -134,6 +164,12 @@ jobs:
           apt -qy install --no-install-recommends git parallel
       - name: Set up Git repository
         uses: actions/checkout@v3
+      - name: Clone repository istqb_product_base
+        run: |
+          set -ex
+          git clone https://github.com/istqborg/istqb_product_base.git
+          cd istqb_product_base
+          git checkout ${{ inputs.base-version }}
       - name: Create output directory docx/
         run: mkdir docx
       - name: Convert MD documents to DOCX
