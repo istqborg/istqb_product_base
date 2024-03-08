@@ -13,6 +13,9 @@ version: Version v0.1
 date: 31 October 2023
 release: For internal use only
 logo: istqb-logo-default
+compatibility: |
+  Compatible with Syllabus on Foundation and Advanced Levels,
+  and Specialist Modules
 ```
 
 3rd parties can be added to the landing page by specifying the key `provided-by` in the file `metadata.yml` as follows:
