@@ -45,13 +45,13 @@ Here is the structure of file `example.tex`:
      ``` tex
      % Landing Page
      \istqblandingpage
-    
+
      % Copyright Notice
      \markdownInput{example-document/copyright.md}
-    
+
      % Revision History
      \markdownInput[texComments]{example-document/revisions.md}
-    
+
      % Table of Contents
      \tableofcontents
      ```
@@ -69,8 +69,8 @@ Here is the structure of file `example.tex`:
      \markdownInput{example-document/00-introduction.md}
      \markdownInput{example-document/01-writing-guidelines.md}
      \markdownInput{example-document/02-intro.md}
-     \markdownInput{example-document/02-markdown-guidelines.md}
-     \markdownInput{example-document/03-architecture.md}
+     \markdownInput{example-document/03-markdown-guidelines.md}
+     \markdownInput{example-document/04-architecture.md}
      ```
 
      You may use more `\markdownInput` `\LaTeX`{=tex} commands to include additional markdown documents.
@@ -81,13 +81,13 @@ Here is the structure of file `example.tex`:
      % Bibliography
      \nocite{*}  % Include references that are not cited in the text
      \printistqbbibliography
-    
+
      % List of Tables
      \listoftables
-    
+
      % List of Figures
      \listoffigures
-    
+
      % Index
      \printindex
      ```

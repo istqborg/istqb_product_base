@@ -1,20 +1,36 @@
 ## Landing page
 
-Data for the Landing page are defined in `metadata.yml` file as follows:
+Data for the Landing page are defined in the file `metadata.yml` as follows:
 
 ```yaml
 schema: Certified Tester
 level: Foundation Level
-title: Example Syllabus Document
+title: Example Document
 prefix: EXMPL
-code: example
+code: CT-EXMPL
 type: Syllabus
 version: Version v0.1
-date: 31 Octobver 2023
+date: 31 October 2023
 release: For internal use only
+logo: istqb-logo-default
+compatibility: |
+  Compatible with Syllabus on Foundation and Advanced Levels,
+  and Specialist Modules
 ```
 
-3rd parties can be added to the landing page by #TBD
+3rd parties can be added to the landing page by specifying the key `provided-by` in the file `metadata.yml` as follows:
+
+```yaml
+provided-by:
+# 3rd-party organizations with logos
+- name: Alliance for Qualification
+  logo: a4q-logo
+- name: Artificial Intelligence United
+  logo: aiu-logo
+# 3rd-party organizations without logos
+- name: Chinese Software Testing Qualifications Board  # or just:
+- Korean Software Testing Qualifications Board
+```
 
 ## Paragraphs
 
