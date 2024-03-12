@@ -583,3 +583,4 @@
 % Unicode characters
 \RequirePackage{newunicodechar}
 \newunicodechar{®}{\textsuperscript{\textregistered}}
+\newunicodechar{−}{--}  % Render the minus sign as an en-dash, assuming that the author mistyped.
