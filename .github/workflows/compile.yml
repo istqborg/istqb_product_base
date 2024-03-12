@@ -17,14 +17,17 @@ jobs:
     name: Validate YAML documents
     runs-on: ubuntu-latest
     container:
-      image: ubuntu:latest
+      image: witiko/markdown:3.2.0-43-gc109d22b-latest
     steps:
       - name: Install required packages
+        shell: bash
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends git parallel python3 python3-pip
-          pip3 install yamale~=4.0.4
+          apt -qy install --no-install-recommends git parallel
+          python3 -m venv ~/venv
+          source ~/venv/bin/activate
+          pip install yamale~=4.0.4
       - name: Set up Git repository
         uses: actions/checkout@v3
       - name: Clone repository istqb_product_base
@@ -33,12 +36,20 @@ jobs:
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
+      - name: Check the well-formedness of all YAML documents
+        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*\.yml$' -print | parallel --halt now,fail=1 istqb_product_base/check-yaml.lua {}
       - name: Validate metadata.yml
         shell: bash
-        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*/metadata\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/metadata.yml {}
+        run: |
+          set -ex
+          source ~/venv/bin/activate
+          find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*/metadata\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/metadata.yml {}
       - name: Validate questions.yml
         shell: bash
-        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*/questions\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/questions.yml {}
+        run: |
+          set -ex
+          source ~/venv/bin/activate
+          find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*/questions\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/questions.yml {}
   produce-pdf:
     name: Produce PDF documents
     needs:
