@@ -12,19 +12,23 @@ permissions:
 env:
   DEBIAN_FRONTEND: noninteractive
   TEXINPUTS: '.:./istqb_product_base/template:'
+  FIND: 'find -follow -path ./.github -prune -o -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o'
 jobs:
   validate:
     name: Validate YAML documents
     runs-on: ubuntu-latest
     container:
-      image: ubuntu:latest
+      image: witiko/markdown:3.2.0-43-gc109d22b-latest
     steps:
       - name: Install required packages
+        shell: bash
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends git parallel python3 python3-pip
-          pip3 install yamale~=4.0.4
+          apt -qy install --no-install-recommends git parallel
+          python3 -m venv ~/venv
+          source ~/venv/bin/activate
+          pip install yamale~=4.0.4
       - name: Set up Git repository
         uses: actions/checkout@v3
       - name: Clone repository istqb_product_base
@@ -33,12 +37,20 @@ jobs:
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
+      - name: Check the well-formedness of all YAML documents
+        run: $FIND -type f -iregex '.*\.yml$' -print | parallel --halt now,fail=1 istqb_product_base/check-yaml.lua {}
       - name: Validate metadata.yml
         shell: bash
-        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*/metadata\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/metadata.yml {}
+        run: |
+          set -ex
+          source ~/venv/bin/activate
+          $FIND -type f -iregex '.*/metadata\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/metadata.yml {}
       - name: Validate questions.yml
         shell: bash
-        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*/questions\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/questions.yml {}
+        run: |
+          set -ex
+          source ~/venv/bin/activate
+          $FIND -type f -iregex '.*/questions\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/questions.yml {}
   produce-pdf:
     name: Produce PDF documents
     needs:
@@ -61,13 +73,13 @@ jobs:
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
       - name: Ensure correct encoding of input files
-        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
+        run: $FIND -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert EPS images to PDF
-        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*\.eps$' -print | parallel --halt now,fail=1 epstopdf {} {.}-eps-converted-to.pdf
+        run: $FIND -type f -iregex '.*\.eps$' -print | parallel --halt now,fail=1 epstopdf {} {.}-eps-converted-to.pdf
       - name: Convert XLSX spreadsheets to PDF
-        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
+        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
       - name: Compile LaTeX documents to PDF
-        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*\.tex$'  -print | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk -r istqb_product_base/latexmkrc {}
+        run: $FIND -type f -iregex '.*\.tex$'  -print | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk -r istqb_product_base/latexmkrc {}
       - name: Upload PDF documents
         uses: actions/upload-artifact@v3
         with:
@@ -95,13 +107,13 @@ jobs:
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
       - name: Ensure correct encoding of input files
-        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
+        run: $FIND -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
-        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
+        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
       - name: Create output directory html/
         run: mkdir html
       - name: Compile LaTeX documents to HTML
-        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*\.tex$' -print | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' make4ht -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d html/{.} {}
+        run: $FIND -type f -iregex '.*\.tex$' -print | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' make4ht -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d html/{.} {}
       - name: Upload HTML documents
         uses: actions/upload-artifact@v3
         with:
@@ -129,9 +141,9 @@ jobs:
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
       - name: Ensure correct encoding of input files
-        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
+        run: $FIND -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
-        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
+        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
       - name: Create output directory epub/
         run: mkdir epub
       - name: Compile LaTeX documents to EPUB
@@ -139,7 +151,7 @@ jobs:
         run: |
           set -ex
           shopt -s extglob
-          find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*\.tex$' -print | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' '(' mkdir -p epub/build/{.} '&&' cp -ar !(epub) epub/build/{.}/ '&&' cd epub/build/{.} '&&' tex4ebook -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d ../.. {} ')'
+          $FIND -type f -iregex '.*\.tex$' -print | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' '(' mkdir -p epub/build/{.} '&&' cp -ar !(epub) epub/build/{.}/ '&&' cd epub/build/{.} '&&' tex4ebook -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d ../.. {} ')'
           rm -rf epub/build
       - name: Upload EPUB documents
         uses: actions/upload-artifact@v3
@@ -172,11 +184,11 @@ jobs:
       - name: Create output directory docx/
         run: mkdir docx
       - name: Convert MD documents to DOCX
-        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*\.md$' -print | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' pandoc -f "${PANDOC_EXTENSIONS}" -i {} -o docx/{}.docx
+        run: $FIND -type f -iregex '.*\.md$' -print | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' pandoc -f "${PANDOC_EXTENSIONS}" -i {} -o docx/{}.docx
       - name: Convert YAML documents to DOCX
-        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -path ./.github -prune -o -type f -iregex '.*\.yml$' -print | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` yml\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
+        run: $FIND -path ./.github -prune -o -type f -iregex '.*\.yml$' -print | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` yml\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
       - name: Convert BIB documents to DOCX
-        run: find -follow -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o -type f -iregex '.*\.bib$' -print | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` bib\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
+        run: $FIND -type f -iregex '.*\.bib$' -print | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` bib\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
       - name: Upload DOCX documents
         uses: actions/upload-artifact@v3
         with:
