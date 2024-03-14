@@ -63,7 +63,9 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix git libreoffice parallel
+          apt -qy install --no-install-recommends dos2unix git parallel
+          wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
+          dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
       - name: Set up Git repository
         uses: actions/checkout@v3
       - name: Clone repository istqb_product_base
@@ -77,7 +79,7 @@ jobs:
       - name: Convert EPS images to PDF
         run: $FIND -type f -iregex '.*\.eps$' -print | parallel --halt now,fail=1 epstopdf {} {.}-eps-converted-to.pdf
       - name: Convert XLSX spreadsheets to PDF
-        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
+        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice7.3 --headless --convert-to pdf {} --outdir {//}
       - name: Compile LaTeX documents to PDF
         run: $FIND -type f -iregex '.*\.tex$'  -print | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk -r istqb_product_base/latexmkrc {}
       - name: Upload PDF documents
@@ -97,7 +99,9 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix git libreoffice parallel tidy
+          apt -qy install --no-install-recommends dos2unix git parallel tidy
+          wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
+          dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
       - name: Set up Git repository
         uses: actions/checkout@v3
       - name: Clone repository istqb_product_base
@@ -109,7 +113,7 @@ jobs:
       - name: Ensure correct encoding of input files
         run: $FIND -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
-        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
+        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice7.3 --headless --convert-to pdf {} --outdir {//}
       - name: Create output directory html/
         run: mkdir html
       - name: Compile LaTeX documents to HTML
@@ -131,7 +135,9 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix git libreoffice parallel tidy
+          apt -qy install --no-install-recommends dos2unix git parallel tidy
+          wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
+          dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
       - name: Set up Git repository
         uses: actions/checkout@v3
       - name: Clone repository istqb_product_base
@@ -143,7 +149,7 @@ jobs:
       - name: Ensure correct encoding of input files
         run: $FIND -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
-        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice --headless --convert-to pdf {} --outdir {//}
+        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice7.3 --headless --convert-to pdf {} --outdir {//}
       - name: Create output directory epub/
         run: mkdir epub
       - name: Compile LaTeX documents to EPUB
