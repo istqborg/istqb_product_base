@@ -216,11 +216,11 @@ You can write a complex table in `\LaTeX`{=tex} as follows:
 
 `````` tex
 ``` {=tex}
-% Use three columns, each 4cm wide and separated with vertical lines.
-\begin{longtable}{|p{4cm}|p{4cm}|p{4cm}|}
+% Use three columns, each 5cm wide and separated with vertical lines.
+\begin{longtable}{|p{5cm}|p{5cm}|p{5cm}|}
 
 % The table caption and table head shown on the first page.
-\caption{A sample long table with multi-paragraph cells} \label{table:long} \\
+\caption{A sample long table with \LaTeX-formatted text} \label{table:long} \\
 \hline
 \multicolumn{2}{|c|}{Grouped Columns} & \multicolumn{1}{c|}{Third Column} \\
 \hline
@@ -248,11 +248,50 @@ First Column & Second Column & Third Column \\
 \hline
 \endlastfoot
 
-% The table body with three rows.
-% Replace `\lipsum[N]` with your own text.
-\lipsum[1] & \lipsum[2] & \lipsum[3] \\
-\lipsum[4] & \lipsum[5] & \lipsum[6] \\
-\lipsum[7] & \lipsum[8] & \lipsum[9] \\
+% The table body with examples of text formatting in LaTeX.
+Here is a short paragraph with \emph{emphasized} and \textbf{bold} text.
+
+&
+
+Here is a long paragraph:
+\medskip
+
+\lipsum[1]
+
+&
+
+Here is an image:
+\medskip
+
+\includegraphics[width=\linewidth]{istqb-logo-default}
+
+\\
+\hline
+
+% Bullet list
+\begin{itemize}
+\item First item
+\item Second item
+\item Third item
+\end{itemize}
+
+&
+
+% Numbered list
+\begin{enumerate}
+\item First item
+\item Second item
+\item Third item
+\end{enumerate}
+
+&
+
+% Definition list
+\begin{description}
+\item First item without a label
+\item[Second] Another item
+\item[Third] Yet another item
+\end{description}
 \end{longtable}
 ```
 ``````
@@ -260,11 +299,11 @@ First Column & Second Column & Third Column \\
 This will produce <#table:long> that is shown on the following pages.
 
 ``` {=tex}
-% Use three columns, each 4cm wide and separated with vertical lines.
-\begin{longtable}{|p{4cm}|p{4cm}|p{4cm}|}
+% Use three columns, each 5cm wide and separated with vertical lines.
+\begin{longtable}{|p{5cm}|p{5cm}|p{5cm}|}
 
 % The table caption and table head shown on the first page.
-\caption{A sample long table with multi-paragraph cells} \label{table:long} \\
+\caption{A sample long table with \LaTeX-formatted text} \label{table:long} \\
 \hline
 \multicolumn{2}{|c|}{Grouped Columns} & \multicolumn{1}{c|}{Third Column} \\
 \hline
@@ -292,11 +331,50 @@ First Column & Second Column & Third Column \\
 \hline
 \endlastfoot
 
-% The table body with three rows.
-% Replace `\lipsum[N]` with your own text.
-\lipsum[1] & \lipsum[2] & \lipsum[3] \\
-\lipsum[4] & \lipsum[5] & \lipsum[6] \\
-\lipsum[7] & \lipsum[8] & \lipsum[9] \\
+% The table body with examples of text formatting in LaTeX.
+Here is a short paragraph with \emph{emphasized} and \textbf{bold} text.
+
+&
+
+Here is a long paragraph:
+\medskip
+
+\lipsum[1]
+
+&
+
+Here is an image:
+\medskip
+
+\includegraphics[width=\linewidth]{istqb-logo-default}
+
+\\
+\hline
+
+% Bullet list
+\begin{itemize}
+\item First item
+\item Second item
+\item Third item
+\end{itemize}
+
+&
+
+% Numbered list
+\begin{enumerate}
+\item First item
+\item Second item
+\item Third item
+\end{enumerate}
+
+&
+
+% Definition list
+\begin{description}
+\item First item without a label
+\item[Second] Another item
+\item[Third] Yet another item
+\end{description}
 \end{longtable}
 ```
 
