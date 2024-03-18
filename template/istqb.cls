@@ -160,7 +160,21 @@
       \end{minipage}
       \begin{minipage}{0.2\linewidth}
       \centering
-      \mbox{Page~\thepage{}~of~\pageref{LastPage}}
+      \int_set:Nn
+        \l_tmpa_int
+        { \thepage - 1 }
+      \int_set:Nn
+        \l_tmpb_int
+        { \lastpage@lastpage - 1 }
+      \mbox
+        {
+          Page~
+          \int_use:N
+            \l_tmpa_int
+          {}~of~
+          \int_use:N
+            \l_tmpb_int
+        }
       \end{minipage}
       \begin{minipage}{0.4\linewidth}
       \hfill
