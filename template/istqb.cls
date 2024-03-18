@@ -277,11 +277,13 @@
 \newcommand
   \istqblandingpage
   {
+    \thispagestyle
+      { empty }
     \group_begin:
     \parskip=0pt
     \centering
     \leavevmode
-    \par \vfill \vfill
+    \par
     \normalfont
     \bfseries
     \fontsize { 24 } { 28.8 } \selectfont
@@ -396,7 +398,7 @@
         \seq_use:Nn
           \l_tmpa_seq
           { \qquad }
-        \par \vfill
+        \par
       }
     \par
     \group_end:
@@ -529,6 +531,7 @@
 % Index
 \RequirePackage{imakeidx}
 \makeindex[columns=2, columnsep=1cm, noautomatic]
+\indexsetup{firstpagestyle=fancy}
 %% Ensure that the index is numbered and part of the table of contents.
 \renewcommand\imki@indexlevel{\section}
 %% Remove spaces between indexed items.
