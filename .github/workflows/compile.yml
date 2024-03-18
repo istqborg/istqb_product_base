@@ -218,3 +218,25 @@ jobs:
         with:
           name: DOCX
           path: docx
+  prerelease:
+    name: Create a prerelease
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - produce-pdf
+      - produce-html
+      - produce-ebooks
+      - produce-docx
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: PDF
+      - name: Create a prerelease
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          title: The latest version
+          automatic_release_tag: latest
+          prerelease: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          files: '*.pdf'
