@@ -587,3 +587,6 @@
 \newunicodechar{≤}{\ensuremath{\leq}}
 \newunicodechar{≥}{\ensuremath{\geq}}
 \newunicodechar{​}{}
+
+% Miscellaneous
+\RequirePackage{lipsum}  % The `lipsum` package is used in a complex table from the example document.
