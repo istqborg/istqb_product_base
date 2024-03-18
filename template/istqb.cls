@@ -163,9 +163,19 @@
       \int_set:Nn
         \l_tmpa_int
         { \thepage - 1 }
-      \int_set:Nn
-        \l_tmpb_int
-        { \lastpage@lastpage - 1 }
+      \str_if_eq:VnTF
+        \lastpage@lastpage
+        { ?? }
+        {
+          \int_set:Nn
+            \l_tmpb_int
+            { 999 }
+        }
+        {
+          \int_set:Nn
+            \l_tmpb_int
+            { \lastpage@lastpage - 1 }
+        }
       \mbox
         {
           Page~
