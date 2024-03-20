@@ -160,9 +160,9 @@ This will produce the following output:
 
 You can reference a captioned figure from the text of the document by writing `<#figure:another-label>`. This will produce the following output: <#figure:another-label>.
 
-## Tables
+## Simple tables
 
-You can write a table as follows:
+You can write a simple table as follows:
 
 ``` md
  | Right | Left | Center | Default |
@@ -208,6 +208,177 @@ This will produce the following output:
  : Here is a caption describing the table. {#label}
 
 You can reference a captioned table from the text of the document by writing `<#table:label>`. This will produce the following output: <#table:label>.
+
+## Complex tables
+
+While markdown is appropriate for writing short and simple tables, you may want to use `\LaTeX`{=tex} for more complex tables.
+You can write a complex table in `\LaTeX`{=tex} as follows:
+
+`````` tex
+``` {=tex}
+% Use three columns, each 5cm wide and separated with vertical lines.
+\begin{longtable}{|p{5cm}|p{5cm}|p{5cm}|}
+
+% The table caption and table head shown on the first page.
+\caption{A sample long table with \LaTeX-formatted text} \label{table:long} \\
+\hline
+\multicolumn{2}{|c|}{Grouped Columns} & \multicolumn{1}{c|}{Third Column} \\
+\hline
+First Column & Second Column & Third Column \\
+\hline
+\endfirsthead
+
+% The table caption and table head shown on the following pages.
+\multicolumn{3}{c}%
+{\tablename\ \thetable{} -- continued from previous page} \\
+\hline
+\multicolumn{2}{|c|}{Grouped Columns} & \multicolumn{1}{c|}{Third Column} \\
+\hline
+First Column & Second Column & Third Column \\
+\hline
+\endhead
+
+% The table foot shown on all pages except the last.
+\hline
+\multicolumn{3}{|r|}{{Continued on next page}} \\
+\hline
+\endfoot
+
+% The table foot shown on the last page.
+\hline
+\endlastfoot
+
+% The table body with examples of text formatting in LaTeX.
+Here is a short paragraph with \emph{emphasized} and \textbf{bold} text.
+
+&
+
+Here is a long paragraph:
+\medskip
+
+\lipsum[1]
+
+&
+
+Here is an image:
+\medskip
+
+\includegraphics[width=\linewidth]{istqb-logo-default}
+
+\\
+\hline
+
+% Bullet list
+\begin{itemize}
+\item First item
+\item Second item
+\item Third item
+\end{itemize}
+
+&
+
+% Numbered list
+\begin{enumerate}
+\item First item
+\item Second item
+\item Third item
+\end{enumerate}
+
+&
+
+% Definition list
+\begin{description}
+\item First item without a label
+\item[Second] Another item
+\item[Third] Yet another item
+\end{description}
+\end{longtable}
+```
+``````
+
+This will produce <#table:long> that is shown on the following pages.
+
+``` {=tex}
+% Use three columns, each 5cm wide and separated with vertical lines.
+\begin{longtable}{|p{5cm}|p{5cm}|p{5cm}|}
+
+% The table caption and table head shown on the first page.
+\caption{A sample long table with \LaTeX-formatted text} \label{table:long} \\
+\hline
+\multicolumn{2}{|c|}{Grouped Columns} & \multicolumn{1}{c|}{Third Column} \\
+\hline
+First Column & Second Column & Third Column \\
+\hline
+\endfirsthead
+
+% The table caption and table head shown on the following pages.
+\multicolumn{3}{c}%
+{\tablename\ \thetable{} -- continued from previous page} \\
+\hline
+\multicolumn{2}{|c|}{Grouped Columns} & \multicolumn{1}{c|}{Third Column} \\
+\hline
+First Column & Second Column & Third Column \\
+\hline
+\endhead
+
+% The table foot shown on all pages except the last.
+\hline
+\multicolumn{3}{|r|}{{Continued on next page}} \\
+\hline
+\endfoot
+
+% The table foot shown on the last page.
+\hline
+\endlastfoot
+
+% The table body with examples of text formatting in LaTeX.
+Here is a short paragraph with \emph{emphasized} and \textbf{bold} text.
+
+&
+
+Here is a long paragraph:
+\medskip
+
+\lipsum[1]
+
+&
+
+Here is an image:
+\medskip
+
+\includegraphics[width=\linewidth]{istqb-logo-default}
+
+\\
+\hline
+
+% Bullet list
+\begin{itemize}
+\item First item
+\item Second item
+\item Third item
+\end{itemize}
+
+&
+
+% Numbered list
+\begin{enumerate}
+\item First item
+\item Second item
+\item Third item
+\end{enumerate}
+
+&
+
+% Definition list
+\begin{description}
+\item First item without a label
+\item[Second] Another item
+\item[Third] Yet another item
+\end{description}
+\end{longtable}
+```
+
+You can reference the table from the text of the document by writing `<#table:long>`. This will produce the following output: <#table:long>.
 
 ## References {#references}
 
