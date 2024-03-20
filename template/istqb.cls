@@ -92,6 +92,11 @@
           \g_istqb_schema_tl
           { ~ }
         \mbox { \g_istqb_level_tl }
+        \tl_if_empty:NF
+          \g_istqb_code_tl
+          {
+            \mbox { ~(\g_istqb_code_tl) }
+          }
       }
     \tl_if_empty:NF
       \g_istqb_title_tl
@@ -105,11 +110,6 @@
           }
           { \\ }
         \g_istqb_title_tl
-        \tl_if_empty:NF
-          \g_istqb_code_tl
-          {
-            \mbox { ~(\g_istqb_code_tl) }
-          }
       }
   \end{minipage}
 }
@@ -160,7 +160,31 @@
       \end{minipage}
       \begin{minipage}{0.2\linewidth}
       \centering
-      \mbox{Page~\thepage{}~of~\pageref{LastPage}}
+      \int_set:Nn
+        \l_tmpa_int
+        { \thepage - 1 }
+      \str_if_eq:VnTF
+        \lastpage@lastpage
+        { ?? }
+        {
+          \int_set:Nn
+            \l_tmpb_int
+            { 999 }
+        }
+        {
+          \int_set:Nn
+            \l_tmpb_int
+            { \lastpage@lastpage - 1 }
+        }
+      \mbox
+        {
+          Page~
+          \int_use:N
+            \l_tmpa_int
+          {}~of~
+          \int_use:N
+            \l_tmpb_int
+        }
       \end{minipage}
       \begin{minipage}{0.4\linewidth}
       \hfill
@@ -277,11 +301,13 @@
 \newcommand
   \istqblandingpage
   {
+    \thispagestyle
+      { empty }
     \group_begin:
     \parskip=0pt
     \centering
     \leavevmode
-    \par \vfill \vfill
+    \par
     \normalfont
     \bfseries
     \fontsize { 24 } { 28.8 } \selectfont
@@ -396,7 +422,7 @@
         \seq_use:Nn
           \l_tmpa_seq
           { \qquad }
-        \par \vfill
+        \par
       }
     \par
     \group_end:
@@ -529,6 +555,7 @@
 % Index
 \RequirePackage{imakeidx}
 \makeindex[columns=2, columnsep=1cm, noautomatic]
+\indexsetup{firstpagestyle=fancy}
 %% Ensure that the index is numbered and part of the table of contents.
 \renewcommand\imki@indexlevel{\section}
 %% Remove spaces between indexed items.
