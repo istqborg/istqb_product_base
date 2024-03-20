@@ -18,7 +18,7 @@ jobs:
     name: Validate YAML documents
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/witiko/markdown:3.4.2-39-g415379f9-latest
+      image: witiko/markdown:3.4.2-39-g415379f9-latest
     steps:
       - name: Install required packages
         shell: bash
@@ -57,7 +57,7 @@ jobs:
       - validate
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/witiko/markdown:3.4.2-39-g415379f9-latest
+      image: witiko/markdown:3.4.2-39-g415379f9-latest
     steps:
       - name: Install required packages
         run: |
@@ -99,7 +99,7 @@ jobs:
       - validate
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/witiko/markdown:3.4.2-39-g415379f9-latest
+      image: witiko/markdown:3.4.2-39-g415379f9-latest
     steps:
       - name: Install required packages
         run: |
@@ -141,7 +141,7 @@ jobs:
       - validate
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/witiko/markdown:3.4.2-39-g415379f9-latest
+      image: witiko/markdown:3.4.2-39-g415379f9-latest
     steps:
       - name: Install required packages
         run: |
