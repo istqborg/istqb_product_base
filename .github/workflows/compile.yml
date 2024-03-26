@@ -13,6 +13,7 @@ env:
   DEBIAN_FRONTEND: noninteractive
   TEXINPUTS: '.:./istqb_product_base/template:'
   FIND: 'find -follow -path ./.github -prune -o -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o'
+  PANDOC_EXTENSIONS: commonmark+bracketed_spans+fancy_lists+pipe_tables+raw_attribute
 jobs:
   validate:
     name: Validate YAML documents
@@ -51,7 +52,7 @@ jobs:
           set -ex
           source ~/venv/bin/activate
           $FIND -type f -iregex '.*/questions\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/questions.yml {}
-  produce-pdf:
+  export-pdf:
     name: Produce PDF documents
     needs:
       - validate
@@ -93,7 +94,7 @@ jobs:
         with:
           name: PDF
           path: '*.pdf'
-  produce-html:
+  export-html:
     name: Produce HTML documents
     needs:
       - validate
@@ -135,7 +136,7 @@ jobs:
         with:
           name: HTML
           path: html
-  produce-ebooks:
+  export-ebooks:
     name: Produce EPUB documents
     needs:
       - validate
@@ -182,15 +183,13 @@ jobs:
         with:
           name: EPUB
           path: epub
-  produce-docx:
-    name: Produce DOCX documents
+  export-docx:
+    name: Produce DOCX documents from MD, YAML, and BIB documents
     needs:
       - validate
     runs-on: ubuntu-latest
     container:
       image: pandoc/core:3.1.1.0-ubuntu
-    env:
-      PANDOC_EXTENSIONS: commonmark+bracketed_spans+fancy_lists+pipe_tables+raw_attribute
     steps:
       - name: Install required packages
         run: |
@@ -205,27 +204,62 @@ jobs:
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-      - name: Create output directory docx/
-        run: mkdir docx
+      - name: Create output directory md-yaml-and-bib-to-docx/
+        run: mkdir md-yaml-and-bib-to-docx
       - name: Convert MD documents to DOCX
-        run: $FIND -type f -iregex '.*\.md$' -print | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' pandoc -f "${PANDOC_EXTENSIONS}" -i {} -o docx/{}.docx
+        run: $FIND -type f -iregex '.*\.md$' -print | parallel --halt now,fail=1 mkdir -p md-yaml-and-bib-to-docx/{//} '&&' pandoc -f "${PANDOC_EXTENSIONS}" -i {} -o md-yaml-and-bib-to-docx/{}.docx
       - name: Convert YAML documents to DOCX
-        run: $FIND -path ./.github -prune -o -type f -iregex '.*\.yml$' -print | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` yml\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
+        run: $FIND -path ./.github -prune -o -type f -iregex '.*\.yml$' -print | parallel --halt now,fail=1 mkdir -p md-yaml-and-bib-to-docx/{//} '&&' 'sed -e "1s/^/\`\`\` yml\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o md-yaml-and-bib-to-docx/{}.docx
       - name: Convert BIB documents to DOCX
-        run: $FIND -type f -iregex '.*\.bib$' -print | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` bib\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
+        run: $FIND -type f -iregex '.*\.bib$' -print | parallel --halt now,fail=1 mkdir -p md-yaml-and-bib-to-docx/{//} '&&' 'sed -e "1s/^/\`\`\` bib\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o md-yaml-and-bib-to-docx/{}.docx
       - name: Upload DOCX documents
         uses: actions/upload-artifact@v3
         with:
-          name: DOCX
-          path: docx
+          name: MD-YAML-and-BIB-to-DOCX
+          path: md-yaml-and-bib-to-docx
+  import-docx:
+    name: Produce MD, YAML, and BIB documents from DOCX documents
+    needs:
+      - validate
+    runs-on: ubuntu-latest
+    container:
+      image: pandoc/core:3.1.1.0-ubuntu
+    steps:
+      - name: Install required packages
+        run: |
+          set -ex
+          apt -qy update
+          apt -qy install --no-install-recommends git parallel
+      - name: Set up Git repository
+        uses: actions/checkout@v3
+      - name: Clone repository istqb_product_base
+        run: |
+          set -ex
+          git clone https://github.com/istqborg/istqb_product_base.git
+          cd istqb_product_base
+          git checkout ${{ inputs.base-version || github.sha }}
+      - name: Create output directory docx-to-md-yaml-and-bib/
+        run: mkdir docx-to-md-yaml-and-bib
+      - name: Convert DOCX documents to MD
+        run: $FIND -type f -iregex '.*\.md\.docx$' -print | parallel --halt now,fail=1 mkdir -p docx-to-md-yaml-and-bib/{//} '&&' pandoc -t "${PANDOC_EXTENSIONS}" -i {} -o docx-to-md-yaml-and-bib/{.}
+      - name: Convert DOCX documents to YAML
+        run: $FIND -path ./.github -prune -o -type f -iregex '.*\.yml\.docx$' -print | parallel --halt now,fail=1 mkdir -p docx-to-md-yaml-and-bib/{//} '&&' pandoc -t "${PANDOC_EXTENSIONS}+hard_line_breaks" -i {} -o docx-to-md-yaml-and-bib/{.} '&&' 'sed -ri "s/^(    |\\t)//"' docx-to-md-yaml-and-bib/{.}
+      - name: Convert DOCX documents to BIB
+        run: $FIND -type f -iregex '.*\.bib\.docx$' -print | parallel --halt now,fail=1 mkdir -p docx-to-md-yaml-and-bib/{//} '&&' pandoc -t "${PANDOC_EXTENSIONS}+hard_line_breaks" -i {} -o docx-to-md-yaml-and-bib/{.} '&&' 'sed -ri "s/^(    |\\t)//"' docx-to-md-yaml-and-bib/{.}
+      - name: Upload MD, YAML, and BIB documents
+        uses: actions/upload-artifact@v3
+        with:
+          name: DOCX-to-MD-YAML-and-BIB
+          path: docx-to-md-yaml-and-bib
   prerelease:
     name: Create a prerelease
     if: github.ref == 'refs/heads/main'
     needs:
-      - produce-pdf
-      - produce-html
-      - produce-ebooks
-      - produce-docx
+      - export-pdf
+      - export-html
+      - export-ebooks
+      - export-docx
+      - import-docx
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
