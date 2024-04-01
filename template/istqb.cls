@@ -613,6 +613,7 @@
 \newunicodechar{−}{--}  % Render the minus sign as an en-dash, assuming that the author mistyped.
 \newunicodechar{≤}{\ensuremath{\leq}}
 \newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{≠}{\ensuremath{\neq}}
 \newunicodechar{​}{}
 
 % Miscellaneous
