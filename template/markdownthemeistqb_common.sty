@@ -201,8 +201,10 @@
                   { ##1 }
                   { unnumbered }
                   {
+                    \group_begin:
                     \markdownSetup
                       {
+                        %% Stop numbering all levels of sections.
                         rendererPrototypes = {
                           headingOne = {
                             \istqbunnumberedsection { ####1 }
@@ -212,6 +214,14 @@
                           },
                           headingThree = {
                             \istqbunnumberedsubsubsection { ####1 }
+                          },
+                          %% Count the number of nested sections, so that we only start numbering
+                          %% sections again when the top-level unnumbered section has ended.
+                          sectionBegin = {
+                            \group_begin:
+                          },
+                          sectionEnd = {
+                            \group_end:
                           },
                         }
                       }
