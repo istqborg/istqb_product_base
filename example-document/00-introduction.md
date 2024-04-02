@@ -1,6 +1,6 @@
 # Introduction
 
-## Purpose of this Syllabus
+## Purpose of this Syllabus {-}
 This syllabus outlines the scope of the \<module-name\> certification.
 
 Together with the \<module-code\> body of knowledge the syllabus forms the basis for the International Software Testing Qualification for \<module-name\> at the Advanced Level. The ISTQB® provides this syllabus as follows:
