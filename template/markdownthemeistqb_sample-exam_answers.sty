@@ -53,12 +53,11 @@
             \textbf { Learning~Objective~(LO) } &
             \textbf { K-Level } &
             \textbf { Number~of~Points } \\
-            \hline
           }
         \tabletail
           { \hline }
         \tablelasttail
-          { }
+          { \hline }
         \tl_set:Nn
           \l_tmpa_tl
           {
@@ -70,6 +69,9 @@
         \seq_map_inline:Nn
           \g_istqb_questions_seq
           {
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { \hline }
             % Record the question number.
             \tl_put_right:Nn
               \l_tmpa_tl
@@ -124,7 +126,7 @@
               \l_tmpb_tl
             \tl_put_right:Nn
               \l_tmpa_tl
-              { \\ \hline }
+              { \\ }
           }
         % Typeset the table.
         \tl_put_right:Nn
@@ -133,6 +135,19 @@
             \end { supertabular }
           }
         \begin { multicols } { 2 }
+        \cs_set_eq:NN
+          \mcnewpage
+          \newpage
+        \cs_set:Npn
+          \newpage
+          {
+            \if@firstcolumn
+              \hrule width\linewidth height0pt
+              \columnbreak
+            \else
+              \mcnewpage
+            \fi
+          }
         \tl_use:N
           \l_tmpa_tl
         \end { multicols }
