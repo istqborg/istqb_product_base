@@ -89,7 +89,7 @@ jobs:
       - name: Compile LaTeX documents to PDF
         run: $FIND -type f -iregex '.*\.tex$'  -print | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk -silent -r istqb_product_base/latexmkrc {}
       - name: Upload PDF documents
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: PDF
           path: '*.pdf'
@@ -131,7 +131,7 @@ jobs:
       - name: Compile LaTeX documents to HTML
         run: $FIND -type f -iregex '.*\.tex$' -print | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' make4ht -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d html/{.} {}
       - name: Upload HTML documents
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: HTML
           path: html
@@ -178,7 +178,7 @@ jobs:
           $FIND -type f -iregex '.*\.tex$' -print | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' '(' mkdir -p epub/build/{.} '&&' cp -ar !(epub) epub/build/{.}/ '&&' cd epub/build/{.} '&&' tex4ebook -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d ../.. {} ')'
           rm -rf epub/build
       - name: Upload EPUB documents
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: EPUB
           path: epub
@@ -214,7 +214,7 @@ jobs:
       - name: Convert BIB documents to DOCX
         run: $FIND -type f -iregex '.*\.bib$' -print | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` bib\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
       - name: Upload DOCX documents
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: DOCX
           path: docx
