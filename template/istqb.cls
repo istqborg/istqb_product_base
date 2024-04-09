@@ -580,13 +580,13 @@
       { #1 }
       { X }
       {
-        \cs_set:Nn
+        \cs_set:Npn
           \endistqbtable
           { \endtabularx }
         \tabularx \linewidth { #1 } \hline
       }
       {
-        \cs_set:Nn
+        \cs_set:Npn
           \endistqbtable
           {
             \end { tabular }
