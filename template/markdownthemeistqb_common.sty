@@ -273,7 +273,7 @@
                         \ifnum \markdownLaTeXRowCounter > \markdownLaTeXRowTotal \relax
                           \addto@hook
                             \markdownLaTeXTable
-                            \endistqbrevisionhistory
+                            { \end { istqbrevisionhistory } }
                           \the \markdownLaTeXTable
                           \expandafter \@gobble
                         \fi \markdownLaTeXRenderTableRow
@@ -294,9 +294,7 @@
                             \markdownLaTeXTableAlignment = { }
                             \addto@hook
                               \markdownLaTeXTable
-                              {
-                                \beginistqbrevisionhistory
-                              }
+                              { \begin { istqbrevisionhistory } }
                             \markdownLaTeXRowCounter = 0
                             \markdownLaTeXRowTotal = ####2
                             \markdownLaTeXColumnTotal = ####3
@@ -468,7 +466,7 @@
         \markdownLaTeXTable = { }
         \markdownLaTeXTableAlignment = { | }
         \markdownLaTeXTableEnd = {
-          \endistqbtable
+          \end { istqbtable }
           \bool_gset_false:N
             \g_istqb_intable_bool
         }
@@ -504,7 +502,7 @@
           }
         \addto@hook
           \markdownLaTeXTable
-          \beginistqbtable
+          { \begin { istqbtable } }
         \markdownLaTeXRowCounter = 0
         \markdownLaTeXRowTotal = #2
         \markdownLaTeXColumnTotal = #3
