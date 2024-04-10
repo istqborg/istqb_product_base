@@ -41,10 +41,14 @@
     renderers = {
       jekyllDataEnd = {
         \group_begin:
-        % Prepare the heading of the table.
+        % Set the dimensions of the table rows.
         \cs_set:Npn
           \arraystretch
-          { 1.5 }
+          { 0.95 }
+        \advance
+          \@colroom
+          1.25cm
+        % Prepare the heading of the table.
         \tablehead
           {
             \hline
@@ -135,17 +139,14 @@
             \end { supertabular }
           }
         \begin { multicols } { 2 }
-        \cs_set_eq:NN
-          \mcnewpage
-          \newpage
         \cs_set:Npn
           \newpage
           {
             \if@firstcolumn
               \hrule width\linewidth height0pt
               \columnbreak
-            \else
-              \mcnewpage
+              % Prevent a page break after the second column.
+              \advance \@colroom \@colroom
             \fi
           }
         \tl_use:N
