@@ -576,6 +576,7 @@
   [ 1 ]
   {
     \renewcommand { \arraystretch }{ 1.5 }  % Increase line spread
+    \rowcolors { 2 } { white } { white }  % Ensure white rows below table head
     \str_if_in:nnTF
       { #1 }
       { X }
@@ -595,7 +596,7 @@
         \centering
         \begin { tabular } { #1 } \hline
       }
-    \rowcolor { istqbtableheader }
+    \rowcolor { istqbtableheader }  % Color table head
   }
   { }
 \ExplSyntaxOff
