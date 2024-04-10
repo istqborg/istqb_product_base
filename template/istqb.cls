@@ -571,33 +571,43 @@
 \RequirePackage{xcolor, colortbl}
 \definecolor{istqbtableheader}{HTML}{D9D9D9}
 \ExplSyntaxOn
-\long\def\beginistqbtable#1#2\endistqbtable{
-  \renewcommand{\arraystretch}{1.5}  % Increase line spread
-  \str_if_in:nnTF
-    { #1 }
-    { X }
-    {
-      \begin{tabularx}\linewidth{#1}\hline
-      \rowcolor{istqbtableheader}
-      #2
-      \end{tabularx}
-    }
-    {
-      \group_begin:
-      \centering
-      \begin{tabular}{#1}\hline
-      \rowcolor{istqbtableheader}
-      #2
-      \end{tabular}
-      \par
-      \group_end:
-    }
-}
+\newenvironment
+  { istqbtable }
+  [ 1 ]
+  {
+    \renewcommand { \arraystretch }{ 1.5 }  % Increase line spread
+    \rowcolors { 2 } { white } { white }  % Ensure white rows below table head
+    \str_if_in:nnTF
+      { #1 }
+      { X }
+      {
+        \cs_set:Npn
+          \endistqbtable
+          { \endtabularx }
+        \tabularx \linewidth { #1 } \hline
+      }
+      {
+        \cs_set:Npn
+          \endistqbtable
+          {
+            \end { tabular }
+            \par
+          }
+        \centering
+        \begin { tabular } { #1 } \hline
+      }
+    \rowcolor { istqbtableheader }  % Color table head
+  }
+  { }
 \ExplSyntaxOff
 
 %% Revision History
-\long\def\beginistqbrevisionhistory#1\endistqbrevisionhistory{%
-  \beginistqbtable{|l|l|X|}#1\endistqbtable
+\newenvironment{istqbrevisionhistory}{%
+  \renewcommand{\arraystretch}{1.5}% Increase line spread
+  \tabularx{\linewidth}{|l|l|X|}\hline
+  \rowcolor{istqbtableheader}%
+}{%
+  \endtabularx
 }
 
 % Table of Contents
