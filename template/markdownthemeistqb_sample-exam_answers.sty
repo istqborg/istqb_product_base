@@ -41,10 +41,14 @@
     renderers = {
       jekyllDataEnd = {
         \group_begin:
-        % Prepare the heading of the table.
+        % Set the dimensions of the table rows.
         \cs_set:Npn
           \arraystretch
-          { 1.5 }
+          { 0.95 }
+        \advance
+          \@colroom
+          1.25cm
+        % Prepare the heading of the table.
         \tablehead
           {
             \hline
@@ -53,12 +57,11 @@
             \textbf { Learning~Objective~(LO) } &
             \textbf { K-Level } &
             \textbf { Number~of~Points } \\
-            \hline
           }
         \tabletail
           { \hline }
         \tablelasttail
-          { }
+          { \hline }
         \tl_set:Nn
           \l_tmpa_tl
           {
@@ -70,6 +73,9 @@
         \seq_map_inline:Nn
           \g_istqb_questions_seq
           {
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { \hline }
             % Record the question number.
             \tl_put_right:Nn
               \l_tmpa_tl
@@ -124,7 +130,7 @@
               \l_tmpb_tl
             \tl_put_right:Nn
               \l_tmpa_tl
-              { \\ \hline }
+              { \\ }
           }
         % Typeset the table.
         \tl_put_right:Nn
@@ -133,6 +139,16 @@
             \end { supertabular }
           }
         \begin { multicols } { 2 }
+        \cs_set:Npn
+          \newpage
+          {
+            \if@firstcolumn
+              \hrule width\linewidth height0pt
+              \columnbreak
+              % Prevent a page break after the second column.
+              \advance \@colroom \@colroom
+            \fi
+          }
         \tl_use:N
           \l_tmpa_tl
         \end { multicols }
