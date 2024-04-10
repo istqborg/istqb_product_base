@@ -444,7 +444,10 @@ Furthermore, if you want to use citations as the subject or the object of a sent
 Several citations without parentheses can be stringed together by writing `@iso-iec:2022 @marick:2013`. This produces the following output: @iso-iec:2022 @marick:2013.
 
 Cited references of all types except web pages are placed in section *References* at the end of each document.
+You can reference the section from the text of the document by writing `<#references>`. This will produce the following output: <#references>.
+
 Uncited references and web pages are placed in section *Further Reading* at the end of the document.
+You can reference the section from the text of the document by writing `<#further-reading>`. This will produce the following output: <#further-reading>.
 
 For further instructions on defining references, see the `Bib\LaTeX`{=tex} manual [@kime:2023, Chapter 2].
 
