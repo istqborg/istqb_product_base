@@ -8,6 +8,7 @@ version: Version v0.1
 date: 31 October 2023
 release: For internal use only
 logo: istqb-logo-default
+language: en
 compatibility: |
   Compatible with Syllabus on Foundation and Advanced Levels,
   and Specialist Modules

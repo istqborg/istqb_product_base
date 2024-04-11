@@ -53,6 +53,38 @@
 \usepackage{parskip}  % Put half of line height between paragraphs.
 \sloppy  % Prevent overfull lines.
 
+%% Language
+\RequirePackage[czech,slovak,english]{babel}
+\ExplSyntaxOn
+\tl_new:N \g_istqb_language_tl
+\cs_new:Nn
+  \istqb_set_language:n
+  {
+    \tl_gset:Nn
+      \g_istqb_language_tl
+      { #1 }
+    \str_case:nnF
+      { #1 }
+      {
+        { cs } { \selectlanguage { czech } }
+        { sk } { \selectlanguage { slovak } }
+        { en } { \selectlanguage { english } }
+      }
+      {
+        \msg_error:nnn
+          { istqb }
+          { unknown-language }
+          { #1 }
+      }
+  }
+\msg_new:nnn
+  { istqb }
+  { unknown-language }
+  { Unknown language "#1" }
+\istqb_set_language:n
+  { en }
+\ExplSyntaxOff
+
 %% Typefaces
 \RequirePackage[T1]{fontenc}
 \RequirePackage{tgheros}
