@@ -220,7 +220,7 @@ jobs:
           path: docx
   prerelease:
     name: Create a prerelease
-    # if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     needs:
       - produce-pdf
       - produce-html
