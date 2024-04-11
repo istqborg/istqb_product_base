@@ -62,6 +62,33 @@ This will produce the following output:
 Here is the first line of a paragraph  
 and here is the second line of the paragraph.
 
+## Superscripts and subscripts
+
+You can write superscripts and subscripts by surrounding a span of text with `^`s or `~`s as follows:
+
+``` md
+E = mc^2^␣␣
+a~n~ = a~1~ + (n − 1)d
+```
+
+This will produce the following output:
+
+E = mc^2^  
+a~n~ = a~1~ + (n − 1)d
+
+Alternatively, you may also use Unicode superscript and subscript characters as follows:
+
+``` md
+E = mc²␣␣
+aₙ = a₁ + (n − 1)d
+```
+
+This will produce the following output:
+
+E = mc²  
+aₙ = a₁ + (n − 1)d
+
+Both outputs should be identical.
 
 ## Lists
 

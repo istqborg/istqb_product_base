@@ -620,11 +620,60 @@
 
 % Unicode characters
 \RequirePackage{newunicodechar}
-\newunicodechar{®}{\textsuperscript{\textregistered}}
+%% Subscripts
+\newunicodechar{₀}{\textsubscript{0}}
+\newunicodechar{₁}{\textsubscript{1}}
+\newunicodechar{₂}{\textsubscript{2}}
+\newunicodechar{₃}{\textsubscript{3}}
+\newunicodechar{₄}{\textsubscript{4}}
+\newunicodechar{₅}{\textsubscript{5}}
+\newunicodechar{₆}{\textsubscript{6}}
+\newunicodechar{₇}{\textsubscript{7}}
+\newunicodechar{₈}{\textsubscript{8}}
+\newunicodechar{₉}{\textsubscript{9}}
+\newunicodechar{ₐ}{\textsubscript{a}}
+\newunicodechar{ₑ}{\textsubscript{e}}
+\newunicodechar{ₒ}{\textsubscript{o}}
+\newunicodechar{ₓ}{\textsubscript{x}}
+\newunicodechar{ₕ}{\textsubscript{h}}
+\newunicodechar{ₖ}{\textsubscript{k}}
+\newunicodechar{ₗ}{\textsubscript{l}}
+\newunicodechar{ₘ}{\textsubscript{m}}
+\newunicodechar{ₙ}{\textsubscript{n}}
+\newunicodechar{ₚ}{\textsubscript{p}}
+\newunicodechar{ₛ}{\textsubscript{s}}
+\newunicodechar{ₜ}{\textsubscript{t}}
+\newunicodechar{₊}{\textsubscript{+}}
+\newunicodechar{₋}{\textsubscript{-}}
+\newunicodechar{₌}{\textsubscript{=}}
+\newunicodechar{₍}{\textsubscript{(}}
+\newunicodechar{₎}{\textsubscript{)}}
+%% Superscripts
+\newunicodechar{⁰}{\textsuperscript{0}}
+\newunicodechar{¹}{\textsuperscript{1}}
+\newunicodechar{²}{\textsuperscript{2}}
+\newunicodechar{³}{\textsuperscript{3}}
+\newunicodechar{⁴}{\textsuperscript{4}}
+\newunicodechar{⁵}{\textsuperscript{5}}
+\newunicodechar{⁶}{\textsuperscript{6}}
+\newunicodechar{⁷}{\textsuperscript{7}}
+\newunicodechar{⁸}{\textsuperscript{8}}
+\newunicodechar{⁹}{\textsuperscript{9}}
+\newunicodechar{ⁱ}{\textsuperscript{i}}
+\newunicodechar{ⁿ}{\textsuperscript{n}}
+\newunicodechar{⁺}{\textsuperscript{+}}
+\newunicodechar{⁻}{\textsuperscript{-}}
+\newunicodechar{⁼}{\textsuperscript{=}}
+\newunicodechar{⁽}{\textsuperscript{(}}
+\newunicodechar{⁾}{\textsuperscript{)}}
+%% Punctuation
 \newunicodechar{−}{--}  % Render the minus sign as an en-dash, assuming that the author mistyped.
+%% Math
 \newunicodechar{≤}{\ensuremath{\leq}}
 \newunicodechar{≥}{\ensuremath{\geq}}
 \newunicodechar{≠}{\ensuremath{\neq}}
+%% Miscellaneous
+\newunicodechar{®}{\textsuperscript{\textregistered}}
 \newunicodechar{​}{}
 
 % Miscellaneous
