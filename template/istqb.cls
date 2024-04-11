@@ -66,9 +66,18 @@
     \str_case:nnF
       { #1 }
       {
-        { cs } { \selectlanguage { czech } }
-        { sk } { \selectlanguage { slovak } }
-        { en } { \selectlanguage { english } }
+        { cs } {
+          \selectlanguage { czech }
+          \def \istqbfurtherreadingname { Další~zdroje }
+        }
+        { sk } {
+          \selectlanguage { slovak }
+          \def \istqbfurtherreadingname { Ďalšie~zdroje }
+        }
+        { en } {
+          \selectlanguage { english }
+          \def \istqbfurtherreadingname { Further~Reading }
+        }
       }
       {
         \msg_error:nnn
@@ -304,7 +313,7 @@
 %% Reference printing
 \newcommand\printistqbbibliography{%
   \clearpage
-  \section{References}%
+  \section{\refname}%
   \label{references}%
   \begingroup
   \defbibheading{bibliography}{%
@@ -320,7 +329,7 @@
   \endgroup
   \begingroup
   \defbibheading{bibliography}{\section{##1}\label{further-reading}}%
-  \printbibliography[filter=further-reading, title=Further Reading]%
+  \printbibliography[filter=further-reading, title=\istqbfurtherreadingname]%
   \endgroup
 }
 
