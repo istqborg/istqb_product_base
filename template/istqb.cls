@@ -70,14 +70,17 @@
         { cs } {
           \selectlanguage { czech }
           \def \istqbfurtherreadingname { Další~zdroje }
+          \def \istqboutofname { z }
         }
         { sk } {
           \selectlanguage { slovak }
           \def \istqbfurtherreadingname { Ďalšie~zdroje }
+          \def \istqboutofname { z }
         }
         { en } {
           \selectlanguage { english }
           \def \istqbfurtherreadingname { Further~Reading }
+          \def \istqboutofname { out~of }
         }
       }
       {
@@ -220,10 +223,13 @@
         }
       \mbox
         {
-          Page~
+          \pagename
+          {}~
           \int_use:N
             \l_tmpa_int
-          {}~of~
+          {}~
+          \istqboutofname
+          {}~
           \int_use:N
             \l_tmpb_int
         }
