@@ -72,6 +72,10 @@
       {
         { cs } {
           \selectlanguage { czech }
+          \gdef \istqbstandardsname { Standardy }
+          \gdef \istqbdocumentsname { ISTQB\textsuperscript{\textregistered}~dokumenty }
+          \gdef \istqbbooksname { Knihy }
+          \gdef \istqbarticlesname { Články }
           \gdef \istqbfurtherreadingname { Další~zdroje }
           \gdef \istqbpagename { Strana }
           \gdef \istqboutofname { z }
@@ -94,6 +98,10 @@
         }
         { sk } {
           \selectlanguage { slovak }
+          \gdef \istqbstandardsname { Štandardy }
+          \gdef \istqbdocumentsname { ISTQB\textsuperscript{\textregistered}~dokumenty }
+          \gdef \istqbbooksname { Knihy }
+          \gdef \istqbarticlesname { Články }
           \gdef \istqbfurtherreadingname { Ďalšie~zdroje }
           \gdef \istqbpagename { Strana }
           \gdef \istqboutofname { z }
@@ -116,6 +124,10 @@
         }
         { en } {
           \selectlanguage { english }
+          \gdef \istqbstandardsname { Standards }
+          \gdef \istqbdocumentsname { ISTQB\textsuperscript{\textregistered}~Documents }
+          \gdef \istqbbooksname { Books }
+          \gdef \istqbarticlesname { Articles }
           \gdef \istqbfurtherreadingname { Further~Reading }
           \gdef \istqbpagename { Page }
           \gdef \istqboutofname { out~of }
@@ -383,10 +395,10 @@
     \fontsize{14}{16.8}\selectfont
     ##1%
   }%
-  \printbibliography[filter=standards, title=Standards]%
-  \printbibliography[filter=istqb-documents, title=ISTQB\textsuperscript{\textregistered} Documents]%
-  \printbibliography[filter=books, title=Books]%
-  \printbibliography[filter=articles, title=Articles]%
+  \printbibliography[filter=standards, title=\istqbstandardsname]%
+  \printbibliography[filter=istqb-documents, title=\istqbdocumentsname]%
+  \printbibliography[filter=books, title=\istqbbooksname]%
+  \printbibliography[filter=articles, title=\istqbarticlesname]%
   \endgroup
   \begingroup
   \defbibheading{bibliography}{\section{##1}\label{section:further-reading}}%
