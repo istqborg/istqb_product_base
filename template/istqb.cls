@@ -75,14 +75,14 @@
           \def \istqbfurtherreadingname { Další~zdroje }
           \def \istqbpagename { Strana }
           \def \istqboutofname { z }
-          \def \istqbprovidedbysingularname { Provided~by }
-          \def \istqbprovidedbypluralname { Provided~by }
+          \def \istqbprovidedbysingularname { Poskytl }
+          \def \istqbprovidedbypluralname { Poskytli }
           \def \istqborgname { International~Software~Testing~Qualifications~Board }
           \def \istqblistdelimiters
             {
-              { ~and~ }
+              { ~a~ }
               { ,~ }
-              { ,~and~ }
+              { ~a~ }
             }
           \prop_gset_from_keyval:Nn
             \g_istqb_reference_labels_prop
@@ -119,14 +119,14 @@
           \def \istqbfurtherreadingname { Further~Reading }
           \def \istqbpagename { Page }
           \def \istqboutofname { out~of }
-          \def \istqbprovidedbysingularname { Poskytl }
-          \def \istqbprovidedbypluralname { Poskytli }
+          \def \istqbprovidedbysingularname { Provided~by }
+          \def \istqbprovidedbypluralname { Provided~by }
           \def \istqborgname { International~Software~Testing~Qualifications~Board }
           \def \istqblistdelimiters
             {
-              { ~a~ }
+              { ~and~ }
               { ,~ }
-              { ~a~ }
+              { ,~and~ }
             }
           \prop_gset_from_keyval:Nn
             \g_istqb_reference_labels_prop
