@@ -321,7 +321,7 @@
 \newcommand\printistqbbibliography{%
   \clearpage
   \section{\refname}%
-  \label{references}%
+  \label{section:references}%
   \begingroup
   \defbibheading{bibliography}{%
     \normalfont
@@ -335,7 +335,7 @@
   \printbibliography[filter=articles, title=Articles]%
   \endgroup
   \begingroup
-  \defbibheading{bibliography}{\section{##1}\label{further-reading}}%
+  \defbibheading{bibliography}{\section{##1}\label{section:further-reading}}%
   \printbibliography[filter=further-reading, title=\istqbfurtherreadingname]%
   \endgroup
 }
