@@ -72,13 +72,13 @@
       {
         { cs } {
           \selectlanguage { czech }
-          \def \istqbfurtherreadingname { Další~zdroje }
-          \def \istqbpagename { Strana }
-          \def \istqboutofname { z }
-          \def \istqbprovidedbysingularname { Poskytl }
-          \def \istqbprovidedbypluralname { Poskytli }
-          \def \istqborgname { International~Software~Testing~Qualifications~Board }
-          \def \istqblistdelimiters
+          \gdef \istqbfurtherreadingname { Další~zdroje }
+          \gdef \istqbpagename { Strana }
+          \gdef \istqboutofname { z }
+          \gdef \istqbprovidedbysingularname { Poskytl }
+          \gdef \istqbprovidedbypluralname { Poskytli }
+          \gdef \istqborgname { International~Software~Testing~Qualifications~Board }
+          \gdef \istqblistdelimiters
             {
               { ~a~ }
               { ,~ }
@@ -94,13 +94,13 @@
         }
         { sk } {
           \selectlanguage { slovak }
-          \def \istqbfurtherreadingname { Ďalšie~zdroje }
-          \def \istqbpagename { Strana }
-          \def \istqboutofname { z }
-          \def \istqbprovidedbysingularname { Poskytol }
-          \def \istqbprovidedbypluralname { Poskytli }
-          \def \istqborgname { International~Software~Testing~Qualifications~Board }
-          \def \istqblistdelimiters
+          \gdef \istqbfurtherreadingname { Ďalšie~zdroje }
+          \gdef \istqbpagename { Strana }
+          \gdef \istqboutofname { z }
+          \gdef \istqbprovidedbysingularname { Poskytol }
+          \gdef \istqbprovidedbypluralname { Poskytli }
+          \gdef \istqborgname { International~Software~Testing~Qualifications~Board }
+          \gdef \istqblistdelimiters
             {
               { ~a~ }
               { ,~ }
@@ -116,13 +116,13 @@
         }
         { en } {
           \selectlanguage { english }
-          \def \istqbfurtherreadingname { Further~Reading }
-          \def \istqbpagename { Page }
-          \def \istqboutofname { out~of }
-          \def \istqbprovidedbysingularname { Provided~by }
-          \def \istqbprovidedbypluralname { Provided~by }
-          \def \istqborgname { International~Software~Testing~Qualifications~Board }
-          \def \istqblistdelimiters
+          \gdef \istqbfurtherreadingname { Further~Reading }
+          \gdef \istqbpagename { Page }
+          \gdef \istqboutofname { out~of }
+          \gdef \istqbprovidedbysingularname { Provided~by }
+          \gdef \istqbprovidedbypluralname { Provided~by }
+          \gdef \istqborgname { International~Software~Testing~Qualifications~Board }
+          \gdef \istqblistdelimiters
             {
               { ~and~ }
               { ,~ }
