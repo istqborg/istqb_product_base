@@ -58,12 +58,15 @@
 \RequirePackage[czech,slovak,english]{babel}
 \ExplSyntaxOn
 \tl_new:N \g_istqb_language_tl
+\prop_new:N \g_istqb_reference_labels_prop
 \cs_new:Nn
   \istqb_set_language:n
   {
     \tl_gset:Nn
       \g_istqb_language_tl
       { #1 }
+    \prop_gclear:N
+      \g_istqb_reference_labels_prop
     \str_case:nnF
       { #1 }
       {
@@ -71,16 +74,37 @@
           \selectlanguage { czech }
           \def \istqbfurtherreadingname { Další~zdroje }
           \def \istqboutofname { z }
+          \prop_gset_from_keyval:Nn
+            \g_istqb_reference_labels_prop
+            {
+              section = { Sekci },
+              figure = { \figurename },
+              table = { Tabulku },
+            }
         }
         { sk } {
           \selectlanguage { slovak }
           \def \istqbfurtherreadingname { Ďalšie~zdroje }
           \def \istqboutofname { z }
+          \prop_gset_from_keyval:Nn
+            \g_istqb_reference_labels_prop
+            {
+              section = { Sekcii },
+              figure = { \figurename },
+              table = { Tabuľku },
+            }
         }
         { en } {
           \selectlanguage { english }
           \def \istqbfurtherreadingname { Further~Reading }
           \def \istqboutofname { out~of }
+          \prop_gset_from_keyval:Nn
+            \g_istqb_reference_labels_prop
+            {
+              section = { Section },
+              figure = { \figurename },
+              table = { \tablename },
+            }
         }
       }
       {
