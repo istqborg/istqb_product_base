@@ -73,6 +73,7 @@
         { cs } {
           \selectlanguage { czech }
           \def \istqbfurtherreadingname { Další~zdroje }
+          \def \istqbpagename { Strana }
           \def \istqboutofname { z }
           \def \istqbprovidedbysingularname { Provided~by }
           \def \istqbprovidedbypluralname { Provided~by }
@@ -94,6 +95,7 @@
         { sk } {
           \selectlanguage { slovak }
           \def \istqbfurtherreadingname { Ďalšie~zdroje }
+          \def \istqbpagename { Strana }
           \def \istqboutofname { z }
           \def \istqbprovidedbysingularname { Poskytol }
           \def \istqbprovidedbypluralname { Poskytli }
@@ -115,6 +117,7 @@
         { en } {
           \selectlanguage { english }
           \def \istqbfurtherreadingname { Further~Reading }
+          \def \istqbpagename { Page }
           \def \istqboutofname { out~of }
           \def \istqbprovidedbysingularname { Poskytl }
           \def \istqbprovidedbypluralname { Poskytli }
@@ -274,7 +277,7 @@
         }
       \mbox
         {
-          \pagename
+          \istqbpagename
           {}~
           \int_use:N
             \l_tmpa_int
