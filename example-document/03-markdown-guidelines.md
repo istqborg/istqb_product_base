@@ -160,6 +160,8 @@ This will produce the same output as the heading of this section.
 
 You can reference the section from the text of the document by writing `<#section:section-references>`. This will produce the following output: <#section:section-references>.
 
+If you are writing a document in a flective language other than English such as Czech, writing `<#section:section-references>` will produce a text in accusative case such as [Sekci `\ref{section:section-references}`{=tex}](#section:section-references). You can explictly use a different grammatical case such as the nominative by writing  ``[Sekce `\ref{section:section-references}`{=tex}](#section:section-references)``. This will produce the following output: [Sekce `\ref{section:section-references}`{=tex}](#section:section-references).
+
 You can also create a clickable link to the section by writing `[displayed text](#section:section-references)`. This will produce the following output: [displayed text](#section:section-references).
 
 ## Figures {#figures}
