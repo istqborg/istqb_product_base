@@ -54,6 +54,7 @@
 \sloppy  % Prevent overfull lines.
 
 %% Language
+\PassOptionsToPackage{shorthands=off}{babel}
 \RequirePackage[czech,slovak,english]{babel}
 \ExplSyntaxOn
 \tl_new:N \g_istqb_language_tl
