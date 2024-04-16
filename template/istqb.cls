@@ -74,6 +74,15 @@
           \selectlanguage { czech }
           \def \istqbfurtherreadingname { Další~zdroje }
           \def \istqboutofname { z }
+          \def \istqbprovidedbysingularname { Provided~by }
+          \def \istqbprovidedbypluralname { Provided~by }
+          \def \istqborgname { International~Software~Testing~Qualifications~Board }
+          \def \istqblistdelimiters
+            {
+              { ~and~ }
+              { ,~ }
+              { ,~and~ }
+            }
           \prop_gset_from_keyval:Nn
             \g_istqb_reference_labels_prop
             {
@@ -86,6 +95,15 @@
           \selectlanguage { slovak }
           \def \istqbfurtherreadingname { Ďalšie~zdroje }
           \def \istqboutofname { z }
+          \def \istqbprovidedbysingularname { Poskytol }
+          \def \istqbprovidedbypluralname { Poskytli }
+          \def \istqborgname { International~Software~Testing~Qualifications~Board }
+          \def \istqblistdelimiters
+            {
+              { ~a~ }
+              { ,~ }
+              { ~a~ }
+            }
           \prop_gset_from_keyval:Nn
             \g_istqb_reference_labels_prop
             {
@@ -98,6 +116,15 @@
           \selectlanguage { english }
           \def \istqbfurtherreadingname { Further~Reading }
           \def \istqboutofname { out~of }
+          \def \istqbprovidedbysingularname { Poskytl }
+          \def \istqbprovidedbypluralname { Poskytli }
+          \def \istqborgname { International~Software~Testing~Qualifications~Board }
+          \def \istqblistdelimiters
+            {
+              { ~a~ }
+              { ,~ }
+              { ~a~ }
+            }
           \prop_gset_from_keyval:Nn
             \g_istqb_reference_labels_prop
             {
@@ -276,7 +303,7 @@
       rightmargin=-8pt,
     ]
       \fontsize{6}{6}\selectfont
-      \textcopyright{}~International~Software~Testing~Qualifications~Board
+      \textcopyright{}~\istqborgname
     \end{mdframed}
   }
 \box_new:N \l_istqb_footer_box
@@ -426,7 +453,7 @@
     \par \vspace { 0.2in }
     \normalfont
     \fontsize { 18 } { 21.6 } \selectfont
-    International~Software~Testing~Qualifications~Board
+    \istqborgname
     \par \vspace { 0.3in }
     \leaders \vrule width \textwidth \vskip 1pt
     \par \vfill \vfill
@@ -441,11 +468,12 @@
         \par \vspace { 0.2in }
         \normalfont
         \fontsize { 18 } { 21.6 } \selectfont
-        Provided~by~
         \int_compare:nNnTF
           { \seq_count:N \g_istqb_third_parties_seq } = { 1 }
           {
             % A single third party organization
+            \istqbprovidedbysingularname
+            {}~
             \seq_get_left:NN
               \g_istqb_third_parties_seq
               \l_tmpa_tl
@@ -454,12 +482,12 @@
           }
           {
             % Several third party organizations
+            \istqbprovidedbypluralname
             \par \vfill
-            \seq_use:Nnnn
+            \exp_last_unbraced:NNV
+              \seq_use:Nnnn
               \g_istqb_third_parties_seq
-              { ~and~ }
-              { ,~ }
-              { ,~and~ }
+              \istqblistdelimiters
           }
         \par \vspace { 0.3in }
         \vfill \vfill
