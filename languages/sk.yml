@@ -1,3 +1,5 @@
+# The babel-language option loads the correct hyphenation patterns and sets low-level typesetting variables for the given language.
+# The value "slovak" was determined from archive "https://mirrors.ctan.org/macros/latex/required/babel/base/locale.zip", file "sk/babel-sk.ini", line "name.babel = slovak".
 babel-language: slovak
 further-reading: Ďalšie zdroje
 bibliography-subsections:
