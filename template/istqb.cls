@@ -555,7 +555,7 @@
   \let\istqboldsection\section
   \def\section##1{%
     \stepcounter{istqbappendix}%
-    \istqboldsection{Appendix~\Alph{istqbappendix}~--~##1}}%
+    \istqboldsection{\istqbappendixname~\Alph{istqbappendix}~--~##1}}%
 }{%
   \setcounter{istqbappendix}{0}%
   \endgroup
