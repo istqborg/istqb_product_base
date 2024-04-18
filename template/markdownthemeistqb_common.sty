@@ -86,25 +86,16 @@
       jekyllDataEnd = { },
     },
   }
-\RequirePackage{etoolbox}
-\tl_new:N \g_istqb_babel_language_tl
+\RequirePackage
+  [ shorthands = off ]
+  { babel }
 \keys_define:nn
   { istqb / language }
   {
     babel-language .code:n = {
-      \tl_gset:Nn
-        \g_istqb_babel_language_tl
+      \babelprovide
+        [ import, main ]
         { #1 }
-      \BeforeBeginEnvironment
-        { document }
-        {
-          \RequirePackage
-            [
-              main = \g_istqb_babel_language_tl,
-              shorthands = off,
-            ]
-            { babel }
-        }
     },
     further-reading .tl_gset:N = \istqbfurtherreadingname,
     istqb .tl_gset:N = \istqborgname,
