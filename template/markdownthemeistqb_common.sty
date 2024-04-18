@@ -439,7 +439,6 @@
                   { ##1 }
                   { revision-history }
                   {
-                    \group_begin:
                     \def \markdownLaTeXRenderTableRow ####1
                       {
                         \markdownLaTeXColumnCounter = 0
@@ -481,9 +480,6 @@
                             \markdownLaTeXRowTotal = ####2
                             \markdownLaTeXColumnTotal = ####3
                             \markdownLaTeXRenderTableRow
-                          },
-                          sectionEnd = {
-                            \group_end:
                           },
                         }
                       }
