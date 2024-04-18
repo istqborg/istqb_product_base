@@ -38,7 +38,10 @@ jobs:
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
       - name: Check the well-formedness of all YAML documents
-        run: $FIND -type f -iregex '.*\.yml$' -print | parallel --halt now,fail=1 istqb_product_base/check-yaml.lua {}
+        run: |
+          set -ex
+          $FIND -type f -iregex '.*\.yml$' -print | parallel --halt now,fail=1 istqb_product_base/check-yaml.lua {}
+          parallel --halt now,fail=1 istqb_product_base/check-yaml.lua {} ::: istqb_product_base/languages/*.yml
       - name: Validate metadata.yml
         shell: bash
         run: |
@@ -51,6 +54,12 @@ jobs:
           set -ex
           source ~/venv/bin/activate
           $FIND -type f -iregex '.*/questions\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/questions.yml {}
+      - name: Validate languages/*.yml
+        shell: bash
+        run: |
+          set -ex
+          source ~/venv/bin/activate
+          parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/language.yml {} ::: istqb_product_base/languages/*.yml
   produce-pdf:
     name: Produce PDF documents
     needs:
