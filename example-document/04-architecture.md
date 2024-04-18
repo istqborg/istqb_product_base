@@ -6,7 +6,7 @@ This example document contains several files with different purpose and structur
     - `istqb.cls` defines the design and the `\LaTeX`{=tex} commands provided by the `\LaTeX`{=tex} template.
     - `markdownthemeistqb_syllabus.sty` defines the processing of YAML metadata and the mapping between markdown elements and `\LaTeX`{=tex} commands.
 - `example.yml` is a YAML document that contains the metadata of the example document.
-- `example.bib` is a `Bíb\LaTeX`{=tex} database with references, as discussed in <#section:references>.
+- `example.bib` is a `Bib\LaTeX`{=tex} database with references, as discussed in <#section:references>.
 - `example-*.md` are markdown documents that contain different parts of the text of the example document.
 - `example.tex` is a `\LaTeX`{=tex} document that typesets the example document.
 

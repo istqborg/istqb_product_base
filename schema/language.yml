@@ -1,0 +1,17 @@
+babel-language: str()
+appendix: str()
+references: str()
+further-reading: str()
+bibliography-subsections:
+  standards: str()
+  documents: str()
+  books: str()
+  articles: str()
+reference-labels:
+  section: str()
+  figure: str()
+  table: str()
+page: [str(), str()]
+provided-by: [str(), str()]
+istqb: str()
+list-delimiters: [str(), str(), str()]

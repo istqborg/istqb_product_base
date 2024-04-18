@@ -1,0 +1,16 @@
+appendix: Appendix
+references: References
+further-reading: Further Reading
+bibliography-subsections:
+  standards: Standards
+  documents: ISTQB® Documents
+  books: Books
+  articles: Articles
+reference-labels:
+  section: Section
+  figure: Figure
+  table: Table
+page: [Page, out of]
+provided-by: [Provided by, Provided by]
+istqb: International Software Testing Qualifications Board
+list-delimiters: [and, ',', ', and']

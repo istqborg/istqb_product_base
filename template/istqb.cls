@@ -178,10 +178,13 @@
         }
       \mbox
         {
-          Page~
+          \istqbpagename
+          {}~
           \int_use:N
             \l_tmpa_int
-          {}~of~
+          {}~
+          \istqboutofname
+          {}~
           \int_use:N
             \l_tmpb_int
         }
@@ -204,7 +207,7 @@
       rightmargin=-8pt,
     ]
       \fontsize{6}{6}\selectfont
-      \textcopyright{}~International~Software~Testing~Qualifications~Board
+      \textcopyright{}~\istqborgname
     \end{mdframed}
   }
 \box_new:N \l_istqb_footer_box
@@ -272,8 +275,8 @@
 %% Reference printing
 \newcommand\printistqbbibliography{%
   \clearpage
-  \section{References}%
-  \label{references}%
+  \section{\istqbrefname}%
+  \label{section:references}%
   \begingroup
   \defbibheading{bibliography}{%
     \normalfont
@@ -281,14 +284,14 @@
     \fontsize{14}{16.8}\selectfont
     ##1%
   }%
-  \printbibliography[filter=standards, title=Standards]%
-  \printbibliography[filter=istqb-documents, title=ISTQB\textsuperscript{\textregistered} Documents]%
-  \printbibliography[filter=books, title=Books]%
-  \printbibliography[filter=articles, title=Articles]%
+  \printbibliography[filter=standards, title=\istqbstandardsname]%
+  \printbibliography[filter=istqb-documents, title=\istqbdocumentsname]%
+  \printbibliography[filter=books, title=\istqbbooksname]%
+  \printbibliography[filter=articles, title=\istqbarticlesname]%
   \endgroup
   \begingroup
-  \defbibheading{bibliography}{\section{##1}\label{further-reading}}%
-  \printbibliography[filter=further-reading, title=Further Reading]%
+  \defbibheading{bibliography}{\section{##1}\label{section:further-reading}}%
+  \printbibliography[filter=further-reading, title=\istqbfurtherreadingname]%
   \endgroup
 }
 
@@ -354,7 +357,7 @@
     \par \vspace { 0.2in }
     \normalfont
     \fontsize { 18 } { 21.6 } \selectfont
-    International~Software~Testing~Qualifications~Board
+    \istqborgname
     \par \vspace { 0.3in }
     \leaders \vrule width \textwidth \vskip 1pt
     \par \vfill \vfill
@@ -369,11 +372,12 @@
         \par \vspace { 0.2in }
         \normalfont
         \fontsize { 18 } { 21.6 } \selectfont
-        Provided~by~
         \int_compare:nNnTF
           { \seq_count:N \g_istqb_third_parties_seq } = { 1 }
           {
             % A single third party organization
+            \istqbprovidedbysingularname
+            {}~
             \seq_get_left:NN
               \g_istqb_third_parties_seq
               \l_tmpa_tl
@@ -382,12 +386,16 @@
           }
           {
             % Several third party organizations
+            \istqbprovidedbypluralname
             \par \vfill
-            \seq_use:Nnnn
+            \exp_last_unbraced:NNo
+              \seq_use:Nnnn
               \g_istqb_third_parties_seq
-              { ~and~ }
-              { ,~ }
-              { ,~and~ }
+              {
+                { \g_istqb_list_delimiter_two }
+                { \g_istqb_list_delimiter_many }
+                { \g_istqb_list_delimiter_last }
+              }
           }
         \par \vspace { 0.3in }
         \vfill \vfill
@@ -547,7 +555,7 @@
   \let\istqboldsection\section
   \def\section##1{%
     \stepcounter{istqbappendix}%
-    \istqboldsection{Appendix~\Alph{istqbappendix}~--~##1}}%
+    \istqboldsection{\istqbappendixname~\Alph{istqbappendix}~--~##1}}%
 }{%
   \setcounter{istqbappendix}{0}%
   \endgroup

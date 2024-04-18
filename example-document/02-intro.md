@@ -1,4 +1,4 @@
-# Examples of using the `\LaTeX`{=tex} template for ISTQB documents
+# Examples of using the template for ISTQB documents
 
 You can write keywords and learning objectives as follows:
 

@@ -13,6 +13,7 @@ version: Version v0.1
 date: 31 October 2023
 release: For internal use only
 logo: istqb-logo-default
+language: en
 compatibility: |
   Compatible with Syllabus on Foundation and Advanced Levels,
   and Specialist Modules
@@ -158,6 +159,8 @@ To reference a section from the text of the document, first write a section iden
 This will produce the same output as the heading of this section.
 
 You can reference the section from the text of the document by writing `<#section:section-references>`. This will produce the following output: <#section:section-references>.
+
+If you are writing a document in a flective language other than English such as Czech, writing `<#section:section-references>` will produce a text in accusative case such as [Sekci `\ref{section:section-references}`{=tex}](#section:section-references). You can explictly use a different grammatical case such as the nominative by writing  ``[Sekce `\ref{section:section-references}`{=tex}](#section:section-references)``. This will produce the following output: [Sekce `\ref{section:section-references}`{=tex}](#section:section-references).
 
 You can also create a clickable link to the section by writing `[displayed text](#section:section-references)`. This will produce the following output: [displayed text](#section:section-references).
 
@@ -407,7 +410,7 @@ Here is an image:
 
 You can reference the table from the text of the document by writing `<#table:long>`. This will produce the following output: <#table:long>.
 
-## References {#references}
+## References {#about-references}
 
 You can add five types of references to your documents: standards, ISTQB documents, books, journal articles, and web pages.
 
@@ -471,10 +474,10 @@ Furthermore, if you want to use citations as the subject or the object of a sent
 Several citations without parentheses can be stringed together by writing `@iso-iec:2022 @marick:2013`. This produces the following output: @iso-iec:2022 @marick:2013.
 
 Cited references of all types except web pages are placed in section *References* at the end of each document.
-You can reference the section from the text of the document by writing `<#references>`. This will produce the following output: <#references>.
+You can reference the section from the text of the document by writing `<#section:references>`. This will produce the following output: <#section:references>.
 
 Uncited references and web pages are placed in section *Further Reading* at the end of the document.
-You can reference the section from the text of the document by writing `<#further-reading>`. This will produce the following output: <#further-reading>.
+You can reference the section from the text of the document by writing `<#section:further-reading>`. This will produce the following output: <#section:further-reading>.
 
 For further instructions on defining references, see the `Bib\LaTeX`{=tex} manual [@kime:2023, Chapter 2].
 
@@ -492,7 +495,7 @@ This example document contains several files with different purpose and structur
     - `istqb.cls` defines the design and the `\LaTeX`{=tex} commands provided by the `\LaTeX`{=tex} template.
     - `markdownthemeistqb_syllabus.sty` defines the processing of YAML metadata and the mapping between markdown elements and `\LaTeX`{=tex} commands.
 - `example.yml` is a YAML document that contains the metadata of the example document.
-- `example.bib` is a `Bíb\LaTeX`{=tex} database with references, as discussed in <#section:references>.
+- `example.bib` is a `Bíb\LaTeX`{=tex} database with references, as discussed in <#section:about-references>.
 - `example-*.md` are markdown documents that contain different parts of the text of the example document.
 - `example.tex` is a `\LaTeX`{=tex} document that typesets the example document.
 
