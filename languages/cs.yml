@@ -1,6 +1,3 @@
-# The babel-language option loads the correct hyphenation patterns and sets low-level typesetting variables for the given language.
-# The value "czech" was determined from archive "https://mirrors.ctan.org/macros/latex/required/babel/base/locale.zip", file "cs/babel-cs.ini", line "name.babel = czech".
-babel-language: czech
 appendix: Příloha
 further-reading: Další zdroje
 bibliography-subsections:

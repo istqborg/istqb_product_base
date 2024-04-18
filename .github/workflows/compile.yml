@@ -37,6 +37,7 @@ jobs:
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
+          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = /babel-language: /p" "$(kpsewhich cs/babel-cs.ini)")\n/"' ::: languages/*.yml
       - name: Check the well-formedness of all YAML documents
         run: |
           set -ex
@@ -89,6 +90,7 @@ jobs:
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
+          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = /babel-language: /p" "$(kpsewhich cs/babel-cs.ini)")\n/"' ::: languages/*.yml
       - name: Ensure correct encoding of input files
         run: $FIND -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert EPS images to PDF
@@ -131,6 +133,7 @@ jobs:
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
+          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = /babel-language: /p" "$(kpsewhich cs/babel-cs.ini)")\n/"' ::: languages/*.yml
       - name: Ensure correct encoding of input files
         run: $FIND -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
@@ -173,6 +176,7 @@ jobs:
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
+          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = /babel-language: /p" "$(kpsewhich cs/babel-cs.ini)")\n/"' ::: languages/*.yml
       - name: Ensure correct encoding of input files
         run: $FIND -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
       - name: Convert XLSX spreadsheets to PDF
@@ -214,6 +218,7 @@ jobs:
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
+          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = /babel-language: /p" "$(kpsewhich cs/babel-cs.ini)")\n/"' ::: languages/*.yml
       - name: Create output directory docx/
         run: mkdir docx
       - name: Convert MD documents to DOCX
