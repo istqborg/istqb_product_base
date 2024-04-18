@@ -275,7 +275,7 @@
 %% Reference printing
 \newcommand\printistqbbibliography{%
   \clearpage
-  \section{\refname}%
+  \section{\istqbrefname}%
   \label{section:references}%
   \begingroup
   \defbibheading{bibliography}{%

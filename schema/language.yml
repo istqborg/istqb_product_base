@@ -1,5 +1,6 @@
 babel-language: str()
 appendix: str()
+references: str()
 further-reading: str()
 bibliography-subsections:
   standards: str()
