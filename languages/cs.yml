@@ -1,0 +1,15 @@
+babel-language: czech
+further-reading: Další zdroje
+bibliography-subsections:
+  standards: Standardy
+  documents: ISTQB® dokumenty
+  books: Knihy
+  articles: Články
+reference-labels:
+  section: Sekci
+  figure: Obrázek
+  table: Tabulku
+page: [Strana, z]
+provided-by: [Poskytl, Poskytli]
+istqb: International Software Testing Qualifications Board
+list-delimiters: [a, ',', a]

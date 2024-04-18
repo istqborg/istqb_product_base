@@ -42,9 +42,177 @@
     superscripts = true,
   }
 
-% Metadata
+% Language
+\cs_new:Nn
+  \istqb_load_language:n
+  {
+    \markdownInput
+      [ snippet = istqb / common / language ]
+      { istqb_product_base / languages / #1.yml }
+  }
+\tl_new:N \l_istqb_anguage_current_position
+\prop_new:N \g_istqb_language_prop
+\markdownSetupSnippet
+  { language }
+  {
+    jekyllData,
+    expectJekyllData,
+    renderers = {
+      jekyllData(Sequence|Mapping)Begin = {
+        \str_if_eq:nnF
+          { #1 }
+          { null }
+          {
+            \tl_gset:Nn
+              \l_istqb_language_current_position
+              { #1 / }
+          }
+      },
+      jekyllData(Begin|(Sequence|Mapping)End) = {
+        \tl_clear:N
+          \l_istqb_language_current_position
+      },
+      jekyllDataString = {
+        \tl_set:Nx
+          \l_tmpa_tl
+          { { \l_istqb_language_current_position #1 } = }
+        \tl_put_right:Nn
+          \l_tmpa_tl
+          { { #2 } }
+        \keys_set:nV
+          { istqb / language }
+          \l_tmpa_tl
+      },
+      jekyllDataEnd = { },
+    },
+  }
+\RequirePackage{etoolbox}
+\tl_new:N \g_istqb_babel_language_tl
 \keys_define:nn
-  { istqb/metadata }
+  { istqb / language }
+  {
+    babel-language .code:n = {
+      \tl_gset:Nn
+        \g_istqb_babel_language_tl
+        { #1 }
+      \BeforeBeginEnvironment
+        { document }
+        {
+          \RequirePackage
+            [
+              main = \g_istqb_babel_language_tl,
+              shorthands = off,
+            ]
+            { babel }
+        }
+    },
+    further-reading .tl_gset:N = \istqbfurtherreadingname,
+    istqb .tl_gset:N = \istqborgname,
+  }
+\keys_define:nn
+  { istqb / language / bibliography-subsections }
+  {
+    standards .tl_gset:N = \istqbstandardsname,
+    documents .tl_gset:N = \istqbdocumentsname,
+    books .tl_gset:N = \istqbbooksname,
+    articles .tl_gset:N = \istqbarticlesname,
+  }
+\keys_define:nn
+  { istqb / language / page }
+  {
+    1 .tl_gset:N = \istqbpagename,
+    2 .tl_gset:N = \istqboutofname,
+  }
+\keys_define:nn
+  { istqb / language / provided-by }
+  {
+    1 .tl_gset:N = \istqbprovidedbysingularname,
+    2 .tl_gset:N = \istqbprovidedbypluralname,
+  }
+\tl_new:N \g_istqb_list_delimiter_two
+\tl_new:N \g_istqb_list_delimiter_many
+\tl_new:N \g_istqb_list_delimiter_last
+\keys_define:nn
+  { istqb / language / list-delimiters }
+  {
+    1 .code:n = {
+      \tl_set:Nn
+        \l_tmpa_tl
+        { #1 }
+      \regex_match:nnF
+        { ^, }
+        { #1 }
+        {
+          \tl_put_left:Nn
+            \l_tmpa_tl
+            { ~ }
+        }
+      \tl_put_right:Nn
+        \l_tmpa_tl
+        { ~ }
+      \tl_gset:NV
+        \g_istqb_list_delimiter_two
+        \l_tmpa_tl
+    },
+    2 .code:n = {
+      \tl_set:Nn
+        \l_tmpa_tl
+        { #1 }
+      \regex_match:nnF
+        { ^, }
+        { #1 }
+        {
+          \tl_put_left:Nn
+            \l_tmpa_tl
+            { ~ }
+        }
+      \tl_put_right:Nn
+        \l_tmpa_tl
+        { ~ }
+      \tl_gset:NV
+        \g_istqb_list_delimiter_many
+        \l_tmpa_tl
+    },
+    3 .code:n = {
+      \tl_set:Nn
+        \l_tmpa_tl
+        { #1 }
+      \regex_match:nnF
+        { ^, }
+        { #1 }
+        {
+          \tl_put_left:Nn
+            \l_tmpa_tl
+            { ~ }
+        }
+      \tl_put_right:Nn
+        \l_tmpa_tl
+        { ~ }
+      \tl_gset:NV
+        \g_istqb_list_delimiter_last
+        \l_tmpa_tl
+    },
+  }
+\prop_new:N \g_istqb_reference_labels_prop
+\keys_define:nn
+  { istqb / language / reference-labels }
+  {
+    unknown .code:n = {
+      \prop_gput:NVn
+        \g_istqb_reference_labels_prop
+        \l_keys_key_str
+        { #1 }
+    },
+  }
+
+% Metadata
+\tl_new:N
+  \g_istqb_language_tl
+\tl_gset:Nn
+  \g_istqb_language_tl
+  { en }
+\keys_define:nn
+  { istqb / metadata }
   {
     schema .tl_gset:N = \g_istqb_schema_tl,
     level .tl_gset:N = \g_istqb_level_tl,
@@ -57,12 +225,7 @@
     prefix .tl_gset:N = \g_istqb_prefix_tl,
     logo .tl_gset:N = \g_istqb_logo_tl,
     compatibility .tl_gset:N = \g_istqb_compatibility_tl,
-    language .code:n = {
-      \AtBeginDocument
-        {
-          \istqb_set_language:n { #1 }
-        }
-    },
+    language .tl_gset:N = \g_istqb_language_tl,
   }
 \tl_new:N \l_istqb_current_third_party_name_tl
 \tl_new:N \l_istqb_current_third_party_logo_tl
@@ -138,9 +301,15 @@
             }
           }
       },
-      jekyllDataEnd = { },
+      jekyllDataEnd = {
+        \istqb_load_language:V
+          \g_istqb_language_tl
+      },
     },
   }
+\cs_generate_variant:Nn
+  \istqb_load_language:n
+  { V }
 
 % Images
 \markdownSetup

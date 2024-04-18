@@ -53,117 +53,6 @@
 \usepackage{parskip}  % Put half of line height between paragraphs.
 \sloppy  % Prevent overfull lines.
 
-%% Language
-\PassOptionsToPackage{shorthands=off}{babel}
-\RequirePackage[czech,slovak,english]{babel}
-\ExplSyntaxOn
-\tl_new:N \g_istqb_language_tl
-\prop_new:N \g_istqb_reference_labels_prop
-\cs_new:Nn
-  \istqb_set_language:n
-  {
-    \tl_gset:Nn
-      \g_istqb_language_tl
-      { #1 }
-    \prop_gclear:N
-      \g_istqb_reference_labels_prop
-    \str_case:nnF
-      { #1 }
-      {
-        { cs } {
-          \selectlanguage { czech }
-          \gdef \istqbstandardsname { Standardy }
-          \gdef \istqbdocumentsname { ISTQB\textsuperscript{\textregistered}~dokumenty }
-          \gdef \istqbbooksname { Knihy }
-          \gdef \istqbarticlesname { Články }
-          \gdef \istqbfurtherreadingname { Další~zdroje }
-          \gdef \istqbpagename { Strana }
-          \gdef \istqboutofname { z }
-          \gdef \istqbprovidedbysingularname { Poskytl }
-          \gdef \istqbprovidedbypluralname { Poskytli }
-          \gdef \istqborgname { International~Software~Testing~Qualifications~Board }
-          \gdef \istqblistdelimiters
-            {
-              { ~a~ }
-              { ,~ }
-              { ~a~ }
-            }
-          \prop_gset_from_keyval:Nn
-            \g_istqb_reference_labels_prop
-            {
-              section = { Sekci },
-              figure = { \figurename },
-              table = { Tabulku },
-            }
-        }
-        { sk } {
-          \selectlanguage { slovak }
-          \gdef \istqbstandardsname { Štandardy }
-          \gdef \istqbdocumentsname { ISTQB\textsuperscript{\textregistered}~dokumenty }
-          \gdef \istqbbooksname { Knihy }
-          \gdef \istqbarticlesname { Články }
-          \gdef \istqbfurtherreadingname { Ďalšie~zdroje }
-          \gdef \istqbpagename { Strana }
-          \gdef \istqboutofname { z }
-          \gdef \istqbprovidedbysingularname { Poskytol }
-          \gdef \istqbprovidedbypluralname { Poskytli }
-          \gdef \istqborgname { International~Software~Testing~Qualifications~Board }
-          \gdef \istqblistdelimiters
-            {
-              { ~a~ }
-              { ,~ }
-              { ~a~ }
-            }
-          \prop_gset_from_keyval:Nn
-            \g_istqb_reference_labels_prop
-            {
-              section = { Sekcii },
-              figure = { \figurename },
-              table = { Tabuľku },
-            }
-        }
-        { en } {
-          \selectlanguage { english }
-          \gdef \istqbstandardsname { Standards }
-          \gdef \istqbdocumentsname { ISTQB\textsuperscript{\textregistered}~Documents }
-          \gdef \istqbbooksname { Books }
-          \gdef \istqbarticlesname { Articles }
-          \gdef \istqbfurtherreadingname { Further~Reading }
-          \gdef \istqbpagename { Page }
-          \gdef \istqboutofname { out~of }
-          \gdef \istqbprovidedbysingularname { Provided~by }
-          \gdef \istqbprovidedbypluralname { Provided~by }
-          \gdef \istqborgname { International~Software~Testing~Qualifications~Board }
-          \gdef \istqblistdelimiters
-            {
-              { ~and~ }
-              { ,~ }
-              { ,~and~ }
-            }
-          \prop_gset_from_keyval:Nn
-            \g_istqb_reference_labels_prop
-            {
-              section = { Section },
-              figure = { \figurename },
-              table = { \tablename },
-            }
-        }
-      }
-      {
-        \msg_error:nnn
-          { istqb }
-          { unknown-language }
-          { #1 }
-      }
-  }
-\msg_new:nnn
-  { istqb }
-  { unknown-language }
-  { Unknown language "#1" }
-\istqb_set_language:n
-  { en }
-\ExplSyntaxOff
-
 %% Typefaces
 \RequirePackage[T1]{fontenc}
 \RequirePackage{tgheros}
@@ -499,10 +388,14 @@
             % Several third party organizations
             \istqbprovidedbypluralname
             \par \vfill
-            \exp_last_unbraced:NNV
+            \exp_last_unbraced:NNo
               \seq_use:Nnnn
               \g_istqb_third_parties_seq
-              \istqblistdelimiters
+              {
+                { \g_istqb_list_delimiter_two }
+                { \g_istqb_list_delimiter_many }
+                { \g_istqb_list_delimiter_last }
+              }
           }
         \par \vspace { 0.3in }
         \vfill \vfill
