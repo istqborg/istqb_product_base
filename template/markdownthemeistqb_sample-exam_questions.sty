@@ -40,6 +40,7 @@
         \seq_map_inline:Nn
           \g_istqb_questions_seq
           {
+            \vbox \bgroup  % Put each question in a vbox to prevent page breaks.
             \group_begin:
             % Print question heading.
             \tl_set:Nn
@@ -139,6 +140,7 @@
               \l_tmpa_int = { 1 }
               { s }.
             \group_end:
+            \egroup
           }
       },
     },
