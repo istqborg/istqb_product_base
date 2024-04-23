@@ -53,7 +53,7 @@ Here is the structure of file `example.tex`:
      \markdownInput[texComments]{example-document/revisions.md}
 
      % Table of Contents
-     \tableofcontents
+     \istqbtableofcontents
      ```
 
      Here, the `texComments` option is used to allow the breaking of long lines in the revision table using the percent sign (`%`).
