@@ -362,6 +362,15 @@
   {
     headerAttributes,
     rendererPrototypes = {
+      headingOne = {
+        \istqbsection { #1 }
+      },
+      headingTwo = {
+        \istqbsubsection { #1 }
+      },
+      headingThree = {
+        \istqbsubsubsection { #1 }
+      },
       headingFour = {
         \paragraph { #1 }
         \leavevmode
