@@ -440,6 +440,38 @@
 \ExplSyntaxOff
 
 % Headings
+\ExplSyntaxOn
+\int_new:N
+  \g_istqb_previous_heading_level
+\int_gset:Nn
+  \g_istqb_previous_heading_level
+  { 0 }
+\cs_new:Npn
+  \istqbupdateheadinglevel
+  #1
+  {
+    \int_if_zero:VF
+      \g_istqb_previous_heading_level
+      {
+        % Encourage page breaks before sections
+        \penalty -2000
+        % Discourage page breaks between sections and subsections in TOC
+        \int_compare:nT
+          { \g_istqb_previous_heading_level < #1 }
+          { \addtocontents { toc } { \nopagebreak } }
+        % Encourage page breaks between subsections and sections in TOC
+        \int_compare:nT
+          { \g_istqb_previous_heading_level > #1 }
+          { \addtocontents { toc } { \pagebreak[0] } }
+      }
+    \int_gset:Nn
+      \g_istqb_previous_heading_level
+      { #1 }
+  }
+\cs_generate_variant:Nn
+  \int_if_zero:nF
+  { VF }
+\ExplSyntaxOff
 %% Sections, subsections, and subsubsections
 \RequirePackage{xpatch, mdframed}
 \xpatchcmd{\section}{\normalfont\Large\bfseries}{\istqbsectionbox}{}{\PatchFailed}
@@ -500,16 +532,32 @@
 \titlespacing\section{0pt}{0pt}{*3.2}
 \titlespacing\subsection{0pt}{*5.5}{*0.8}
 \titlespacing\subsubsection{0pt}{*3.25}{*1}
+%%% Document commands
+\newcommand\istqbsection[1]{%
+  \istqbupdateheadinglevel{1}%
+  \section{#1}%
+}
+\newcommand\istqbsubsection[1]{%
+  \istqbupdateheadinglevel{2}%
+  \subsection{#1}%
+}
+\newcommand\istqbsubsubsection[1]{%
+  \istqbupdateheadinglevel{3}%
+  \subsubsection{#1}%
+}
 \newcommand\istqbunnumberedsection[1]{%
+  \istqbupdateheadinglevel{1}%
   \section*{#1}%
   \markboth{#1}{#1}%
   \addcontentsline{toc}{section}{#1}%
 }
 \newcommand\istqbunnumberedsubsection[1]{%
+  \istqbupdateheadinglevel{2}%
   \subsection*{#1}%
   \addcontentsline{toc}{subsection}{#1}%
 }
 \newcommand\istqbunnumberedsubsubsection[1]{%
+  \istqbupdateheadinglevel{3}%
   \subsubsection*{#1}%
   \addcontentsline{toc}{subsubsection}{#1}%
 }

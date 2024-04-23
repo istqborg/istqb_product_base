@@ -286,7 +286,7 @@ Here is a short paragraph with \emph{emphasized} and \textbf{bold} text.
 Here is a long paragraph:
 \medskip
 
-\lipsum[1]
+\lipsum[2]
 
 &
 
@@ -369,7 +369,7 @@ Here is a short paragraph with \emph{emphasized} and \textbf{bold} text.
 Here is a long paragraph:
 \medskip
 
-\lipsum[1]
+\lipsum[2]
 
 &
 
