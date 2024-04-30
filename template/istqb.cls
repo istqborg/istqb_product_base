@@ -134,7 +134,10 @@
 \renewcommand{\footrulewidth}{0pt}
 \RequirePackage{xcolor}
 \RequirePackage{mdframed}
-\RequirePackage{lastpage}
+\@ifundefined
+  {HCode}%
+  {\RequirePackage{lastpage}}%
+  {\def\lastpage@lastpage{??}}
 \ExplSyntaxOn
 \tl_new:N \g_istqb_version_tl
 \tl_new:N \g_istqb_date_tl
