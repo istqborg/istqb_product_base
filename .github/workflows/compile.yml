@@ -6,6 +6,11 @@ on:
         description: 'A Git ref in the repository istqb_product_base, which should be used for the LaTeX+Markdown template'
         required: false
         type: string
+      skip-prerelease:
+        description: 'Whether we should skip creating a prerelease or not'
+        required: false
+        default: false
+        type: boolean
   push:
 permissions:
   contents: write
@@ -234,7 +239,7 @@ jobs:
           path: docx
   prerelease:
     name: Create a prerelease
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && inputs.skip-prerelease == false
     needs:
       - produce-pdf
       - produce-html
