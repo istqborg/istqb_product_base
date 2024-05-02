@@ -4,8 +4,8 @@ title: Example Document
 prefix: EXMPL
 code: CT-EXMPL
 type: Syllabus
-version: Version v0.1
-date: 31 October 2023
+version: v0.1
+date: 2024/01/01
 release: For internal use only
 logo: istqb-logo-default
 language: en
@@ -14,10 +14,10 @@ compatibility: |
   and Specialist Modules
 provided-by:
 # 3rd-party organizations with logos
-- name: Alliance for Qualification
-  logo: a4q-logo
-- name: Artificial Intelligence United
-  logo: aiu-logo
+- name: Czech and Slovak Quality Board
+  logo: casqb-logo-vertical
+- name: Polish Testing Board
+  logo: sjsi-logo
 # 3rd-party organizations without logos
-- name: Chinese Software Testing Qualifications Board  # or just:
-- Korean Software Testing Qualifications Board
+- name: International Requirements Engineering Board  # or just:
+- Hungarian Testing Board
