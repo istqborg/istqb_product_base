@@ -43,17 +43,12 @@ jobs:
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
           parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = /babel-language: /p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}' ::: languages/*.yml
-      - name: Check the well-formedness of all YAML documents
-        run: |
-          set -ex
-          $FIND -type f -iregex '.*\.yml$' -print | parallel --halt now,fail=1 istqb_product_base/check-yaml.lua {}
-          parallel --halt now,fail=1 istqb_product_base/check-yaml.lua {} ::: istqb_product_base/languages/*.yml
-      - name: Validate metadata.yml
+      - name: Validate metadata*.yml
         shell: bash
         run: |
           set -ex
           source ~/venv/bin/activate
-          $FIND -type f -iregex '.*/metadata\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/metadata.yml {}
+          $FIND -type f -iregex '.*/metadata.*\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/metadata.yml {}
       - name: Validate questions.yml
         shell: bash
         run: |
@@ -66,6 +61,11 @@ jobs:
           set -ex
           source ~/venv/bin/activate
           parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/language.yml {} ::: istqb_product_base/languages/*.yml
+      - name: Check the well-formedness of all YAML documents
+        run: |
+          set -ex
+          $FIND -type f -iregex '.*\.yml$' -print | parallel --halt now,fail=1 istqb_product_base/check-yaml.lua {}
+          parallel --halt now,fail=1 istqb_product_base/check-yaml.lua {} ::: istqb_product_base/languages/*.yml
   produce-pdf:
     name: Produce PDF documents
     needs:
