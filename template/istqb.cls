@@ -731,9 +731,11 @@
 \newunicodechar{≤}{\ensuremath{\leq}}
 \newunicodechar{≥}{\ensuremath{\geq}}
 \newunicodechar{≠}{\ensuremath{\neq}}
+%% Spacing
+\newunicodechar{ }{\,}
+\newunicodechar{​}{}
 %% Miscellaneous
 \newunicodechar{®}{\textsuperscript{\textregistered}}
-\newunicodechar{​}{}
 
 % Miscellaneous
 \RequirePackage{lipsum}  % The `lipsum` package is used in a complex table from the example document.
