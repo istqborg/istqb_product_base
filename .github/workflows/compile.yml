@@ -23,7 +23,7 @@ jobs:
     name: Validate YAML documents
     runs-on: ubuntu-latest
     container:
-      image: witiko/markdown:3.5.0-0-gfd01a252-latest
+      image: witiko/markdown:3.5.0-21-gb542eccb-latest
     steps:
       - name: Install required packages
         shell: bash
@@ -72,7 +72,7 @@ jobs:
       - validate
     runs-on: ubuntu-latest
     container:
-      image: witiko/markdown:3.5.0-0-gfd01a252-latest
+      image: witiko/markdown:3.5.0-21-gb542eccb-latest
     steps:
       - name: Install required packages
         run: |
@@ -115,7 +115,7 @@ jobs:
       - validate
     runs-on: ubuntu-latest
     container:
-      image: witiko/markdown:3.5.0-0-gfd01a252-latest
+      image: witiko/markdown:3.5.0-21-gb542eccb-latest
     steps:
       - name: Install required packages
         run: |
@@ -158,7 +158,7 @@ jobs:
       - validate
     runs-on: ubuntu-latest
     container:
-      image: witiko/markdown:3.5.0-0-gfd01a252-latest
+      image: witiko/markdown:3.5.0-21-gb542eccb-latest
     steps:
       - name: Install required packages
         run: |
