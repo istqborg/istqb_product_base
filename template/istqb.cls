@@ -73,6 +73,7 @@
 \tl_new:N \g_istqb_title_tl
 \tl_new:N \g_istqb_code_tl
 \tl_new:N \g_istqb_logo_tl
+\tl_new:N \g_istqb_organization_tl
 \tl_gset:Nn
   \g_istqb_logo_tl
   { istqb-logo-default }
