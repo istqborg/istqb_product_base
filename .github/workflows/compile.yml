@@ -103,7 +103,7 @@ jobs:
       - name: Convert XLSX spreadsheets to PDF
         run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice7.3 --headless --convert-to pdf {} --outdir {//}
       - name: Compile LaTeX documents to PDF
-        run: $FIND -type f -iregex '.*\.tex$'  -print | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk -r istqb_product_base/latexmkrc {} '&&' 'mv -v {.}.pdf "$(cat {.}.istqb_project_name).pdf"'
+        run: $FIND -type f -iregex '.*\.tex$'  -print | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk -r istqb_product_base/latexmkrc {} '&&' '(test {} = ./example-document.tex || mv -v {.}.pdf "$(cat {.}.istqb_project_name).pdf")'
       - name: Upload PDF documents
         uses: actions/upload-artifact@v4
         with:
