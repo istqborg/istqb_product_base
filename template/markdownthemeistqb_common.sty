@@ -222,6 +222,7 @@
   }
 \tl_new:N \l_istqb_current_third_party_name_tl
 \tl_new:N \l_istqb_current_third_party_logo_tl
+\iow_new:N \g_istqb_project_name_iow
 \markdownSetupSnippet
   { metadata }
   {
@@ -297,12 +298,26 @@
       jekyllDataEnd = {
         \istqb_load_language:V
           \g_istqb_language_tl
+        \iow_open:Ne
+          \g_istqb_project_name_iow
+          { \c_sys_jobname_str .istqb_project_name }
+        \iow_now:Ne
+          \g_istqb_project_name_iow
+          { ISTQB- \g_istqb_code_tl - \g_istqb_type_tl - \g_istqb_version_tl }
+        \iow_close:N
+          \g_istqb_project_name_iow
       },
     },
   }
 \cs_generate_variant:Nn
   \istqb_load_language:n
   { V }
+\cs_generate_variant:Nn
+  \iow_open:Nn
+  { Ne }
+\cs_generate_variant:Nn
+  \iow_now:Nn
+  { Ne }
 
 % Images
 \markdownSetup
