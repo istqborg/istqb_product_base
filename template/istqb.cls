@@ -82,36 +82,62 @@
   \fontsize{9}{10.8}\selectfont
   \begin{minipage}[b]{0.7\linewidth}
     \tl_if_empty:NF
-      \g_istqb_schema_tl
+      \g_istqb_organization_tl
       {
-        \mbox { \g_istqb_schema_tl }
-      }
-    \tl_if_empty:NF
-      \g_istqb_level_tl
-      {
+        \mbox { \g_istqb_organization_tl }
         \tl_if_empty:NF
           \g_istqb_schema_tl
           { ~ }
+      }
+    \tl_if_empty:NF
+      \g_istqb_schema_tl
+      { \mbox { \g_istqb_schema_tl } }
+    \bool_if:nF
+      {
+        \tl_if_empty_p:N
+          \g_istqb_organization_tl &&
+        \tl_if_empty_p:N
+          \g_istqb_schema_tl
+      }
+      { \\ }
+    \tl_if_empty:NF
+      \g_istqb_level_tl
+      {
         \mbox { \g_istqb_level_tl }
         \tl_if_empty:NF
-          \g_istqb_code_tl
-          {
-            \mbox { ~(\g_istqb_code_tl) }
-          }
+          \g_istqb_type_tl
+          { ~ }
       }
+    \tl_if_empty:NF
+      \g_istqb_type_tl
+      { \mbox { \g_istqb_type_tl } }
+    \bool_if:nF
+      {
+        (
+          \tl_if_empty_p:N
+            \g_istqb_level_tl &&
+          \tl_if_empty_p:N
+            \g_istqb_type_tl
+        ) ||
+        (
+          \tl_if_empty_p:N
+            \g_istqb_title_tl &&
+          \tl_if_empty_p:N
+            \g_istqb_code_tl
+        )
+      }
+      { \,--\, }
     \tl_if_empty:NF
       \g_istqb_title_tl
       {
-        \tl_if_empty:NTF
-          \g_istqb_schema_tl
-          {
-            \tl_if_empty:NF
-              \g_istqb_level_tl
-              { \\ }
-          }
-          { \\ }
-        \g_istqb_title_tl
+        \mbox { \g_istqb_title_tl }
+        \tl_if_empty:NF
+          \g_istqb_code_tl
+          { ~ }
       }
+    \tl_if_empty:NF
+      \g_istqb_code_tl
+      { \mbox { ( \g_istqb_code_tl ) } }
   \end{minipage}
 }
 \rhead{%
