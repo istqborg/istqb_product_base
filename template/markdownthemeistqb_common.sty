@@ -744,7 +744,7 @@
                 \l_tmpb_tl
             ]
           }
-        \emph
+        \textit
           {
             \exp_last_unbraced:NV
               \hyperref
@@ -752,8 +752,37 @@
               { #1 }
           }
       }{
-        \emph { \href { #3 } { #1 } }
+        \textit { \href { #3 } { #1 } }
       }
+  }
+\bool_new:N \l_istqb_reference_short_bool
+\markdownSetup
+  {
+    linkAttributes,
+    rendererPrototypes = {
+      linkAttributeContextBegin = {
+        \group_begin:
+        \bool_set_false:N
+          \l_istqb_reference_short_bool
+        \markdownSetup
+          {
+            renderers = {
+              attributeClassName = {
+                \tl_if_eq:nnT
+                  { ##1 }
+                  { unnumbered }
+                  {
+                    \bool_set_true:N
+                      \l_istqb_reference_short_bool
+                  }
+              },
+            },
+          }
+      },
+      linkAttributeContextEnd = {
+        \group_end:
+      },
+    },
   }
 \tl_new:N \l_istqb_reference_label_tl
 \tl_new:N \l_istqb_reference_number_tl
@@ -813,24 +842,31 @@
             \exp_not:N \ref
               { \l_tmpa_tl }
           }
-        \tl_set:Nx
-          \l_tmpb_tl
+        \bool_if:NTF
+          \l_istqb_reference_short_bool
           {
-            \exp_not:N \emph
+            \textit { \tl_use:N \l_istqb_reference_number_tl }
+          }
+          {
+            \tl_set:Nx
+              \l_tmpb_tl
               {
-                \exp_not:N \hyperref
-                  [ \l_tmpa_tl ]
+                \exp_not:N \textit
                   {
-                    \l_istqb_reference_label_tl
-                    {}~
-                    \l_istqb_reference_number_tl
+                    \exp_not:N \hyperref
+                      [ \l_tmpa_tl ]
+                      {
+                        \l_istqb_reference_label_tl
+                        {}~
+                        \l_istqb_reference_number_tl
+                      }
                   }
               }
+            \tl_use:N
+              \l_tmpb_tl
           }
-        \tl_use:N
-          \l_tmpb_tl
       }{
-        \emph { \url { #2 } }
+        \textit { \url { #2 } }
       }
 }
 \cs_generate_variant:Nn
