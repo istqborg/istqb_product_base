@@ -7,6 +7,7 @@ This chapter explains how to use the template for ISTQB® documents, but explani
 Data for the Landing page are defined in the file `metadata.yml` as follows:
 
 ```yaml
+organization: ISTQB®
 schema: Certified Tester
 level: Foundation Level
 title: Example Document
