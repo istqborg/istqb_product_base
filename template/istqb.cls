@@ -77,6 +77,9 @@
 \tl_gset:Nn
   \g_istqb_logo_tl
   { istqb-logo-default }
+\tl_gset:Nn
+  \g_istqb_organization_tl
+  { ISTQB® }
 \lhead{%
   \kern 0.1in
   \fontsize{9}{10.8}\selectfont
