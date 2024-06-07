@@ -10,7 +10,7 @@ reference-labels:
   section: Section
   figure: Figure
   table: Table
-page: [Page, out of]
+page: [Page, of]
 provided-by: [Provided by, Provided by]
 istqb: International Software Testing Qualifications Board
 list-delimiters: [and, ',', ', and']
