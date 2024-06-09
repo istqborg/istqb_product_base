@@ -113,9 +113,13 @@
                                   }
                                   { correct } {
                                     \group_begin:
-                                    \seq_put_right:Nn
-                                      \l_istqb_current_answer_correct_keys_seq
+                                    \clist_map_inline:nn
                                       { ####2 }
+                                      {
+                                        \seq_put_right:Nn
+                                          \l_istqb_current_answer_correct_keys_seq
+                                          { ########1 }
+                                      }
                                     \clist_set_from_seq:NN
                                       \l_istqb_current_answer_correct_keys_clist
                                       \l_istqb_current_answer_correct_keys_seq
