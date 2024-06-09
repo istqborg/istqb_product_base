@@ -34,7 +34,15 @@ for _, filename in ipairs(arg) do
           this_failed = true
         end
       end
-    else
+    end
+    for question_no, question in pairs(output) do
+      if type(question) == 'table' and type(question['answers']) ~= nil and question['correct'] ~= nil then
+        local correct_num = type(questions['correct']) == 'table' and #questions['correct'] or 1
+        if not (#question['answers'] == 4 and correct_num == 1 or #question['answers'] == 5 and correct_num == 2) then
+          print("\nFile " .. filename .. ", question " .. question_no .. " contains " .. #question['answers'] .. " answers, out of which " .. correct_num .. " " .. (correct_num > 1 and "are" or "is") .. " marked as correct. Expected either 4 answers with 1 correct one or 5 answers with 2 correct ones.")
+          break
+        end
+      end
     end
   end
   if this_failed then
