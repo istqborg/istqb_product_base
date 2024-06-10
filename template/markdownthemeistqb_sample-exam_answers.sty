@@ -42,31 +42,6 @@
       jekyllDataEnd = {
         \group_begin:
         % Set the dimensions of the table rows.
-        \advance
-          \@colroom
-          1.25cm
-        \int_compare:nTF
-          { \seq_count:N \g_istqb_questions_seq > 45 }
-          {
-            \cs_set:Npn
-              \arraystretch
-              { 0.95 }
-          }
-          {
-            \int_compare:nTF
-            { \seq_count:N \g_istqb_questions_seq > 40 }
-            {
-              \cs_set:Npn
-                \arraystretch
-                { 1.05 }
-            }
-            {
-              \cs_set:Npn
-                \arraystretch
-                { 1.20 }
-            }
-          }
-        % Set the dimensions of the table rows.
         \cs_set:Npn
           \arraystretch
           { 0.95 }
