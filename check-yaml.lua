@@ -34,7 +34,30 @@ for _, filename in ipairs(arg) do
           this_failed = true
         end
       end
-    else
+    end
+    if output['questions'] ~= nil then
+      for question_no, question in pairs(output['questions']) do
+        if type(question) == 'table' and type(question['answers']) ~= nil and question['correct'] ~= nil then
+          local answers_num = 0
+          for _, _ in pairs(question['answers']) do
+            answers_num = answers_num + 1
+          end
+          local correct = question['correct']
+          local correct_num = 0
+          if type(correct) == 'string' then
+            for _ in correct:gmatch('[^,]*') do
+              correct_num = correct_num + 1
+            end
+          else
+            correct_num = #question['correct']
+          end
+          if not (answers_num == 4 and correct_num == 1 or answers_num == 5 and correct_num == 2) then
+            print("\nFile " .. filename .. ", question " .. question_no .. ", contains " .. answers_num .. " answers, out of which " .. correct_num .. " " .. (correct_num > 1 and "are" or "is") .. " marked as correct. Expected either 4 answers with 1 correct one or 5 answers with 2 correct ones.")
+            this_failed = true
+            break
+          end
+        end
+      end
     end
   end
   if this_failed then
