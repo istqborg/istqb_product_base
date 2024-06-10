@@ -45,6 +45,7 @@
         \prop_gclear:N \g_istqb_answer_keys_prop
         \prop_gclear:N \g_istqb_answers_prop
       },
+      jekyllDataMappingBegin = ,
       jekyllDataSequenceBegin = {
         \str_case:nn
           { #1 }
@@ -66,6 +67,12 @@
                   },
                 }
             }
+          }
+      },
+      jekyllData(Mapping|Sequence)Begin += {
+        \str_case:nn
+          { #1 }
+          {
             { questions } {
               \group_begin:
               \markdownSetup
