@@ -160,6 +160,8 @@
 % Answers
 \RequirePackage
   { longtable }
+\dim_new:N
+  \l_explanation_width_dim
 \markdownSetupSnippet
   { answers }
   {
@@ -174,7 +176,7 @@
         \group_begin:
         % Prepare the heading of the table.
         \dim_set:Nn
-          \l_tmpa_dim
+          \l_explanation_width_dim
           { 11.15cm }
         \cs_set:Npn
           \arraystretch
@@ -184,13 +186,13 @@
           {
             \begin
               { longtable }
-              { | C { 1.9cm } | C { 1.5cm } | p { \l_tmpa_dim } | C { 2.4cm } | C { 1.4cm } | C { 1.9cm } | }
+              { | C { 1.9cm } | C { 1.5cm } | p { \l_explanation_width_dim } | C { 2.4cm } | C { 1.4cm } | C { 1.9cm } | }
             \hline
             \textbf { Question~Number~(\#) } &
             \textbf { Correct~Answer } &
             \multicolumn
               { 1 }
-              { C { \l_tmpa_dim } | }
+              { C { \l_explanation_width_dim } | }
               { \textbf { Explanation~/~Rationale } } &
             \textbf { Learning~Objective~(LO) } &
             \textbf { K-Level } &
@@ -229,7 +231,7 @@
             \tl_put_right:Nn
               \l_tmpa_tl
               {
-                \begin { minipage } [ t ] { \l_tmpa_dim }
+                \begin { minipage } [ t ] { \l_explanation_width_dim }
               }
             \prop_get:NnN
               \g_istqb_question_explanation_prop
@@ -242,7 +244,7 @@
               \l_tmpa_tl
               {
                 \end { minipage }
-                \par
+                \medskip
               }
             \tl_put_right:Nn
               \l_tmpa_tl
