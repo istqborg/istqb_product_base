@@ -10,7 +10,7 @@ date: 2024/06/04
 release: For internal use only
 logo: istqb-logo-default
 language: en
-line-numbers: true
+line-numbers: false
 compatibility: |
   Compatible with Syllabus on Foundation and Advanced Levels,
   and Specialist Modules
