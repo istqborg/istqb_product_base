@@ -43,7 +43,19 @@
     fancyLists = true,
     renderers = {
       jekyllDataEnd = {
-        \group_begin:
+        % Start a two-column layout
+        \begin { multicols } { 2 }
+        \cs_set:Npn
+          \newpage
+          {
+            \if@firstcolumn
+              \hrule width
+                \linewidth height0pt
+              \columnbreak
+              % Prevent a page break after the second column.
+              \advance \@colroom \@colroom
+            \fi
+          }
         % Set the dimensions of the table rows.
         \cs_set:Npn
           \arraystretch
@@ -96,8 +108,7 @@
               \l_tmpa_clist
             \tl_put_right:Ne
               \l_tmpa_tl
-              {
-                \clist_use:Nn
+              { \clist_use:Nn
                   \l_tmpa_clist
                   { ,~ } &
               }
@@ -146,25 +157,11 @@
         % Typeset the table.
         \tl_put_right:Nn
           \l_tmpa_tl
-          {
-            \end { supertabular }
-          }
-        \begin { multicols } { 2 }
-        \cs_set:Npn
-          \newpage
-          {
-            \if@firstcolumn
-              \hrule width
-                \linewidth height0pt
-              \columnbreak
-              % Prevent a page break after the second column.
-              \advance \@colroom \@colroom
-            \fi
-          }
+          { \end { supertabular } }
         \tl_use:N
           \l_tmpa_tl
+        % End the two-column layout.
         \end { multicols }
-        \group_end:
       },
     },
   }
@@ -245,16 +242,14 @@
               \l_tmpa_clist
             \tl_put_right:Ne
               \l_tmpa_tl
-              {
-                \clist_use:Nn
+              { \clist_use:Nn
                   \l_tmpa_clist
                   { ,~ } &
               }
             % Record the explanation / rationale.
             \tl_put_right:Nn
               \l_tmpa_tl
-              {
-                \begin
+              { \begin
                   { minipage }
                   [ t ]
                   {
@@ -271,10 +266,8 @@
               \l_tmpb_tl
             \tl_put_right:Nn
               \l_tmpa_tl
-              {
-                \end { minipage }
-                \medskip
-              }
+              { \end { minipage }
+                \medskip }
             \tl_put_right:Nn
               \l_tmpa_tl
               { & }
@@ -323,9 +316,7 @@
         % Typeset the table.
         \tl_put_right:Nn
           \l_tmpa_tl
-          {
-            \end { longtable }
-          }
+          { \end { longtable } }
         \tl_use:N
           \l_tmpa_tl
         \group_end:

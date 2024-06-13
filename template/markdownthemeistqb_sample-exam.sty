@@ -105,6 +105,7 @@
   {
     renderers = {
       jekyllDataMappingBegin = {
+        \group_begin:
         \tl_set:Nn
           \l_istqb_current_question_tl
           { #1 }
@@ -113,7 +114,6 @@
           \l_istqb_current_question_tl
         \markdownSetup
           {
-            code = \group_begin:,
             renderers = {
               jekyllDataMappingEnd =
             },
@@ -256,30 +256,6 @@
       },
     },
   }
-\markdownSetupSnippet
-  { questions / * / correct }
-  {
-    renderers = {
-      jekyllData(String|Number) = {
-        \seq_put_right:cn
-          { l_istqb_current_answer_correct
-            _keys_seq }
-          { #2 }
-      },
-      jekyllDataSequenceEnd += {
-        \clist_set_from_seq:cc
-          { l_istqb_current_answer_correct
-            _keys_clist }
-          { l_istqb_current_answer_correct
-            _keys_seq }
-        \prop_gput:NVv
-          \g_istqb_answer_correct_keys_prop
-          \l_istqb_current_question_tl
-          { l_istqb_current_answer_correct
-            _keys_clist }
-      },
-    },
-  }
 \prop_new:N \g_istqb_answer_keys_prop
 \prop_new:N \g_istqb_answers_prop
 \seq_new:N \l_istqb_current_answer_keys_seq
@@ -305,14 +281,6 @@
           { #2 }
       },
       jekyllDataMappingEnd += {
-        \seq_sort:Nn
-          \l_istqb_current_answer_keys_seq
-          {
-            \str_compare:nNnTF
-              { ##1 } > { ##2 }
-              { \sort_return_swapped: }
-              { \sort_return_same: }
-          }
         \clist_set_from_seq:NN
           \l_istqb_current_answer_keys_clist
           \l_istqb_current_answer_keys_seq
@@ -320,6 +288,30 @@
           \g_istqb_answer_keys_prop
           \l_istqb_current_question_tl
           \l_istqb_current_answer_keys_clist
+      },
+    },
+  }
+\markdownSetupSnippet
+  { questions / * / correct }
+  {
+    renderers = {
+      jekyllData(String|Number) = {
+        \seq_put_right:cn
+          { l_istqb_current_answer_correct
+            _keys_seq }
+          { #2 }
+      },
+      jekyllDataSequenceEnd += {
+        \clist_set_from_seq:cc
+          { l_istqb_current_answer_correct
+            _keys_clist }
+          { l_istqb_current_answer_correct
+            _keys_seq }
+        \prop_gput:NVv
+          \g_istqb_answer_correct_keys_prop
+          \l_istqb_current_question_tl
+          { l_istqb_current_answer_correct
+            _keys_clist }
       },
     },
   }
