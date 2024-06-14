@@ -35,6 +35,8 @@
   { C }
   [ 1 ]
   { >{ \centering\arraybackslash } p { #1 } }
+\tl_new:N
+  \l_istqb_answer_key_table_tl
 \markdownSetupSnippet
   { answer-key }
   {
@@ -81,7 +83,7 @@
         \tabletail { \hline }
         \tablelasttail { \hline }
         \tl_set:Nn
-          \l_tmpa_tl
+          \l_istqb_answer_key_table_tl
           {
             \begin
               { supertabular }
@@ -94,11 +96,11 @@
           \g_istqb_questions_seq
           {
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answer_key_table_tl
               { \hline }
             % Record the question number.
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answer_key_table_tl
               { \textbf { ##1 } & }
             % Record the correct answers.
             \prop_get:cnN
@@ -107,59 +109,59 @@
               { ##1 }
               \l_tmpa_clist
             \tl_put_right:Ne
-              \l_tmpa_tl
+              \l_istqb_answer_key_table_tl
               { \clist_use:Nn
                   \l_tmpa_clist
                   { ,~ } &
               }
             % Record the learning objective.
             \tl_put_right:NV
-              \l_tmpa_tl
+              \l_istqb_answer_key_table_tl
               \g_istqb_prefix_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answer_key_table_tl
               { - }
             \prop_get:cnN
               { g_istqb_question_learning
                 _objective_prop }
               { ##1 }
-              \l_tmpb_tl
+              \l_tmpa_tl
             \tl_put_right:NV
+              \l_istqb_answer_key_table_tl
               \l_tmpa_tl
-              \l_tmpb_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answer_key_table_tl
               { & }
             % Record the K-level.
             \prop_get:NnN
               \g_istqb_question_k_level_prop
               { ##1 }
-              \l_tmpb_tl
+              \l_tmpa_tl
             \tl_put_right:NV
+              \l_istqb_answer_key_table_tl
               \l_tmpa_tl
-              \l_tmpb_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answer_key_table_tl
               { & }
             % Record the number of points.
             \prop_get:cnN
               { g_istqb_question_number
                 _of_points_prop }
               { ##1 }
-              \l_tmpb_tl
+              \l_tmpa_tl
             \tl_put_right:NV
+              \l_istqb_answer_key_table_tl
               \l_tmpa_tl
-              \l_tmpb_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answer_key_table_tl
               { \\ }
           }
         % Typeset the table.
         \tl_put_right:Nn
-          \l_tmpa_tl
+          \l_istqb_answer_key_table_tl
           { \end { supertabular } }
         \tl_use:N
-          \l_tmpa_tl
+          \l_istqb_answer_key_table_tl
         % End the two-column layout.
         \end { multicols }
       },
@@ -172,6 +174,8 @@
 \dim_const:Nn
   \c_explanation_width_dim
   { 11.15cm }
+\tl_new:N
+  \l_istqb_answers_table_tl
 \markdownSetupSnippet
   { answers }
   {
@@ -190,7 +194,7 @@
           \arraystretch
           { 1.5 }
         \tl_set:Nn
-          \l_tmpa_tl
+          \l_istqb_answers_table_tl
           {
             \begin
               { longtable }
@@ -225,7 +229,7 @@
           {
             % Record the question number.
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               {
                 \textbf
                   { ##1 }
@@ -241,14 +245,14 @@
               { ##1 }
               \l_tmpa_clist
             \tl_put_right:Ne
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               { \clist_use:Nn
                   \l_tmpa_clist
                   { ,~ } &
               }
             % Record the explanation / rationale.
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               { \begin
                   { minipage }
                   [ t ]
@@ -260,65 +264,65 @@
               { g_istqb_question_explanation
                 _prop }
               { ##1 }
-              \l_tmpb_tl
+              \l_tmpa_tl
             \tl_put_right:NV
+              \l_istqb_answers_table_tl
               \l_tmpa_tl
-              \l_tmpb_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               { \end { minipage }
                 \medskip }
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               { & }
             % Record the learning objective.
             \tl_put_right:NV
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               \g_istqb_prefix_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               { - }
             \prop_get:cnN
               { g_istqb_question_learning
                 _objective_prop }
               { ##1 }
-              \l_tmpb_tl
+              \l_tmpa_tl
             \tl_put_right:NV
+              \l_istqb_answers_table_tl
               \l_tmpa_tl
-              \l_tmpb_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               { & }
             % Record the K-level.
             \prop_get:NnN
               \g_istqb_question_k_level_prop
               { ##1 }
-              \l_tmpb_tl
+              \l_tmpa_tl
             \tl_put_right:NV
+              \l_istqb_answers_table_tl
               \l_tmpa_tl
-              \l_tmpb_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               { & }
             % Record the number of points.
             \prop_get:cnN
               { g_istqb_question_number_of
                 _points_prop }
               { ##1 }
-              \l_tmpb_tl
+              \l_tmpa_tl
             \tl_put_right:NV
+              \l_istqb_answers_table_tl
               \l_tmpa_tl
-              \l_tmpb_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               { \\ \hline }
           }
         % Typeset the table.
         \tl_put_right:Nn
-          \l_tmpa_tl
+          \l_istqb_answers_table_tl
           { \end { longtable } }
         \tl_use:N
-          \l_tmpa_tl
+          \l_istqb_answers_table_tl
         \group_end:
       },
     },
