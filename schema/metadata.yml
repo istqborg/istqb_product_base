@@ -11,6 +11,7 @@ release: str(required=False)
 prefix: str(required=False)
 compatibility: str(required=False)
 language: str(required=False)
+line-numbers: bool(required=False)
 provided-by: include('third-parties', required=False)
 ---
 third-parties: list(any(str(), include('third-party')))
