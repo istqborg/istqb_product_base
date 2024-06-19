@@ -245,9 +245,22 @@
         \iow_open:Ne
           \g_istqb_project_name_iow
           { \c_sys_jobname_str .istqb_project_name }
+        \str_set:NV
+          \l_tmpa_str
+          \g_istqb_organization_tl
+        \str_remove_all:Nn
+          \l_tmpa_str
+          { ® }
         \iow_now:Ne
           \g_istqb_project_name_iow
-          { ISTQB- \g_istqb_code_tl - \g_istqb_type_tl - \g_istqb_version_tl }
+          {
+            \l_tmpa_str -
+            \g_istqb_code_tl -
+            \g_istqb_type_tl -
+            \g_istqb_version_tl -
+            \str_uppercase:V
+              \g_istqb_language_tl
+          }
         \iow_close:N
           \g_istqb_project_name_iow
       },
@@ -262,6 +275,9 @@
 \cs_generate_variant:Nn
   \iow_now:Nn
   { Ne }
+\cs_generate_variant:Nn
+  \str_uppercase:n
+  { V }
 \markdownSetupSnippet
   { metadata / provided-by }
   {
