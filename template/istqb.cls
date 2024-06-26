@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{istqb}[2024/06/15 1.0.0 LaTeX class for ISTQB Documents]
+\ProvidesClass{istqb}[2024/06/25 1.1.0 LaTeX class for ISTQB Documents]
 \LoadClass[10pt]{article}
 
 % Page layout
@@ -706,6 +706,80 @@
   \currentpdfbookmark{\contentsname}{istqbtoc}%
   \tableofcontents
 }
+
+% Structure Tables
+\ExplSyntaxOn
+\tl_new:N
+  \l_istqb_external_document_basename_tl
+\int_new:N
+  \l_istqb_external_document_last_page_int
+\cs_new:Nn
+  \istqb_stucture_tables:n
+  {
+    \pdfximage
+      { #1.pdf }
+    \int_gset:Nn
+      \l_istqb_external_document_last_page_int
+      { \the\pdflastximagepages }
+    % Overview
+    \istqblandscapebegin
+    \int_compare:nNnTF
+      { \l_istqb_external_document_last_page_int } > { 3 }
+      {
+        \includegraphics
+          [
+            page = 4,
+            trim = {1.75cm~7.5cm~1.75cm~0.75cm},
+            clip,
+          ]
+          { #1 }
+      }
+      {
+        % For placeholder or incorrect inputs, display at least page 1.
+        \centering
+        \includegraphics
+          [
+            page = 1,
+            keepaspectratio,
+            width = \linewidth,
+            height = 0.5\paperheight,
+          ]
+          { #1 }
+      }
+    \istqblandscapeend
+    % Structure Tables
+    \int_step_inline:nnn
+      { 5 }
+      { \l_istqb_external_document_last_page_int }
+      {
+        \centering
+        \includegraphics
+          [
+            page = #1,
+            height = 0.7\paperheight,
+            trim = {0.75cm~0.75cm~0.75cm~0.75cm},
+            clip,
+          ]
+          { #1 }
+        \par
+      }
+  }
+\newcommand
+  \istqbstructuretables
+  [ 1 ]
+  {
+    \file_parse_full_name:nNNN
+      { #1 }
+      \l_tmpa_tl
+      \l_istqb_external_document_basename_tl
+      \l_tmpb_tl
+    \istqb_stucture_tables:V
+      \l_istqb_external_document_basename_tl
+  }
+\cs_generate_variant:Nn
+  \istqb_stucture_tables:n
+  { V }
+\ExplSyntaxOff
 
 % Unicode characters
 \RequirePackage{newunicodechar}

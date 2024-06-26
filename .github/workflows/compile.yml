@@ -82,6 +82,7 @@ jobs:
       - name: Set up Git repository
         uses: actions/checkout@v4
       - name: Install LibreOffice
+        if: github.ref == 'refs/heads/main'
         run: |
           set -ex
           if $FIND -type f -iregex '.*\.xlsx$' -print | grep -q .
@@ -101,7 +102,7 @@ jobs:
       - name: Convert EPS images to PDF
         run: $FIND -type f -iregex '.*\.eps$' -print | parallel --halt now,fail=1 epstopdf {} {.}-eps-converted-to.pdf
       - name: Convert XLSX spreadsheets to PDF
-        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice7.3 --headless --convert-to pdf {} --outdir {//}
+        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 test ${{github.ref == 'refs/heads/main'}} = true '&&' libreoffice7.3 --headless --convert-to pdf {} --outdir {//} '||' ln -s '$(kpsewhich example-image.pdf)' {.}.pdf
       - name: Compile LaTeX documents to PDF
         run: $FIND -type f -iregex '.*\.tex$'  -print | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk -r istqb_product_base/latexmkrc {} '&&' '(test {} = ./example-document.tex || mv -v {.}.pdf "$(cat {.}.istqb_project_name).pdf")'
       - name: Upload PDF documents
@@ -116,6 +117,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: witiko/markdown:3.6.0-10-g11b016ea-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Install required packages
         run: |
@@ -159,6 +161,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: witiko/markdown:3.6.0-10-g11b016ea-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Install required packages
         run: |
