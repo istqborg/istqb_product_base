@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_sample-exam_answers}%
-  {2023-10-11}%
-  {0.0.1}%
+  {2024-06-15}%
+  {1.0.0}%
   {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Answers documents}
 
 % Import common code
@@ -32,15 +32,32 @@
 \RequirePackage
   { array }
 \newcolumntype
-  { C } [ 1 ] { >{ \centering\arraybackslash } p { #1 } }
+  { C }
+  [ 1 ]
+  { >{ \centering\arraybackslash } p { #1 } }
+\tl_new:N
+  \l_istqb_answer_key_table_tl
 \markdownSetupSnippet
   { answer-key }
   {
-    snippet = { istqb/sample-exam/questions },
+    snippet = istqb / sample-exam
+      / questions,
     fancyLists = true,
     renderers = {
       jekyllDataEnd = {
-        \group_begin:
+        % Start a two-column layout
+        \begin { multicols } { 2 }
+        \cs_set:Npn
+          \newpage
+          {
+            \if@firstcolumn
+              \hrule width
+                \linewidth height0pt
+              \columnbreak
+              % Prevent a page break after the second column.
+              \advance \@colroom \@colroom
+            \fi
+          }
         % Set the dimensions of the table rows.
         \advance
           \@colroom
@@ -77,107 +94,101 @@
         \tablehead
           {
             \hline
-            \textbf { Question~Number~(\#) } &
-            \textbf { Correct~Answer } &
-            \textbf { Learning~Objective~(LO) } &
-            \textbf { K-Level } &
-            \textbf { Number~of~Points } \\
+            \textbf
+              { Question~Number~(\#) } &
+            \textbf
+              { Correct~Answer } &
+            \textbf
+              { Learning~Objective~(LO) } &
+            \textbf
+              { K-Level } &
+            \textbf
+              { Number~of~Points } \\
           }
-        \tabletail
-          { \hline }
-        \tablelasttail
-          { \hline }
+        \tabletail { \hline }
+        \tablelasttail { \hline }
         \tl_set:Nn
-          \l_tmpa_tl
+          \l_istqb_answer_key_table_tl
           {
             \begin
               { supertabular }
-              { | C { 1.9cm } | C { 1.5cm } | C { 2.4cm } | C { 1.4cm } | C { 1.9cm } | }
+              { | C { 1.9cm } | C { 1.5cm }
+                | C { 2.4cm } | C { 1.4cm }
+                | C { 1.9cm } | }
           }
         % Prepare the lines of the table
         \seq_map_inline:Nn
           \g_istqb_questions_seq
           {
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answer_key_table_tl
               { \hline }
             % Record the question number.
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answer_key_table_tl
               { \textbf { ##1 } & }
             % Record the correct answers.
-            \prop_get:NnN
-              \g_istqb_answer_correct_keys_prop
+            \prop_get:cnN
+              { g_istqb_answer_correct
+                _keys_prop }
               { ##1 }
               \l_tmpa_clist
             \tl_put_right:Ne
-              \l_tmpa_tl
-              {
-                \clist_use:Nn
+              \l_istqb_answer_key_table_tl
+              { \clist_use:Nn
                   \l_tmpa_clist
                   { ,~ } &
               }
             % Record the learning objective.
             \tl_put_right:NV
-              \l_tmpa_tl
+              \l_istqb_answer_key_table_tl
               \g_istqb_prefix_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answer_key_table_tl
               { - }
-            \prop_get:NnN
-              \g_istqb_question_learning_objective_prop
+            \prop_get:cnN
+              { g_istqb_question_learning
+                _objective_prop }
               { ##1 }
-              \l_tmpb_tl
+              \l_tmpa_tl
             \tl_put_right:NV
+              \l_istqb_answer_key_table_tl
               \l_tmpa_tl
-              \l_tmpb_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answer_key_table_tl
               { & }
             % Record the K-level.
             \prop_get:NnN
               \g_istqb_question_k_level_prop
               { ##1 }
-              \l_tmpb_tl
+              \l_tmpa_tl
             \tl_put_right:NV
+              \l_istqb_answer_key_table_tl
               \l_tmpa_tl
-              \l_tmpb_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answer_key_table_tl
               { & }
             % Record the number of points.
-            \prop_get:NnN
-              \g_istqb_question_number_of_points_prop
+            \prop_get:cnN
+              { g_istqb_question_number
+                _of_points_prop }
               { ##1 }
-              \l_tmpb_tl
+              \l_tmpa_tl
             \tl_put_right:NV
+              \l_istqb_answer_key_table_tl
               \l_tmpa_tl
-              \l_tmpb_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answer_key_table_tl
               { \\ }
           }
         % Typeset the table.
         \tl_put_right:Nn
-          \l_tmpa_tl
-          {
-            \end { supertabular }
-          }
-        \begin { multicols } { 2 }
-        \cs_set:Npn
-          \newpage
-          {
-            \if@firstcolumn
-              \hrule width\linewidth height0pt
-              \columnbreak
-              % Prevent a page break after the second column.
-              \advance \@colroom \@colroom
-            \fi
-          }
+          \l_istqb_answer_key_table_tl
+          { \end { supertabular } }
         \tl_use:N
-          \l_tmpa_tl
+          \l_istqb_answer_key_table_tl
+        % End the two-column layout.
         \end { multicols }
-        \group_end:
       },
     },
   }
@@ -185,12 +196,16 @@
 % Answers
 \RequirePackage
   { longtable }
-\dim_new:N
-  \l_explanation_width_dim
+\dim_const:Nn
+  \c_explanation_width_dim
+  { 11.15cm }
+\tl_new:N
+  \l_istqb_answers_table_tl
 \markdownSetupSnippet
   { answers }
   {
-    snippet = { istqb/sample-exam/questions },
+    snippet = istqb / sample-exam
+      / questions,
     fancyLists = true,
     renderers = {
       interblockSeparator = {
@@ -200,26 +215,34 @@
       jekyllDataEnd = {
         \group_begin:
         % Prepare the heading of the table.
-        \dim_set:Nn
-          \l_explanation_width_dim
-          { 11.15cm }
         \cs_set:Npn
           \arraystretch
           { 1.5 }
         \tl_set:Nn
-          \l_tmpa_tl
+          \l_istqb_answers_table_tl
           {
             \begin
               { longtable }
-              { | C { 1.9cm } | C { 1.5cm } | p { \l_explanation_width_dim } | C { 2.4cm } | C { 1.4cm } | C { 1.9cm } | }
+              { | C { 1.9cm } | C { 1.5cm }
+                | p
+                { \c_explanation_width_dim }
+                | C { 2.4cm } | C { 1.4cm }
+                | C { 1.9cm } | }
             \hline
-            \textbf { Question~Number~(\#) } &
+            \textbf
+              { Question~Number~(\#) } &
             \textbf { Correct~Answer } &
             \multicolumn
               { 1 }
-              { C { \l_explanation_width_dim } | }
-              { \textbf { Explanation~/~Rationale } } &
-            \textbf { Learning~Objective~(LO) } &
+              { C
+                { \c_explanation_width_dim }
+                | }
+              {
+                \textbf
+                  { Explanation~/~Rationale }
+              } &
+            \textbf
+              { Learning~Objective~(LO) } &
             \textbf { K-Level } &
             \textbf { Number~of~Points } \\
             \hline
@@ -231,7 +254,7 @@
           {
             % Record the question number.
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               {
                 \textbf
                   { ##1 }
@@ -241,87 +264,90 @@
                   { Question~\# ##1 } &
               }
             % Record the correct answers.
-            \prop_get:NnN
-              \g_istqb_answer_correct_keys_prop
+            \prop_get:cnN
+              { g_istqb_answer_correct
+                _keys_prop }
               { ##1 }
               \l_tmpa_clist
             \tl_put_right:Ne
-              \l_tmpa_tl
-              {
-                \clist_use:Nn
+              \l_istqb_answers_table_tl
+              { \clist_use:Nn
                   \l_tmpa_clist
                   { ,~ } &
               }
             % Record the explanation / rationale.
             \tl_put_right:Nn
-              \l_tmpa_tl
-              {
-                \begin { minipage } [ t ] { \l_explanation_width_dim }
+              \l_istqb_answers_table_tl
+              { \begin
+                  { minipage }
+                  [ t ]
+                  {
+                    \c_explanation_width_dim
+                  }
               }
-            \prop_get:NnN
-              \g_istqb_question_explanation_prop
+            \prop_get:cnN
+              { g_istqb_question_explanation
+                _prop }
               { ##1 }
-              \l_tmpb_tl
+              \l_tmpa_tl
             \tl_put_right:NV
+              \l_istqb_answers_table_tl
               \l_tmpa_tl
-              \l_tmpb_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
-              {
-                \end { minipage }
-                \medskip
-              }
+              \l_istqb_answers_table_tl
+              { \end { minipage }
+                \medskip }
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               { & }
             % Record the learning objective.
             \tl_put_right:NV
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               \g_istqb_prefix_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               { - }
-            \prop_get:NnN
-              \g_istqb_question_learning_objective_prop
+            \prop_get:cnN
+              { g_istqb_question_learning
+                _objective_prop }
               { ##1 }
-              \l_tmpb_tl
+              \l_tmpa_tl
             \tl_put_right:NV
+              \l_istqb_answers_table_tl
               \l_tmpa_tl
-              \l_tmpb_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               { & }
             % Record the K-level.
             \prop_get:NnN
               \g_istqb_question_k_level_prop
               { ##1 }
-              \l_tmpb_tl
+              \l_tmpa_tl
             \tl_put_right:NV
+              \l_istqb_answers_table_tl
               \l_tmpa_tl
-              \l_tmpb_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               { & }
             % Record the number of points.
-            \prop_get:NnN
-              \g_istqb_question_number_of_points_prop
+            \prop_get:cnN
+              { g_istqb_question_number_of
+                _points_prop }
               { ##1 }
-              \l_tmpb_tl
+              \l_tmpa_tl
             \tl_put_right:NV
+              \l_istqb_answers_table_tl
               \l_tmpa_tl
-              \l_tmpb_tl
             \tl_put_right:Nn
-              \l_tmpa_tl
+              \l_istqb_answers_table_tl
               { \\ \hline }
           }
         % Typeset the table.
         \tl_put_right:Nn
-          \l_tmpa_tl
-          {
-            \end { longtable }
-          }
+          \l_istqb_answers_table_tl
+          { \end { longtable } }
         \tl_use:N
-          \l_tmpa_tl
+          \l_istqb_answers_table_tl
         \group_end:
       },
     },

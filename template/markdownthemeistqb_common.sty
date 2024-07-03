@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_common}%
-  {2023-10-16}%
-  {0.0.1}%
+  {2024-06-15}%
+  {1.0.0}%
   {LaTeX theme for the Markdown Package that contains common code for different types of ISTQB documents}
 
 % Hybrid Markdown + LaTeX text
@@ -50,8 +50,7 @@
       [ snippet = istqb / common / language ]
       { istqb_product_base / languages / #1.yml }
   }
-\tl_new:N \l_istqb_language_current_position
-\prop_new:N \g_istqb_language_prop
+\tl_new:N \l_istqb_language_position
 \markdownSetupSnippet
   { language }
   {
@@ -59,26 +58,26 @@
     expectJekyllData,
     renderers = {
       jekyllData(Sequence|Mapping)Begin = {
+        \group_begin:
         \str_if_eq:nnF
           { #1 }
           { null }
           {
-            \tl_gset:Nn
-              \l_istqb_language_current_position
+            \tl_set:Nn
+              \l_istqb_language_position
               { #1 / }
           }
       },
-      jekyllData(Begin|(Sequence|Mapping)End) = {
-        \tl_clear:N
-          \l_istqb_language_current_position
+      jekyllData(Sequence|Mapping)End = {
+        \group_end:
       },
       jekyllDataString = {
         \tl_set:Nx
           \l_tmpa_tl
-          { { \l_istqb_language_current_position #1 } = }
+          { { \l_istqb_language_position #1 } }
         \tl_put_right:Nn
           \l_tmpa_tl
-          { { #2 } }
+          { = { #2 } }
         \keys_set:nV
           { istqb / language }
           \l_tmpa_tl
@@ -93,9 +92,6 @@
   { istqb / language }
   {
     babel-language .code:n = {
-      \babelprovide
-        [ import, main ]
-        { #1 }
       \selectlanguage
         { #1 }
     },
@@ -125,6 +121,24 @@
     1 .tl_gset:N = \istqbprovidedbysingularname,
     2 .tl_gset:N = \istqbprovidedbypluralname,
   }
+\cs_new:Nn
+  \__istqb_gset_with_spaces:Nn
+  {
+    \tl_gset:Nn
+      #1
+      { #2 }
+    \regex_match:nnF
+      { ^, }
+      { #2 }
+      {
+        \tl_gput_left:Nn
+          #1
+          { ~ }
+      }
+    \tl_gput_right:Nn
+      #1
+      { ~ }
+  }
 \tl_new:N \g_istqb_list_delimiter_two
 \tl_new:N \g_istqb_list_delimiter_many
 \tl_new:N \g_istqb_list_delimiter_last
@@ -132,61 +146,19 @@
   { istqb / language / list-delimiters }
   {
     1 .code:n = {
-      \tl_set:Nn
-        \l_tmpa_tl
-        { #1 }
-      \regex_match:nnF
-        { ^, }
-        { #1 }
-        {
-          \tl_put_left:Nn
-            \l_tmpa_tl
-            { ~ }
-        }
-      \tl_put_right:Nn
-        \l_tmpa_tl
-        { ~ }
-      \tl_gset:NV
+      \__istqb_gset_with_spaces:Nn
         \g_istqb_list_delimiter_two
-        \l_tmpa_tl
+        { #1 }
     },
     2 .code:n = {
-      \tl_set:Nn
-        \l_tmpa_tl
-        { #1 }
-      \regex_match:nnF
-        { ^, }
-        { #1 }
-        {
-          \tl_put_left:Nn
-            \l_tmpa_tl
-            { ~ }
-        }
-      \tl_put_right:Nn
-        \l_tmpa_tl
-        { ~ }
-      \tl_gset:NV
+      \__istqb_gset_with_spaces:Nn
         \g_istqb_list_delimiter_many
-        \l_tmpa_tl
+        { #1 }
     },
     3 .code:n = {
-      \tl_set:Nn
-        \l_tmpa_tl
-        { #1 }
-      \regex_match:nnF
-        { ^, }
-        { #1 }
-        {
-          \tl_put_left:Nn
-            \l_tmpa_tl
-            { ~ }
-        }
-      \tl_put_right:Nn
-        \l_tmpa_tl
-        { ~ }
-      \tl_gset:NV
+      \__istqb_gset_with_spaces:Nn
         \g_istqb_list_delimiter_last
-        \l_tmpa_tl
+        { #1 }
     },
   }
 \prop_new:N \g_istqb_reference_labels_prop
@@ -207,6 +179,10 @@
 \tl_gset:Nn
   \g_istqb_language_tl
   { en }
+\RequirePackage { lineno }
+\cs_gset:Npn
+  \linenumberfont
+  { \normalfont \normalsize \sffamily }
 \keys_define:nn
   { istqb / metadata }
   {
@@ -223,9 +199,13 @@
     compatibility .tl_gset:N = \g_istqb_compatibility_tl,
     language .tl_gset:N = \g_istqb_language_tl,
     organization .tl_gset:N = \g_istqb_organization_tl,
+    line-numbers .code:n = {
+      \tl_if_eq:nnT
+        { #1 }
+        { true }
+        { \AtBeginDocument { \linenumbers } }
+    },
   }
-\tl_new:N \l_istqb_current_third_party_name_tl
-\tl_new:N \l_istqb_current_third_party_logo_tl
 \iow_new:N \g_istqb_project_name_iow
 \markdownSetupSnippet
   { metadata }
@@ -233,7 +213,7 @@
     jekyllData,
     expectJekyllData,
     renderers = {
-      jekyllData(String|Number) = {
+      jekyllData(String|Number|Boolean) = {
         \keys_set:nn
           { istqb/metadata }
           { { #1 } = { #2 } }
@@ -244,58 +224,18 @@
           {
             { provided-by } {
               % A third-party organization
-              \group_begin:
-              \markdownSetup
-                {
-                  renderers = {
-                    jekyllData(String|Number) = {
-                      % A short definition of a third-party organization
-                      \seq_gput_right:Nn
-                        \g_istqb_third_parties_seq
-                        { ##2 }
-                    },
-                    jekyllDataMappingBegin = {
-                      % A verbose definition of a third-party organization
-                      \group_begin:
-                      \markdownSetup
-                        {
-                          renderers = {
-                            jekyllData(String|Number) = {
-                              \str_case:nn
-                                { ####1 }
-                                {
-                                  { name } {
-                                    \tl_set:Nn
-                                      \l_istqb_current_third_party_name_tl
-                                      { ####2 }
-                                  }
-                                  { logo } {
-                                    \tl_set:Nn
-                                      \l_istqb_current_third_party_logo_tl
-                                      { ####2 }
-                                  }
-                                }
-                            },
-                            jekyllDataMappingEnd = {
-                              \seq_gput_right:NV
-                                \g_istqb_third_parties_seq
-                                \l_istqb_current_third_party_name_tl
-                              \tl_if_empty:VF
-                                \l_istqb_current_third_party_logo_tl
-                                {
-                                  \prop_gput:NVV
-                                    \g_istqb_third_party_logos_prop
-                                    \l_istqb_current_third_party_name_tl
-                                    \l_istqb_current_third_party_logo_tl
-                                }
-                              \group_end:
-                            },
-                          },
-                        }
-                    },
-                    jekyllDataSequenceEnd = { \group_end: },
-                  },
-                }
+              \markdownSetup {
+                code = \group_begin:,
+                renderers = {
+                  jekyllDataSequenceEnd =
+                },
+                snippet = istqb / common
+                  / metadata / provided-by,
+                renderers = {
+                  jekyllDataSequenceEnd +=
+                    \group_end:
+                },
+              }
             }
           }
       },
@@ -305,9 +245,22 @@
         \iow_open:Ne
           \g_istqb_project_name_iow
           { \c_sys_jobname_str .istqb_project_name }
+        \str_set:NV
+          \l_tmpa_str
+          \g_istqb_organization_tl
+        \str_remove_all:Nn
+          \l_tmpa_str
+          { ® }
         \iow_now:Ne
           \g_istqb_project_name_iow
-          { ISTQB- \g_istqb_code_tl - \g_istqb_type_tl - \g_istqb_version_tl }
+          {
+            \l_tmpa_str -
+            \g_istqb_code_tl -
+            \g_istqb_type_tl -
+            \g_istqb_version_tl -
+            \str_uppercase:V
+              \g_istqb_language_tl
+          }
         \iow_close:N
           \g_istqb_project_name_iow
       },
@@ -322,6 +275,71 @@
 \cs_generate_variant:Nn
   \iow_now:Nn
   { Ne }
+\cs_generate_variant:Nn
+  \str_uppercase:n
+  { V }
+\markdownSetupSnippet
+  { metadata / provided-by }
+  {
+    renderers = {
+      jekyllData(String|Number) = {
+        % Short-hand definition
+        \seq_gput_right:Nn
+          \g_istqb_third_parties_seq
+          { #2 }
+      },
+      jekyllDataMappingBegin = {
+        % Verbose definition
+        \markdownSetup {
+          code = \group_begin:,
+          renderers = {
+            jekyllDataMappingEnd =
+          },
+          snippet = istqb / common
+            / metadata / provided-by
+            / verbose,
+          renderers = {
+            jekyllDataMappingEnd +=
+              \group_end:
+          },
+        }
+      },
+    },
+  }
+\tl_new:N \l_istqb_third_party_name_tl
+\tl_new:N \l_istqb_third_party_logo_tl
+\keys_define:nn
+  { istqb / metadata / provided-by }
+  {
+    name .tl_set:N =
+      \l_istqb_third_party_name_tl,
+    logo .tl_set:N =
+      \l_istqb_third_party_logo_tl,
+  }
+\markdownSetupSnippet
+  { metadata / provided-by / verbose }
+  {
+    renderers = {
+      jekyllData(String|Number) = {
+        \keys_set:nn
+          { istqb / metadata / provided-by }
+          { { #1 } = { #2 } }
+      },
+      jekyllDataMappingEnd = {
+        \seq_gput_right:NV
+          \g_istqb_third_parties_seq
+          \l_istqb_third_party_name_tl
+        \tl_if_empty:VF
+          \l_istqb_third_party_logo_tl
+          {
+            \prop_gput:NVV
+              \g_istqb_third_party_logos_prop
+              \l_istqb_third_party_name_tl
+              \l_istqb_third_party_logo_tl
+          }
+      },
+    }
+  }
 
 % Images
 \markdownSetup
