@@ -42,7 +42,7 @@ jobs:
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = /babel-language: /p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}' ::: languages/*.yml
+          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}' ::: languages/*.yml
       - name: Validate metadata*.yml
         shell: bash
         run: |
