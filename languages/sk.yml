@@ -7,7 +7,7 @@ bibliography-subsections:
   books: Knihy
   articles: Články
 reference-labels:
-  section: Sekciu
+  section: Kapitolu
   figure: Obrázok
   table: Tabuľku
 page: [Strana, z]
