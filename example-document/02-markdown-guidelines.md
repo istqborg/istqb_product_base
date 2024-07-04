@@ -261,10 +261,20 @@ This will produce the following output:
  |  123  |  123 |   123  |   123   |
  |    1  |  1   |     1  |   1     |
 
-The second line of the table allows you to define the formatting of columns.
-Writing `---:`, `:---`, or `:--:` will cause the cells in the column to be typeset at their natural width with either right-aligned, left-aligned, or centered content.
-Writing `----` will stretch the column to the page width and left-align its content.
-If you write `----` for several columns, each will stretch to a uniform portion of the remaining page width.
+The second line of the table allows you to define the formatting of columns:
+
+- Writing `---:`, `:---`, or `:--:` will cause the cells in the column to be
+  typeset at their natural width with either right-aligned, left-aligned, or
+  centered content, respectively. The cells will not wrap over multiple lines
+  and should therefore contain short texts with a couple of words at most.
+
+- Writing `----` will stretch the column to the page width and left-align its
+  content. If you write `----` for several columns, each will stretch to a
+  uniform portion of the remaining page width. The cells will wrap over
+  multiple lines and are therefore well-suited for long paragraphs of text.
+
+If your table overflows a page, make sure that all columns with long texts
+are specified as `----`, not as `---:`, `:---`, or `:--:`.
 
 You can add a caption to the table as follows:
 

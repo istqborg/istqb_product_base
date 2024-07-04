@@ -1,6 +1,10 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{istqb}[2024/06/25 1.1.0 LaTeX class for ISTQB Documents]
+\ProvidesClass{istqb}[2024/07/03 1.2.0 LaTeX class for ISTQB Documents]
+
+% Fonts
 \LoadClass[10pt]{article}
+\usepackage{microtype}
+\DisableLigatures[-]{family=tt*}
 
 % Page layout
 %% Page geometry
