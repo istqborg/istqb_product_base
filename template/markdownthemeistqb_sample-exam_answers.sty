@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_sample-exam_answers}%
-  {2024-06-15}%
-  {1.0.0}%
+  {2024-07-03}%
+  {1.0.1}%
   {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Answers documents}
 
 % Import common code
@@ -59,12 +59,30 @@
             \fi
           }
         % Set the dimensions of the table rows.
-        \cs_set:Npn
-          \arraystretch
-          { 0.95 }
         \advance
           \@colroom
           1.25cm
+        \int_compare:nTF
+          { \seq_count:N \g_istqb_questions_seq > 45 }
+          {
+            \cs_set:Npn
+              \arraystretch
+              { 0.95 }
+          }
+          {
+            \int_compare:nTF
+            { \seq_count:N \g_istqb_questions_seq > 40 }
+            {
+              \cs_set:Npn
+                \arraystretch
+                { 1.025 }
+            }
+            {
+              \cs_set:Npn
+                \arraystretch
+                { 1.175 }
+            }
+          }
         % Prepare the heading of the table.
         \tablehead
           {
