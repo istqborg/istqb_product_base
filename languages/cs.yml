@@ -7,9 +7,9 @@ bibliography-subsections:
   books: Knihy
   articles: Články
 reference-labels:
-  section: Sekci
-  figure: Obrázek
-  table: Tabulku
+  section: sekci
+  figure: obrázek
+  table: tabulku
 page: [Strana, z]
 provided-by: [Poskytl, Poskytli]
 istqb: International Software Testing Qualifications Board
