@@ -41,7 +41,7 @@ jobs:
           python3 -m venv ~/venv
           . ~/venv/bin/activate
           pip install -r requirements.txt
-          python3 template.py find-files languages | parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}'
+          python3 template.py fixup-languages
       - name: Validate metadata
         shell: bash
         run: |
@@ -90,7 +90,7 @@ jobs:
           python3 -m venv ~/venv
           . ~/venv/bin/activate
           pip install -r requirements.txt
-          python3 template.py find-files languages | parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}'
+          python3 template.py fixup-languages
       - name: Install LibreOffice
         if: github.ref == 'refs/heads/main'
         run: |
@@ -152,7 +152,7 @@ jobs:
           python3 -m venv ~/venv
           . ~/venv/bin/activate
           pip install -r requirements.txt
-          python3 template.py find-files languages | parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}'
+          python3 template.py fixup-languages
       - name: Install LibreOffice
         if: github.ref == 'refs/heads/main'
         run: |
@@ -211,7 +211,7 @@ jobs:
           python3 -m venv ~/venv
           . ~/venv/bin/activate
           pip install -r requirements.txt
-          python3 template.py find-files languages | parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}'
+          python3 template.py fixup-languages
       - name: Install LibreOffice
         if: github.ref == 'refs/heads/main'
         run: |
@@ -274,7 +274,6 @@ jobs:
           python3 -m venv ~/venv
           . ~/venv/bin/activate
           pip install -r requirements.txt
-          python3 template.py find-files languages | parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}'
       - name: Create output directory docx/
         run: mkdir docx
       - name: Convert MD documents to DOCX
