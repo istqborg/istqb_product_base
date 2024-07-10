@@ -25,10 +25,11 @@ DOCUMENT_FILETYPES = sorted(['xlsx', 'markdown', 'eps', 'tex', 'bib'])
 FILETYPES = METADATA_FILETYPES + DOCUMENT_FILETYPES
 
 
-def _find_files(file_type: str, root=Path('.')) -> Iterable[Path]:
+def _find_files(file_types: Iterable[str], root=Path('.')) -> Iterable[Path]:
+    file_types = list(file_types)
     for parent_directory, subdirectories, filenames in os.walk(root, topdown=True, onerror=print, followlinks=True):
 
-        def keep_filename(filename: str):
+        def _keep_filename(file_type: str, filename: str) -> bool:
             if filename.startswith('.'):
                 return False
             if filename in {'template.py', 'check-yaml.lua', 'istqb.cfg', 'istqb.mk4', 'latexmkrc', 'requirements.txt'}:
@@ -41,8 +42,12 @@ def _find_files(file_type: str, root=Path('.')) -> Iterable[Path]:
             if file_type == 'all':
                 return True
             if file_type in ('all-yaml', 'user-yaml', 'metadata', 'questions', 'languages'):
-                if not re.search('\.ya?ml$', filename, flags=re.IGNORECASE):
+                all_yaml_match = re.search('\.ya?ml$', filename, flags=re.IGNORECASE)
+
+                if not all_yaml_match:
                     return False
+                if file_type == 'all-yaml':
+                    return True
 
                 metadata_match = re.fullmatch('metadata\.ya?ml', filename, flags=re.IGNORECASE)
                 questions_match = re.fullmatch('questions\.ya?ml', filename, flags=re.IGNORECASE)
@@ -71,10 +76,13 @@ def _find_files(file_type: str, root=Path('.')) -> Iterable[Path]:
             else:
                 raise ValueError(f'Unknown file type: {file_type}')
 
-        def prune_subdirectory(subdirectory: str):
+        def keep_filename(filename: str) -> bool:
+            return any(_keep_filename(file_type, filename) for file_type in file_types)
+
+        def prune_subdirectory(subdirectory: str) -> bool:
             if subdirectory.startswith('.'):
                 return False
-            if subdirectory in {'istqb_product_base', 'template', 'schema', 'markdown'}:
+            if subdirectory in {'istqb_product_base', 'template', 'schema', 'markdown', 'venv'}:
                 return False
             return True
 
@@ -128,15 +136,37 @@ def _fixup_language(path: Path) -> None:
         wf.write(input_yaml_text)
 
 
+def _fixup_line_endings(path: Path) -> None:
+    with path.open('rt', newline='') as rf:
+        input_text = rf.read()
+    if '\r' not in input_text:
+        return
+
+    LOGGER.info('Translating line endings in file "%s"', path)
+    with path.open('rt') as rf:
+        input_lines = rf.readlines()
+    with path.open('wt', newline='\n') as wf:
+        wf.writelines(input_lines)
+
+    with path.open('rt', newline='') as rf:
+        input_text = rf.read()
+    assert '\r' not in input_text
+
+
 def find_files(args: Namespace) -> None:
-    paths = sorted(_find_files(args.filetype))
+    paths = sorted(_find_files(file_types=[args.filetype]))
     for path in paths:
         print(path)
 
 
 def fixup_languages(args: Namespace) -> None:
-    for path in _find_files(file_type='languages'):
+    for path in _find_files(file_types=['languages']):
         _fixup_language(path)
+
+
+def fixup_line_endings(args: Namespace) -> None:
+    for path in _find_files(file_types=['all-yaml', 'markdown', 'tex', 'bib']):
+        _fixup_line_endings(path)
 
 
 def main():
@@ -149,6 +179,9 @@ def main():
 
     parser_fixup_languages = subparsers.add_parser('fixup-languages', help='Determine and add `babel-language` to language definitions if missing')
     parser_fixup_languages.set_defaults(func=fixup_languages)
+
+    parser_fixup_line_endings = subparsers.add_parser('fixup-line-endings', help='Convert all text files to unix-style line endings')
+    parser_fixup_line_endings.set_defaults(func=fixup_line_endings)
 
     args = parser.parse_args()
     if not 'func' in args:

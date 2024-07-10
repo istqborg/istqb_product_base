@@ -78,7 +78,7 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix git parallel
+          apt -qy install --no-install-recommends git parallel
       - name: Set up Git repository
         uses: actions/checkout@v4
       - name: Clone repository istqb_product_base
@@ -105,8 +105,7 @@ jobs:
         run: |
           set -ex
           . ~/venv/bin/activate
-          python3 istqb_product_base/template.py find-files all-yaml | parallel --halt now,fail=1 dos2unix
-          python3 istqb_product_base/template.py find-files markdown | parallel --halt now,fail=1 dos2unix
+          python3 istqb_product_base/template.py fixup-line-endings
       - name: Convert EPS images to PDF
         run: |
           set -ex
@@ -140,7 +139,7 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix git parallel tidy
+          apt -qy install --no-install-recommends git parallel tidy
       - name: Set up Git repository
         uses: actions/checkout@v4
       - name: Clone repository istqb_product_base
@@ -167,8 +166,7 @@ jobs:
         run: |
           set -ex
           . ~/venv/bin/activate
-          python3 istqb_product_base/template.py find-files all-yaml | parallel --halt now,fail=1 dos2unix
-          python3 istqb_product_base/template.py find-files markdown | parallel --halt now,fail=1 dos2unix
+          python3 istqb_product_base/template.py fixup-line-endings
       - name: Convert XLSX spreadsheets to PDF
         run: |
           set -ex
@@ -199,7 +197,7 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends dos2unix git parallel tidy
+          apt -qy install --no-install-recommends git parallel tidy
       - name: Set up Git repository
         uses: actions/checkout@v4
       - name: Clone repository istqb_product_base
@@ -226,8 +224,7 @@ jobs:
         run: |
           set -ex
           . ~/venv/bin/activate
-          python3 istqb_product_base/template.py find-files all-yaml | parallel --halt now,fail=1 dos2unix
-          python3 istqb_product_base/template.py find-files markdown | parallel --halt now,fail=1 dos2unix
+          python3 istqb_product_base/template.py fixup-line-endings
       - name: Convert XLSX spreadsheets to PDF
         run: |
           set -ex
