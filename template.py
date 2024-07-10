@@ -14,7 +14,9 @@ import re
 import subprocess
 from typing import Iterable
 import os
+import sys
 
+import yamale
 import yaml
 
 
@@ -23,6 +25,11 @@ LOGGER = logging.getLogger(__name__)
 METADATA_FILETYPES = ['all', 'all-yaml', 'user-yaml'] + sorted(['metadata', 'questions', 'languages'])
 DOCUMENT_FILETYPES = sorted(['xlsx', 'markdown', 'eps', 'tex', 'bib'])
 FILETYPES = METADATA_FILETYPES + DOCUMENT_FILETYPES
+
+VALIDATABLE_FILETYPES = sorted(['metadata', 'questions', 'languages'])
+
+ROOT_DIRECTORY = Path(__file__).parent.resolve()
+SCHEMA_DIRECTORY = ROOT_DIRECTORY / 'schema'
 
 
 def _find_files(file_types: Iterable[str], root=Path('.')) -> Iterable[Path]:
@@ -60,7 +67,7 @@ def _find_files(file_types: Iterable[str], root=Path('.')) -> Iterable[Path]:
                 elif file_type == 'languages':
                     return languages_match
                 elif file_type == 'user-yaml':
-                    return not (metadata_match or questions_match or languages_match)
+                    return not languages_match
                 else:
                     raise ValueError(f'Unknown file type: {file_type}')
             elif file_type == 'xlsx':
@@ -82,7 +89,9 @@ def _find_files(file_types: Iterable[str], root=Path('.')) -> Iterable[Path]:
         def prune_subdirectory(subdirectory: str) -> bool:
             if subdirectory.startswith('.'):
                 return False
-            if subdirectory in {'istqb_product_base', 'template', 'schema', 'markdown', 'venv'}:
+            if subdirectory == 'istqb_product_base' and 'languages' not in file_types:
+                return False
+            if subdirectory in {'template', 'schema', 'markdown', 'venv'}:
                 return False
             return True
 
@@ -97,6 +106,11 @@ def _find_files(file_types: Iterable[str], root=Path('.')) -> Iterable[Path]:
         for filename in filenames:
             if keep_filename(filename):
                 yield Path(parent_directory) / filename
+
+
+def _fixup_languages() -> None:
+    for path in _find_files(file_types=['languages']):
+        _fixup_language(path)
 
 
 def _fixup_language(path: Path) -> None:
@@ -153,6 +167,32 @@ def _fixup_line_endings(path: Path) -> None:
     assert '\r' not in input_text
 
 
+def _validate_files(file_types: Iterable[str]) -> None:
+
+    def validate_file(schema, path: Path):
+        data = yamale.make_data(path)
+        yamale.validate(schema, data)
+        subprocess.check_output(['texlua', f'{ROOT_DIRECTORY / "check-yaml.lua"}'])
+        LOGGER.info('Validated file "%s" with schema "%s"', path, schema.name)
+
+    for file_type in file_types:
+        if file_type == 'metadata':
+            schema = yamale.make_schema(SCHEMA_DIRECTORY / 'metadata.yml')
+            for path in _find_files(file_types=['metadata']):
+                validate_file(schema, path)
+        elif file_type == 'questions':
+            schema = yamale.make_schema(SCHEMA_DIRECTORY / 'questions.yml')
+            for path in _find_files(file_types=['questions']):
+                validate_file(schema, path)
+        elif file_type == 'languages':
+            _fixup_languages()
+            schema = yamale.make_schema(SCHEMA_DIRECTORY / 'language.yml')
+            for path in _find_files(file_types=['languages']):
+                validate_file(schema, path)
+        else:
+            raise ValueError(f'Unknown file type: {file_type}')
+
+
 def find_files(args: Namespace) -> None:
     paths = sorted(_find_files(file_types=[args.filetype]))
     for path in paths:
@@ -160,8 +200,7 @@ def find_files(args: Namespace) -> None:
 
 
 def fixup_languages(args: Namespace) -> None:
-    for path in _find_files(file_types=['languages']):
-        _fixup_language(path)
+    _fixup_languages()
 
 
 def fixup_line_endings(args: Namespace) -> None:
@@ -169,19 +208,42 @@ def fixup_line_endings(args: Namespace) -> None:
         _fixup_line_endings(path)
 
 
+def validate_files(args: Namespace) -> None:
+    _validate_files(file_types=[args.filetype])
+
+
 def main():
-    parser = ArgumentParser(prog='IstqbTemplate', description='Process ISTQB documents written with the LaTeX+Markdown template')
+    parser = ArgumentParser(
+        prog='template.py',
+        description='Process ISTQB documents written with the LaTeX+Markdown template',
+    )
     subparsers = parser.add_subparsers()
 
-    parser_find = subparsers.add_parser('find-files', help='Produce a newline-separated list of different types of files in this repository')
-    parser_find.add_argument('filetype', choices=FILETYPES, default='all')
-    parser_find.set_defaults(func=find_files)
+    parser_find_files = subparsers.add_parser(
+        'find-files',
+        help='Produce a newline-separated list of different types of files in this repository',
+    )
+    parser_find_files.add_argument('filetype', choices=FILETYPES, default='all')
+    parser_find_files.set_defaults(func=find_files)
 
-    parser_fixup_languages = subparsers.add_parser('fixup-languages', help='Determine and add `babel-language` to language definitions if missing')
+    parser_fixup_languages = subparsers.add_parser(
+        'fixup-languages',
+        help='Determine and add `babel-language` to language definitions if missing',
+    )
     parser_fixup_languages.set_defaults(func=fixup_languages)
 
-    parser_fixup_line_endings = subparsers.add_parser('fixup-line-endings', help='Convert all text files to unix-style line endings')
+    parser_fixup_line_endings = subparsers.add_parser(
+        'fixup-line-endings',
+        help='Convert all text files to unix-style line endings',
+    )
     parser_fixup_line_endings.set_defaults(func=fixup_line_endings)
+
+    parser_validate_files = subparsers.add_parser(
+        'validate-files',
+        help='Validate the different types of files in this repository',
+    )
+    parser_validate_files.add_argument('filetype', choices=VALIDATABLE_FILETYPES)
+    parser_validate_files.set_defaults(func=validate_files)
 
     args = parser.parse_args()
     if not 'func' in args:
