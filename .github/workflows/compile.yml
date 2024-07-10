@@ -17,7 +17,6 @@ permissions:
 env:
   DEBIAN_FRONTEND: noninteractive
   TEXINPUTS: '.:./istqb_product_base/template:'
-  FIND: 'find -follow -path ./.github -prune -o -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o'
 jobs:
   validate:
     name: Validate YAML documents
@@ -31,9 +30,6 @@ jobs:
           set -ex
           apt -qy update
           apt -qy install --no-install-recommends git parallel
-          python3 -m venv ~/venv
-          source ~/venv/bin/activate
-          pip install yamale~=4.0.4
       - name: Set up Git repository
         uses: actions/checkout@v4
       - name: Clone repository istqb_product_base
@@ -42,30 +38,34 @@ jobs:
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}' ::: languages/*.yml
-      - name: Validate metadata*.yml
+          python3 -m venv ~/venv
+          . ~/venv/bin/activate
+          pip install -r requirements.txt
+          python3 template.py find-files languages | parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}'
+      - name: Validate metadata
         shell: bash
         run: |
           set -ex
-          source ~/venv/bin/activate
-          $FIND -type f -iregex '.*/metadata.*\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/metadata.yml {}
-      - name: Validate questions.yml
+          . ~/venv/bin/activate
+          python3 istqb_product_base/template.py find-files metadata | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/metadata.yml {}
+      - name: Validate question definitions
         shell: bash
         run: |
           set -ex
-          source ~/venv/bin/activate
-          $FIND -type f -iregex '.*/questions\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/questions.yml {}
-      - name: Validate languages/*.yml
+          . ~/venv/bin/activate
+          python3 istqb_product_base/template.py find-files questions | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/questions.yml {}
+      - name: Validate language definitions
         shell: bash
         run: |
           set -ex
-          source ~/venv/bin/activate
-          parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/language.yml {} ::: istqb_product_base/languages/*.yml
+          . ~/venv/bin/activate
+          cd istqb_product_base
+          python3 template.py find-files languages | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/language.yml {}
       - name: Check the well-formedness of all YAML documents
         run: |
           set -ex
-          $FIND -type f -iregex '.*\.yml$' -print | parallel --halt now,fail=1 istqb_product_base/check-yaml.lua {}
-          parallel --halt now,fail=1 istqb_product_base/check-yaml.lua {} ::: istqb_product_base/languages/*.yml
+          . ~/venv/bin/activate
+          python3 istqb_product_base/template.py find-files all-yaml | parallel --halt now,fail=1 istqb_product_base/check-yaml.lua {} ::: istqb_product_base/languages/*.yml
   produce-pdf:
     name: Produce PDF documents
     needs:
@@ -81,30 +81,47 @@ jobs:
           apt -qy install --no-install-recommends dos2unix git parallel
       - name: Set up Git repository
         uses: actions/checkout@v4
-      - name: Install LibreOffice
-        if: github.ref == 'refs/heads/main'
-        run: |
-          set -ex
-          if $FIND -type f -iregex '.*\.xlsx$' -print | grep -q .
-          then
-            wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
-            dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
-          fi
       - name: Clone repository istqb_product_base
         run: |
           set -ex
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}' ::: languages/*.yml
+          python3 -m venv ~/venv
+          . ~/venv/bin/activate
+          pip install -r requirements.txt
+          python3 template.py find-files languages | parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}'
+      - name: Install LibreOffice
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -ex
+          . ~/venv/bin/activate
+          if python3 template.py find-files xlsx | grep -q .
+          then
+            wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
+            dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
+          fi
       - name: Ensure correct encoding of input files
-        run: $FIND -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
+        run: |
+          set -ex
+          . ~/venv/bin/activate
+          python3 istqb_product_base/template.py find-files all-yaml | parallel --halt now,fail=1 dos2unix
+          python3 istqb_product_base/template.py find-files markdown | parallel --halt now,fail=1 dos2unix
       - name: Convert EPS images to PDF
-        run: $FIND -type f -iregex '.*\.eps$' -print | parallel --halt now,fail=1 epstopdf {} {.}-eps-converted-to.pdf
+        run: |
+          set -ex
+          . ~/venv/bin/activate
+          python3 istqb_product_base/template.py find-files eps | parallel --halt now,fail=1 epstopdf {} {.}-eps-converted-to.pdf
       - name: Convert XLSX spreadsheets to PDF
-        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 test ${{github.ref == 'refs/heads/main'}} = true '&&' libreoffice7.3 --headless --convert-to pdf {} --outdir {//} '||' ln -s '$(kpsewhich example-image.pdf)' {.}.pdf
+        run: |
+          set -ex
+          . ~/venv/bin/activate
+          python3 template.py find-files xlsx | parallel --halt now,fail=1 test ${{github.ref == 'refs/heads/main'}} = true '&&' libreoffice7.3 --headless --convert-to pdf {} --outdir {//} '||' ln -s '$(kpsewhich example-image.pdf)' {.}.pdf
       - name: Compile LaTeX documents to PDF
-        run: $FIND -type f -iregex '.*\.tex$'  -print | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk -r istqb_product_base/latexmkrc {} '&&' '(test {} = ./example-document.tex || mv -v {.}.pdf "$(cat {.}.istqb_project_name).pdf")'
+        run: |
+          set -ex
+          . ~/venv/bin/activate
+          python3 template.py find-files tex | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk -r istqb_product_base/latexmkrc {} '&&' '(test {} = ./example-document.tex || mv -v {.}.pdf "$(cat {.}.istqb_project_name).pdf")'
       - name: Upload PDF documents
         uses: actions/upload-artifact@v4
         with:
@@ -126,29 +143,44 @@ jobs:
           apt -qy install --no-install-recommends dos2unix git parallel tidy
       - name: Set up Git repository
         uses: actions/checkout@v4
-      - name: Install LibreOffice
-        run: |
-          set -ex
-          if $FIND -type f -iregex '.*\.xlsx$' -print | grep -q .
-          then
-            wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
-            dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
-          fi
       - name: Clone repository istqb_product_base
         run: |
           set -ex
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}' ::: languages/*.yml
+          python3 -m venv ~/venv
+          . ~/venv/bin/activate
+          pip install -r requirements.txt
+          python3 template.py find-files languages | parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}'
+      - name: Install LibreOffice
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -ex
+          . ~/venv/bin/activate
+          if python3 template.py find-files xlsx | grep -q .
+          then
+            wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
+            dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
+          fi
       - name: Ensure correct encoding of input files
-        run: $FIND -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
+        run: |
+          set -ex
+          . ~/venv/bin/activate
+          python3 istqb_product_base/template.py find-files all-yaml | parallel --halt now,fail=1 dos2unix
+          python3 istqb_product_base/template.py find-files markdown | parallel --halt now,fail=1 dos2unix
       - name: Convert XLSX spreadsheets to PDF
-        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice7.3 --headless --convert-to pdf {} --outdir {//}
+        run: |
+          set -ex
+          . ~/venv/bin/activate
+          python3 template.py find-files xlsx | parallel --halt now,fail=1 test ${{github.ref == 'refs/heads/main'}} = true '&&' libreoffice7.3 --headless --convert-to pdf {} --outdir {//} '||' ln -s '$(kpsewhich example-image.pdf)' {.}.pdf
       - name: Create output directory html/
         run: mkdir html
       - name: Compile LaTeX documents to HTML
-        run: $FIND -type f -iregex '.*\.tex$' -print | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' make4ht -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d html/{.} {}
+        run: |
+          set -ex
+          . ~/venv/bin/activate
+          python3 template.py find-files tex | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' make4ht -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d html/{.} {}
       - name: Upload HTML documents
         uses: actions/upload-artifact@v4
         with:
@@ -170,25 +202,37 @@ jobs:
           apt -qy install --no-install-recommends dos2unix git parallel tidy
       - name: Set up Git repository
         uses: actions/checkout@v4
-      - name: Install LibreOffice
-        run: |
-          set -ex
-          if $FIND -type f -iregex '.*\.xlsx$' -print | grep -q .
-          then
-            wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
-            dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
-          fi
       - name: Clone repository istqb_product_base
         run: |
           set -ex
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}' ::: languages/*.yml
+          python3 -m venv ~/venv
+          . ~/venv/bin/activate
+          pip install -r requirements.txt
+          python3 template.py find-files languages | parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}'
+      - name: Install LibreOffice
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -ex
+          . ~/venv/bin/activate
+          if python3 template.py find-files xlsx | grep -q .
+          then
+            wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
+            dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
+          fi
       - name: Ensure correct encoding of input files
-        run: $FIND -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
+        run: |
+          set -ex
+          . ~/venv/bin/activate
+          python3 istqb_product_base/template.py find-files all-yaml | parallel --halt now,fail=1 dos2unix
+          python3 istqb_product_base/template.py find-files markdown | parallel --halt now,fail=1 dos2unix
       - name: Convert XLSX spreadsheets to PDF
-        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice7.3 --headless --convert-to pdf {} --outdir {//}
+        run: |
+          set -ex
+          . ~/venv/bin/activate
+          python3 template.py find-files xlsx | parallel --halt now,fail=1 test ${{github.ref == 'refs/heads/main'}} = true '&&' libreoffice7.3 --headless --convert-to pdf {} --outdir {//} '||' ln -s '$(kpsewhich example-image.pdf)' {.}.pdf
       - name: Create output directory epub/
         run: mkdir epub
       - name: Compile LaTeX documents to EPUB
@@ -196,7 +240,8 @@ jobs:
         run: |
           set -ex
           shopt -s extglob
-          $FIND -type f -iregex '.*\.tex$' -print | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' '(' mkdir -p epub/build/{.} '&&' cp -ar !(epub) epub/build/{.}/ '&&' cd epub/build/{.} '&&' tex4ebook -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d ../.. {} ')'
+          . ~/venv/bin/activate
+          python3 template.py find-files tex | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' '(' mkdir -p epub/build/{.} '&&' cp -ar !(epub) epub/build/{.}/ '&&' cd epub/build/{.} '&&' tex4ebook -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d ../.. {} ')'
           rm -rf epub/build
       - name: Upload EPUB documents
         uses: actions/upload-artifact@v4
@@ -217,7 +262,7 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends git parallel
+          apt -qy install --no-install-recommends git parallel python3 python3-venv
       - name: Set up Git repository
         uses: actions/checkout@v4
       - name: Clone repository istqb_product_base
@@ -226,15 +271,26 @@ jobs:
           git clone https://github.com/istqborg/istqb_product_base.git
           cd istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}' ::: languages/*.yml
+          python3 -m venv ~/venv
+          . ~/venv/bin/activate
+          pip install -r requirements.txt
+          python3 template.py find-files languages | parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}'
       - name: Create output directory docx/
         run: mkdir docx
       - name: Convert MD documents to DOCX
-        run: $FIND -type f -iregex '.*\.md$' -print | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' pandoc -f "${PANDOC_EXTENSIONS}" -i {} -o docx/{}.docx
+        run: |
+          set -ex
+          . ~/venv/bin/activate
+          python3 istqb_product_base/template.py find-files markdown | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' pandoc -f "${PANDOC_EXTENSIONS}" -i {} -o docx/{}.docx
       - name: Convert YAML documents to DOCX
-        run: $FIND -path ./.github -prune -o -path ./languages -prune -o -type f -iregex '.*\.yml$' -print | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` yml\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
+        run: |
+          set -ex
+          . ~/venv/bin/activate
+          python3 istqb_product_base/template.py find-files user-yaml | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` yml\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
       - name: Convert BIB documents to DOCX
-        run: $FIND -type f -iregex '.*\.bib$' -print | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` bib\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
+        run: |
+          set -ex
+          python3 istqb_product_base/template.py find-files bib | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` bib\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
       - name: Upload DOCX documents
         uses: actions/upload-artifact@v4
         with:
