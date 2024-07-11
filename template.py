@@ -7,13 +7,14 @@ Processes ISTQB documents written with the LaTeX+Markdown template.
 
 from argparse import ArgumentParser, Namespace
 from configparser import ConfigParser
+from itertools import repeat
 import json
 import logging
 from multiprocessing import Pool
 from pathlib import Path
 import re
 import subprocess
-from typing import Iterable, List, Tuple, TYPE_CHECKING
+from typing import Any, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING
 import os
 import shutil
 import sys
@@ -244,9 +245,10 @@ def _convert_xlsx_files_to_pdf() -> None:
                 LOGGER.info('Copied file "%s" to "%s"', example_image_path, output_path)
 
 
-def _convert_tex_file_to_pdf(input_path: Path) -> Tuple[Path, Path]:
-    if (input_path.parent / 'NO_PDF').exists():
-        return input_path, None
+def _compile_tex_file_to_pdf(input_path: Path) -> Optional[Path]:
+    if (input_path.parent / input_path.stem / 'NO_PDF').exists():
+        # Creating a file `document/NO_PDF` will prevent `document.tex` from being compiled to PDF.
+        return
     _run_command('latexmk', '-gg', '-r', f'{LATEXMKRC}', f'{input_path}')
     if input_path.name != 'example-document.tex':
         with input_path.with_suffix('.istqb_project_name').open('rt') as f:
@@ -254,25 +256,32 @@ def _convert_tex_file_to_pdf(input_path: Path) -> Tuple[Path, Path]:
         input_path.with_suffix('.pdf').rename(output_path)
     else:
         output_path = input_path.with_suffix('.pdf')
-    return input_path, output_path
+    return output_path
 
 
-def _convert_tex_file_to_html(input_path: Path, output_directory: Path) -> Tuple[Path, Path]:
-    if (input_path.parent / 'NO_HTML').exists():
-        return input_path, None
+def _compile_tex_file_to_html(input_path: Path, output_directory: Path) -> Optional[Path]:
+    if (input_path.parent / input_path.stem / 'NO_HTML').exists():
+        # Creating a file `document/NO_HTML` will prevent `document.tex` from being compiled to HTML.
+        return
     output_path = output_directory / input_path.name / input_path.with_suffix('.html').name
     _run_command('make4ht', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_path.parent}', f'{input_path}')
-    return input_path, output_path
+    return output_path
 
 
 if TYPE_CHECKING:  # The Protocol class is unavailable in Python <3.8 but that should not prevent us from running the script.
     from typing import Protocol
 
-    class ConversionFunction(Protocol):
-        def __call__(self, input_path: Path, *args, **kwargs) -> Tuple[Path, Path]: ...
+    class CompilationFunction(Protocol):
+        def __call__(self, input_path: Path, *args, **kwargs) -> Path: ...
 
 
-def _convert_tex_files(convert: 'ConversionFunction', *args, **kwargs) -> None:
+def _compile_fn(args: Tuple['CompilationFunction', Path, Tuple[Any], Dict[Any, Any]]) -> Tuple[Path, Path]:
+    compile_fn, input_path, args, kwargs = args
+    output_path = compile_fn(input_path, *args, *kwargs)
+    return input_path, output_path
+
+
+def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> None:
     _fixup_languages()
     _validate_files(file_types=['all'])
     _fixup_line_endings()
@@ -280,7 +289,7 @@ def _convert_tex_files(convert: 'ConversionFunction', *args, **kwargs) -> None:
     _convert_xlsx_files_to_pdf()
     with Pool(None) as pool:
         input_paths = _find_files(file_types=['tex'])
-        for input_path, output_path in pool.imap(lambda path: convert(path, *args, **kwargs), input_paths):
+        for input_path, output_path in pool.imap(_compile_fn, zip(repeat(compile_fn), input_paths, repeat(args), repeat(kwargs))):
             if output_path is None:
                 LOGGER.info('Skipped the compilation of file "%s"', input_path)
             else:
@@ -288,13 +297,13 @@ def _convert_tex_files(convert: 'ConversionFunction', *args, **kwargs) -> None:
                 assert output_path.exists(), f'File "{output_path}" does not exist'
 
 
-def _convert_tex_files_to_pdf() -> None:
-    _convert_tex_files(_convert_tex_file_to_pdf)
+def _compile_tex_files_to_pdf() -> None:
+    _compile_tex_files(_compile_tex_file_to_pdf)
 
 
-def _convert_tex_files_to_html(output_directory: Path) -> None:
+def _compile_tex_files_to_html(output_directory: Path) -> None:
     output_directory.mkdir(parents=True, exist_ok=True)
-    _convert_tex_files(_convert_tex_file_to_html, output_directory)
+    _compile_tex_files(_compile_tex_file_to_html, output_directory)
 
 
 def find_files(args: Namespace) -> None:
