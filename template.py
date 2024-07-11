@@ -33,7 +33,6 @@ FILETYPES = METADATA_FILETYPES + DOCUMENT_FILETYPES
 
 VALIDATABLE_FILETYPES = ['all', 'all-yaml'] + sorted(['metadata', 'questions', 'languages'])
 
-CURRENT_DIRECTORY = Path('.').resolve()
 ROOT_DIRECTORY = Path(__file__).parent.resolve()
 SCHEMA_DIRECTORY = ROOT_DIRECTORY / 'schema'
 
@@ -132,6 +131,7 @@ def _run_command(*args: str, text=False) -> str:
         except UnicodeDecodeError:
             output = e.output
         print(output)
+        raise e
     return output
 
 
@@ -296,15 +296,15 @@ def _compile_tex_file_to_epub(input_path: Path, output_directory: Path) -> Optio
     build_directory = output_directory / 'build' / input_path.stem
 
     def prune_output_directory(parent_directory: str, filenames: List[str]) -> bool:
-        if Path(parent_directory).resolve() == output_directory.parent:
-            return [filename for filename in filenames if filename != output_directory.name]
-        else:
-            return filenames
+        parent_directory = Path(parent_directory).resolve()
+        if parent_directory == output_directory.parent:
+            return [output_directory.name]
+        return []
 
-    shutil.copytree(CURRENT_DIRECTORY, build_directory, ignore=prune_output_directory)
+    shutil.copytree(input_path.parent, build_directory, ignore=prune_output_directory)
 
     with change_directory(build_directory):
-        _run_command('tex4ebook', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', 'f{output_directory}', f'{input_path}')
+        _run_command('tex4ebook', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_directory}', input_path.name)
 
     shutil.rmtree(build_directory)
 
