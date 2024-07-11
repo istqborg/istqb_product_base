@@ -118,13 +118,13 @@ def _fixup_languages() -> None:
         _fixup_language(path)
 
 
-def _run_command(*args: str) -> str:
-    output = subprocess.check_output(args, text=True, stderr=subprocess.STDOUT)
+def _run_command(*args: str, text=False) -> str:
+    output = subprocess.check_output(args, text=text, stderr=subprocess.STDOUT)
     return output
 
 
 def _find_files_in_tex_live(pathname) -> List[Path]:
-    paths = _run_command('kpsewhich', pathname).splitlines()
+    paths = _run_command('kpsewhich', pathname, text=True).splitlines()
     paths = list(map(Path, paths))
     return paths
 
