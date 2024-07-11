@@ -257,6 +257,7 @@ def _convert_tex_file_to_pdf(input_path: Path) -> Tuple[Path, Path]:
 
 def _convert_tex_files_to_pdf() -> None:
     _fixup_languages()
+    _validate_files(file_types=['all'])
     _fixup_line_endings()
     _convert_eps_files_to_pdf()
     _convert_xlsx_files_to_pdf()
