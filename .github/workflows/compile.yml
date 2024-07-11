@@ -186,14 +186,12 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: pandoc/core:3.1.1.0-ubuntu
-    env:
-      PANDOC_EXTENSIONS: commonmark+bracketed_spans+fancy_lists+pipe_tables+raw_attribute
     steps:
       - name: Install required packages
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends git parallel python3 python3-venv
+          apt -qy install --no-install-recommends git
       - name: Set up Git repository
         uses: actions/checkout@v4
       - name: Clone repository istqb_product_base
@@ -207,18 +205,10 @@ jobs:
           pip install -r requirements.txt
       - name: Create output directory docx/
         run: mkdir docx
-      - name: Convert MD documents to DOCX
+      - name: Convert documents to DOCX
         run: |
           set -e; . ~/venv/bin/activate; set -x
-          python3 istqb_product_base/template.py find-files markdown | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' pandoc -f "${PANDOC_EXTENSIONS}" -i {} -o docx/{}.docx
-      - name: Convert YAML documents to DOCX
-        run: |
-          set -e; . ~/venv/bin/activate; set -x
-          python3 istqb_product_base/template.py find-files user-yaml | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` yml\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
-      - name: Convert BIB documents to DOCX
-        run: |
-          set -e; . ~/venv/bin/activate; set -x
-          python3 istqb_product_base/template.py find-files bib | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` bib\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
+          python3 istqb_product_base/template.py convert-to-docx all docx/
       - name: Upload DOCX documents
         uses: actions/upload-artifact@v4
         with:

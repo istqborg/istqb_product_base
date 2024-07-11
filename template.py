@@ -15,6 +15,7 @@ from multiprocessing import Pool
 from pathlib import Path
 import re
 import subprocess
+from tempfile import NamedTemporaryFile
 from typing import Any, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING
 import os
 import shutil
@@ -32,6 +33,7 @@ DOCUMENT_FILETYPES = sorted(['xlsx', 'markdown', 'eps', 'tex', 'bib'])
 FILETYPES = METADATA_FILETYPES + DOCUMENT_FILETYPES
 
 VALIDATABLE_FILETYPES = ['all', 'all-yaml'] + sorted(['metadata', 'questions', 'languages'])
+CONVERT_TO_DOCX_FILETYPES = ['all', 'user-yaml'] + sorted(['markdown', 'bib'])
 
 ROOT_DIRECTORY = Path(__file__).parent.resolve()
 SCHEMA_DIRECTORY = ROOT_DIRECTORY / 'schema'
@@ -39,6 +41,9 @@ SCHEMA_DIRECTORY = ROOT_DIRECTORY / 'schema'
 LATEXMKRC = ROOT_DIRECTORY / 'latexmkrc'
 ISTQB_CFG = ROOT_DIRECTORY / 'istqb.cfg'
 ISTQB_MK4 = ROOT_DIRECTORY / 'istqb.mk4'
+
+PANDOC_INPUT_FORMAT = 'commonmark'
+PANDOC_EXTENSIONS = ['bracketed_spans', 'fancy_lists', 'pipe_tables', 'raw_attribute']
 
 
 def _find_files(file_types: Iterable[str], root=Path('.')) -> Iterable[Path]:
@@ -338,8 +343,8 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
             if output_path is None:
                 LOGGER.info('Skipped the compilation of file "%s"', input_path)
             else:
-                LOGGER.info('Compiled file "%s" to "%s"', input_path, output_path)
                 assert output_path.exists(), f'File "{output_path}" does not exist'
+                LOGGER.info('Compiled file "%s" to "%s"', input_path, output_path)
 
 
 def _compile_tex_files_to_pdf() -> None:
@@ -354,6 +359,45 @@ def _compile_tex_files_to_html(output_directory: Path) -> None:
 def _compile_tex_files_to_epub(output_directory: Path) -> None:
     output_directory.mkdir(parents=True, exist_ok=True)
     _compile_tex_files(_compile_tex_file_to_epub, output_directory)
+
+
+def _convert_files_to_docx(output_directory: Path, file_types: Iterable[str]) -> None:
+    output_directory.mkdir(parents=True, exist_ok=True)
+
+    def create_nested_output_directory(input_path: Path) -> Tuple[Path, Path]:
+        nested_output_directory = output_directory / input_path.relative_to('.').parent
+        nested_output_directory.mkdir(parents=True, exist_ok=True)
+        output_path = nested_output_directory / input_path.with_suffix('.docx').name
+        return nested_output_directory, output_path
+
+    pandoc_from_format = '+'.join([PANDOC_INPUT_FORMAT, *PANDOC_EXTENSIONS])
+    for file_type in file_types:
+        if file_type in ('all', 'markdown'):
+            for input_path in _find_files(file_types=['markdown']):
+                nested_output_directory, output_path = create_nested_output_directory(input_path)
+                _run_command('pandoc', '-f', pandoc_from_format, '-i', f'{input_path}', '-o', f'{output_path}')
+                assert output_path.exists(), f'File "{output_path}" does not exist'
+                LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
+        if file_type in ('all', 'user-yaml'):
+            for input_path in _find_files(file_types=['user-yaml']):
+                nested_output_directory, output_path = create_nested_output_directory(input_path)
+                with NamedTemporaryFile('wt', delete=False) as wf, input_path.open('rt') as rf:
+                    print(f'``` yml\n{rf.read()}\n```', file=wf)
+                    wf.close()
+                    _run_command('pandoc', '-f', f'{pandoc_from_format}+hard_line_breaks', '-i', f'{wf.name}', '-o', f'{output_path}')
+                    os.unlink(wf.name)
+                assert output_path.exists(), f'File "{output_path}" does not exist'
+                LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
+        if file_type in ('all', 'bib'):
+            for input_path in _find_files(file_types=['bib']):
+                nested_output_directory, output_path = create_nested_output_directory(input_path)
+                with NamedTemporaryFile('wt', delete=False) as wf, input_path.open('rt') as rf:
+                    print(f'``` bib\n{rf.read()}\n```', file=wf)
+                    wf.close()
+                    _run_command('pandoc', '-f', f'{pandoc_from_format}+hard_line_breaks', '-i', f'{wf.name}', '-o', f'{output_path}')
+                    os.unlink(wf.name)
+                assert output_path.exists(), f'File "{output_path}" does not exist'
+                LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
 
 def find_files(args: Namespace) -> None:
@@ -394,11 +438,15 @@ def compile_tex_files_to_epub(args: Namespace) -> None:
     _compile_tex_files_to_epub(output_directory=Path(args.outputdir))
 
 
+def convert_files_to_docx(args: Namespace) -> None:
+    _convert_files_to_docx(output_directory=Path(args.outputdir), file_types=[args.filetype])
+
+
 def main():
     parser = ArgumentParser(
         prog='template.py',
         description='Process ISTQB documents written with the LaTeX+Markdown template',
-        epilog='This program requires that Git, LibreOffice, TeX Live and Tidy HTML5 are installed.',
+        epilog='This program requires that Git, LibreOffice, Pandoc, TeX Live and Tidy HTML5 are installed.',
     )
     subparsers = parser.add_subparsers()
 
@@ -459,6 +507,14 @@ def main():
     )
     parser_compile_tex_to_epub.add_argument('outputdir')
     parser_compile_tex_to_epub.set_defaults(func=compile_tex_files_to_epub)
+
+    parser_convert_files_to_docx = subparsers.add_parser(
+        'convert-to-docx',
+        help='Validate the different types of files in this repository to DOCX',
+    )
+    parser_convert_files_to_docx.add_argument('filetype', choices=CONVERT_TO_DOCX_FILETYPES)
+    parser_convert_files_to_docx.add_argument('outputdir')
+    parser_convert_files_to_docx.set_defaults(func=convert_files_to_docx)
 
     args = parser.parse_args()
     if not 'func' in args:
