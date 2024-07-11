@@ -127,7 +127,11 @@ def _run_command(*args: str, text=False) -> str:
     try:
         output = subprocess.check_output(args, text=text, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
-        print(e.output)
+        try:
+            output = e.output.decode()
+        except UnicodeDecodeError:
+            output = e.output
+        print(output)
     return output
 
 
