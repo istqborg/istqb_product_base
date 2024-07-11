@@ -309,7 +309,7 @@ def main():
         'find-files',
         help='Produce a newline-separated list of different types of files in this repository',
     )
-    parser_find_files.add_argument('filetype', choices=FILETYPES, default='all')
+    parser_find_files.add_argument('filetype', choices=FILETYPES)
     parser_find_files.set_defaults(func=find_files)
 
     parser_fixup_languages = subparsers.add_parser(
@@ -328,7 +328,7 @@ def main():
         'validate-files',
         help='Validate the different types of files in this repository',
     )
-    parser_validate_files.add_argument('filetype', choices=VALIDATABLE_FILETYPES, default='all')
+    parser_validate_files.add_argument('filetype', choices=VALIDATABLE_FILETYPES)
     parser_validate_files.set_defaults(func=validate_files)
 
     parser_convert_eps_files_to_pdf = subparsers.add_parser(
