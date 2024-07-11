@@ -44,20 +44,17 @@ jobs:
       - name: Validate metadata
         shell: bash
         run: |
-          set -ex
-          . ~/venv/bin/activate
+          set -e; . ~/venv/bin/activate; set -x
           python3 istqb_product_base/template.py validate-files metadata
       - name: Validate question definitions
         shell: bash
         run: |
-          set -ex
-          . ~/venv/bin/activate
+          set -e; . ~/venv/bin/activate; set -x
           python3 istqb_product_base/template.py validate-files questions
       - name: Validate language definitions
         shell: bash
         run: |
-          set -ex
-          . ~/venv/bin/activate
+          set -e; . ~/venv/bin/activate; set -x
           python3 istqb_product_base/template.py validate-files languages
   produce-pdf:
     name: Produce PDF documents
@@ -86,8 +83,7 @@ jobs:
       - name: Install LibreOffice
         if: github.ref == 'refs/heads/main'
         run: |
-          set -ex
-          . ~/venv/bin/activate
+          set -e; . ~/venv/bin/activate; set -x
           if python3 istqb_product_base/template.py find-files xlsx | grep -q .
           then
             wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
@@ -95,8 +91,7 @@ jobs:
           fi
       - name: Compile LaTeX documents to PDF
         run: |
-          set -ex
-          . ~/venv/bin/activate
+          set -e; . ~/venv/bin/activate; set -x
           python3 istqb_product_base/template.py compile-tex-to-pdf
       - name: Upload PDF documents
         uses: actions/upload-artifact@v4
@@ -132,8 +127,7 @@ jobs:
       - name: Install LibreOffice
         if: github.ref == 'refs/heads/main'
         run: |
-          set -ex
-          . ~/venv/bin/activate
+          set -e; . ~/venv/bin/activate; set -x
           if python3 istqb_product_base/template.py find-files xlsx | grep -q .
           then
             wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
@@ -141,20 +135,17 @@ jobs:
           fi
       - name: Ensure correct encoding of input files
         run: |
-          set -ex
-          . ~/venv/bin/activate
+          set -e; . ~/venv/bin/activate; set -x
           python3 istqb_product_base/template.py fixup-line-endings
       - name: Convert XLSX spreadsheets to PDF
         run: |
-          set -ex
-          . ~/venv/bin/activate
+          set -e; . ~/venv/bin/activate; set -x
           python3 istqb_product_base/template.py convert-xlsx-to-pdf
       - name: Create output directory html/
         run: mkdir html
       - name: Compile LaTeX documents to HTML
         run: |
-          set -ex
-          . ~/venv/bin/activate
+          set -e; . ~/venv/bin/activate; set -x
           python3 istqb_product_base/template.py find-files tex | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' make4ht -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d html/{.} {}
       - name: Upload HTML documents
         uses: actions/upload-artifact@v4
@@ -190,8 +181,7 @@ jobs:
       - name: Install LibreOffice
         if: github.ref == 'refs/heads/main'
         run: |
-          set -ex
-          . ~/venv/bin/activate
+          set -e; . ~/venv/bin/activate; set -x
           if python3 istqb_product_base/template.py find-files xlsx | grep -q .
           then
             wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
@@ -199,22 +189,19 @@ jobs:
           fi
       - name: Ensure correct encoding of input files
         run: |
-          set -ex
-          . ~/venv/bin/activate
+          set -e; . ~/venv/bin/activate; set -x
           python3 istqb_product_base/template.py fixup-line-endings
       - name: Convert XLSX spreadsheets to PDF
         run: |
-          set -ex
-          . ~/venv/bin/activate
+          set -e; . ~/venv/bin/activate; set -x
           python3 istqb_product_base/template.py convert-xlsx-to-pdf
       - name: Create output directory epub/
         run: mkdir epub
       - name: Compile LaTeX documents to EPUB
         shell: bash
         run: |
-          set -ex
+          set -e; . ~/venv/bin/activate; set -x
           shopt -s extglob
-          . ~/venv/bin/activate
           python3 istqb_product_base/template.py find-files tex | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' '(' mkdir -p epub/build/{.} '&&' cp -ar !(epub) epub/build/{.}/ '&&' cd epub/build/{.} '&&' tex4ebook -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d ../.. {} ')'
           rm -rf epub/build
       - name: Upload EPUB documents
@@ -252,17 +239,15 @@ jobs:
         run: mkdir docx
       - name: Convert MD documents to DOCX
         run: |
-          set -ex
-          . ~/venv/bin/activate
+          set -e; . ~/venv/bin/activate; set -x
           python3 istqb_product_base/template.py find-files markdown | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' pandoc -f "${PANDOC_EXTENSIONS}" -i {} -o docx/{}.docx
       - name: Convert YAML documents to DOCX
         run: |
-          set -ex
-          . ~/venv/bin/activate
+          set -e; . ~/venv/bin/activate; set -x
           python3 istqb_product_base/template.py find-files user-yaml | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` yml\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
       - name: Convert BIB documents to DOCX
         run: |
-          set -ex
+          set -e; . ~/venv/bin/activate; set -x
           python3 istqb_product_base/template.py find-files bib | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` bib\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
       - name: Upload DOCX documents
         uses: actions/upload-artifact@v4
