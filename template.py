@@ -124,7 +124,10 @@ def _fixup_languages() -> None:
 
 
 def _run_command(*args: str, text=False) -> str:
-    output = subprocess.check_output(args, text=text, stderr=subprocess.STDOUT)
+    try:
+        output = subprocess.check_output(args, text=text, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        print(e.output)
     return output
 
 
