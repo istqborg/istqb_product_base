@@ -41,21 +41,11 @@ jobs:
           python3 -m venv ~/venv
           . ~/venv/bin/activate
           pip install -r requirements.txt
-      - name: Validate metadata
+      - name: Validate metadata, question definitions, and language definitions
         shell: bash
         run: |
           set -e; . ~/venv/bin/activate; set -x
-          python3 istqb_product_base/template.py validate-files metadata
-      - name: Validate question definitions
-        shell: bash
-        run: |
-          set -e; . ~/venv/bin/activate; set -x
-          python3 istqb_product_base/template.py validate-files questions
-      - name: Validate language definitions
-        shell: bash
-        run: |
-          set -e; . ~/venv/bin/activate; set -x
-          python3 istqb_product_base/template.py validate-files languages
+          python3 istqb_product_base/template.py validate-files
   produce-pdf:
     name: Produce PDF documents
     needs:

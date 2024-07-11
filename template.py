@@ -29,7 +29,7 @@ METADATA_FILETYPES = ['all', 'all-yaml', 'user-yaml'] + sorted(['metadata', 'que
 DOCUMENT_FILETYPES = sorted(['xlsx', 'markdown', 'eps', 'tex', 'bib'])
 FILETYPES = METADATA_FILETYPES + DOCUMENT_FILETYPES
 
-VALIDATABLE_FILETYPES = sorted(['metadata', 'questions', 'languages'])
+VALIDATABLE_FILETYPES = ['all', 'all-yaml'] + sorted(['metadata', 'questions', 'languages'])
 
 ROOT_DIRECTORY = Path(__file__).parent.resolve()
 SCHEMA_DIRECTORY = ROOT_DIRECTORY / 'schema'
@@ -199,21 +199,19 @@ def _validate_files(file_types: Iterable[str]) -> None:
         LOGGER.info('Validated file "%s" with schema "%s"', path, schema.name)
 
     for file_type in file_types:
-        if file_type == 'metadata':
+        if file_type in ('metadata', 'all', 'all-yaml'):
             schema = yamale.make_schema(SCHEMA_DIRECTORY / 'metadata.yml')
             for path in _find_files(file_types=['metadata']):
                 validate_file(schema, path)
-        elif file_type == 'questions':
+        if file_type in ('questions', 'all', 'all-yaml'):
             schema = yamale.make_schema(SCHEMA_DIRECTORY / 'questions.yml')
             for path in _find_files(file_types=['questions']):
                 validate_file(schema, path)
-        elif file_type == 'languages':
+        if file_type in ('languages', 'all', 'all-yaml'):
             _fixup_languages()
             schema = yamale.make_schema(SCHEMA_DIRECTORY / 'language.yml')
             for path in _find_files(file_types=['languages']):
                 validate_file(schema, path)
-        else:
-            raise ValueError(f'Unknown file type: {file_type}')
 
 
 def _convert_eps_files_to_pdf() -> None:
@@ -329,7 +327,7 @@ def main():
         'validate-files',
         help='Validate the different types of files in this repository',
     )
-    parser_validate_files.add_argument('filetype', choices=VALIDATABLE_FILETYPES)
+    parser_validate_files.add_argument('filetype', choices=VALIDATABLE_FILETYPES, default='all')
     parser_validate_files.set_defaults(func=validate_files)
 
     parser_convert_eps_files_to_pdf = subparsers.add_parser(
