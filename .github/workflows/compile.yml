@@ -95,6 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: witiko/markdown:3.6.0-10-g11b016ea-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Install required packages
         run: |
