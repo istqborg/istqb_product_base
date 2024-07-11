@@ -13,7 +13,7 @@ from multiprocessing import Pool
 from pathlib import Path
 import re
 import subprocess
-from typing import Iterable, List, Tuple
+from typing import Iterable, List, Tuple, TYPE_CHECKING
 import os
 import shutil
 import sys
@@ -35,6 +35,8 @@ ROOT_DIRECTORY = Path(__file__).parent.resolve()
 SCHEMA_DIRECTORY = ROOT_DIRECTORY / 'schema'
 
 LATEXMKRC = ROOT_DIRECTORY / 'latexmkrc'
+ISTQB_CFG = ROOT_DIRECTORY / 'istqb.cfg'
+ISTQB_MK4 = ROOT_DIRECTORY / 'istqb.mk4'
 
 
 def _find_files(file_types: Iterable[str], root=Path('.')) -> Iterable[Path]:
@@ -244,7 +246,7 @@ def _convert_xlsx_files_to_pdf() -> None:
 
 def _convert_tex_file_to_pdf(input_path: Path) -> Tuple[Path, Path]:
     if (input_path.parent / 'NO_PDF').exists():
-        return
+        return input_path, None
     _run_command('latexmk', '-gg', '-r', f'{LATEXMKRC}', f'{input_path}')
     if input_path.name != 'example-document.tex':
         with input_path.with_suffix('.istqb_project_name').open('rt') as f:
@@ -255,16 +257,44 @@ def _convert_tex_file_to_pdf(input_path: Path) -> Tuple[Path, Path]:
     return input_path, output_path
 
 
-def _convert_tex_files_to_pdf() -> None:
+def _convert_tex_file_to_html(input_path: Path, output_directory: Path) -> Tuple[Path, Path]:
+    if (input_path.parent / 'NO_HTML').exists():
+        return input_path, None
+    output_path = output_directory / input_path.name / input_path.with_suffix('.html').name
+    _run_command('make4ht', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_path.parent}', f'{input_path}')
+    return input_path, output_path
+
+
+if TYPE_CHECKING:  # The Protocol class is unavailable in Python <3.8 but that should not prevent us from running the script.
+    from typing import Protocol
+
+    class ConversionFunction(Protocol):
+        def __call__(self, input_path: Path, *args, **kwargs) -> Tuple[Path, Path]: ...
+
+
+def _convert_tex_files(convert: 'ConversionFunction', *args, **kwargs) -> None:
     _fixup_languages()
     _validate_files(file_types=['all'])
     _fixup_line_endings()
     _convert_eps_files_to_pdf()
     _convert_xlsx_files_to_pdf()
-    input_paths = _find_files(file_types=['tex'])
     with Pool(None) as pool:
-        for input_path, output_path in pool.imap(_convert_tex_file_to_pdf, input_paths):
-            LOGGER.info('Compiled file "%s" to "%s"', input_path, output_path)
+        input_paths = _find_files(file_types=['tex'])
+        for input_path, output_path in pool.imap(lambda path: convert(path, *args, **kwargs), input_paths):
+            if output_path is None:
+                LOGGER.info('Skipped the compilation of file "%s"', input_path)
+            else:
+                LOGGER.info('Compiled file "%s" to "%s"', input_path, output_path)
+                assert output_path.exists(), f'File "{output_path}" does not exist'
+
+
+def _convert_tex_files_to_pdf() -> None:
+    _convert_tex_files(_convert_tex_file_to_pdf)
+
+
+def _convert_tex_files_to_html(output_directory: Path) -> None:
+    output_directory.mkdir(parents=True, exist_ok=True)
+    _convert_tex_files(_convert_tex_file_to_html, output_directory)
 
 
 def find_files(args: Namespace) -> None:
@@ -294,14 +324,18 @@ def convert_xlsx_files_to_pdf(args: Namespace) -> None:
 
 
 def compile_tex_files_to_pdf(args: Namespace) -> None:
-    _convert_tex_files_to_pdf()
+    _compile_tex_files_to_pdf()
+
+
+def compile_tex_files_to_html(args: Namespace) -> None:
+    _compile_tex_files_to_html(output_directory=Path(args.outputdir))
 
 
 def main():
     parser = ArgumentParser(
         prog='template.py',
         description='Process ISTQB documents written with the LaTeX+Markdown template',
-        epilog='This program requires that Git, LibreOffice, and TeX Live are installed.',
+        epilog='This program requires that Git, LibreOffice, TeX Live and Tidy HTML5 are installed.',
     )
     subparsers = parser.add_subparsers()
 
@@ -348,6 +382,13 @@ def main():
         help='Compile all TeX files in this repository to PDF',
     )
     parser_compile_tex_to_pdf.set_defaults(func=compile_tex_files_to_pdf)
+
+    parser_compile_tex_to_html = subparsers.add_parser(
+        'compile-tex-to-html',
+        help='Compile all TeX files in this repository to HTML',
+    )
+    parser_compile_tex_to_html.add_argument('outputdir')
+    parser_compile_tex_to_html.set_defaults(func=compile_tex_files_to_html)
 
     args = parser.parse_args()
     if not 'func' in args:
