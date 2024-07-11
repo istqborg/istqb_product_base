@@ -89,7 +89,7 @@ jobs:
         run: |
           set -ex
           . ~/venv/bin/activate
-          if python3 template.py find-files xlsx | grep -q .
+          if python3 istqb_product_base/template.py find-files xlsx | grep -q .
           then
             wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
             dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
@@ -108,12 +108,12 @@ jobs:
         run: |
           set -ex
           . ~/venv/bin/activate
-          python3 template.py find-files xlsx | parallel --halt now,fail=1 test ${{github.ref == 'refs/heads/main'}} = true '&&' libreoffice7.3 --headless --convert-to pdf {} --outdir {//} '||' ln -s '$(kpsewhich example-image.pdf)' {.}.pdf
+          python3 istqb_product_base/template.py convert-xlsx-to-pdf
       - name: Compile LaTeX documents to PDF
         run: |
           set -ex
           . ~/venv/bin/activate
-          python3 template.py find-files tex | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk -r istqb_product_base/latexmkrc {} '&&' '(test {} = ./example-document.tex || mv -v {.}.pdf "$(cat {.}.istqb_project_name).pdf")'
+          python3 istqb_product_base/template.py find-files tex | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk -r istqb_product_base/latexmkrc {} '&&' '(test {} = ./example-document.tex || mv -v {.}.pdf "$(cat {.}.istqb_project_name).pdf")'
       - name: Upload PDF documents
         uses: actions/upload-artifact@v4
         with:
@@ -150,7 +150,7 @@ jobs:
         run: |
           set -ex
           . ~/venv/bin/activate
-          if python3 template.py find-files xlsx | grep -q .
+          if python3 istqb_product_base/template.py find-files xlsx | grep -q .
           then
             wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
             dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
@@ -164,14 +164,14 @@ jobs:
         run: |
           set -ex
           . ~/venv/bin/activate
-          python3 template.py find-files xlsx | parallel --halt now,fail=1 test ${{github.ref == 'refs/heads/main'}} = true '&&' libreoffice7.3 --headless --convert-to pdf {} --outdir {//} '||' ln -s '$(kpsewhich example-image.pdf)' {.}.pdf
+          python3 istqb_product_base/template.py convert-xlsx-to-pdf
       - name: Create output directory html/
         run: mkdir html
       - name: Compile LaTeX documents to HTML
         run: |
           set -ex
           . ~/venv/bin/activate
-          python3 template.py find-files tex | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' make4ht -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d html/{.} {}
+          python3 istqb_product_base/template.py find-files tex | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' make4ht -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d html/{.} {}
       - name: Upload HTML documents
         uses: actions/upload-artifact@v4
         with:
@@ -208,7 +208,7 @@ jobs:
         run: |
           set -ex
           . ~/venv/bin/activate
-          if python3 template.py find-files xlsx | grep -q .
+          if python3 istqb_product_base/template.py find-files xlsx | grep -q .
           then
             wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
             dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
@@ -222,7 +222,7 @@ jobs:
         run: |
           set -ex
           . ~/venv/bin/activate
-          python3 template.py find-files xlsx | parallel --halt now,fail=1 test ${{github.ref == 'refs/heads/main'}} = true '&&' libreoffice7.3 --headless --convert-to pdf {} --outdir {//} '||' ln -s '$(kpsewhich example-image.pdf)' {.}.pdf
+          python3 istqb_product_base/template.py convert-xlsx-to-pdf
       - name: Create output directory epub/
         run: mkdir epub
       - name: Compile LaTeX documents to EPUB
@@ -231,7 +231,7 @@ jobs:
           set -ex
           shopt -s extglob
           . ~/venv/bin/activate
-          python3 template.py find-files tex | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' '(' mkdir -p epub/build/{.} '&&' cp -ar !(epub) epub/build/{.}/ '&&' cd epub/build/{.} '&&' tex4ebook -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d ../.. {} ')'
+          python3 istqb_product_base/template.py find-files tex | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' '(' mkdir -p epub/build/{.} '&&' cp -ar !(epub) epub/build/{.}/ '&&' cd epub/build/{.} '&&' tex4ebook -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d ../.. {} ')'
           rm -rf epub/build
       - name: Upload EPUB documents
         uses: actions/upload-artifact@v4

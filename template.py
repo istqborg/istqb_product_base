@@ -12,10 +12,12 @@ import logging
 from pathlib import Path
 import re
 import subprocess
-from typing import Iterable
+from typing import Iterable, List
 import os
+import shutil
 import sys
 
+from git import Repo
 import yamale
 import yaml
 
@@ -113,6 +115,22 @@ def _fixup_languages() -> None:
         _fixup_language(path)
 
 
+def _find_files_in_tex_live(pathname) -> List[Path]:
+    paths = subprocess.check_output(['kpsewhich', pathname], text=True).splitlines()
+    paths = list(map(Path, paths))
+    return paths
+
+
+def _find_file_in_tex_live(pathname) -> Path:
+    paths = _find_files_in_tex_live(pathname)
+    if len(paths) > 1:
+        raise ValueError(f'Multiple files "{pathname}" was found in your TeX installation but only one was expected')
+    if len(paths) != 1:
+        raise ValueError(f'File "{pathname}" not found in your TeX installation (is TeX installed?)')
+    path, = paths
+    return path
+
+
 def _fixup_language(path: Path) -> None:
     # Is `babel-language` already in the language definitions?
     with path.open('rt') as rf:
@@ -125,11 +143,7 @@ def _fixup_language(path: Path) -> None:
     # Determine the babel name of the language.
     iso_code = path.name[:2]
     pathname = f'{iso_code}/babel-{iso_code}.ini'
-    config_filenames = subprocess.check_output(['kpsewhich', pathname], text=True).splitlines()
-    assert len(config_filenames) <= 1
-    if len(config_filenames) != 1:
-        raise ValueError(f'File "{pathname}" not found in your TeX installation (is TeX installed?)')
-    config_filename, = config_filenames
+    config_filename = _find_file_in_tex_live(pathname)
 
     config = ConfigParser()
     config.read(config_filename)
@@ -201,6 +215,26 @@ def _convert_eps_to_pdf() -> None:
             LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
 
+def _is_on_main_branch(path: Path) -> bool:
+    repo = Repo(path.parent, search_parent_directories=True)
+    return repo.active_branch.name == 'main'
+
+
+def _convert_xlsx_to_pdf() -> None:
+    example_image_path = None
+    for input_path in _find_files(file_types=['xlsx']):
+        output_path = input_path.with_suffix('.pdf')
+        if not output_path.exists():
+            if _is_on_main_branch(input_path):
+                subprocess.check_output(['libreoffice7.3', '--headless', '--convert-to', 'pdf', f'{input_path}', '--outdir', f'{output_path.parent}'])
+                LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
+            else:
+                if example_image_path is None:
+                    example_image_path = _find_file_in_tex_live('example-image.pdf')
+                shutil.copy(example_image_path, output_path)
+                LOGGER.info('Copied file "%s" to "%s"', example_image_path, output_path)
+
+
 def find_files(args: Namespace) -> None:
     paths = sorted(_find_files(file_types=[args.filetype]))
     for path in paths:
@@ -224,10 +258,15 @@ def convert_eps_to_pdf(args: Namespace) -> None:
     _convert_eps_to_pdf()
 
 
+def convert_xlsx_to_pdf(args: Namespace) -> None:
+    _convert_xlsx_to_pdf()
+
+
 def main():
     parser = ArgumentParser(
         prog='template.py',
         description='Process ISTQB documents written with the LaTeX+Markdown template',
+        epilog='This program requires that Git, LibreOffice, and TeX Live are installed.',
     )
     subparsers = parser.add_subparsers()
 
@@ -262,6 +301,12 @@ def main():
         help='Convert EPS files in this repository to PDF',
     )
     parser_convert_eps_to_pdf.set_defaults(func=convert_eps_to_pdf)
+
+    parser_convert_xlsx_to_pdf = subparsers.add_parser(
+        'convert-xlsx-to-pdf',
+        help='Convert XLSX files in this repository to PDF',
+    )
+    parser_convert_xlsx_to_pdf.set_defaults(func=convert_xlsx_to_pdf)
 
     args = parser.parse_args()
     if not 'func' in args:
