@@ -9,10 +9,11 @@ from argparse import ArgumentParser, Namespace
 from configparser import ConfigParser
 import json
 import logging
+from multiprocessing import Pool
 from pathlib import Path
 import re
 import subprocess
-from typing import Iterable, List
+from typing import Iterable, List, Tuple
 import os
 import shutil
 import sys
@@ -32,6 +33,8 @@ VALIDATABLE_FILETYPES = sorted(['metadata', 'questions', 'languages'])
 
 ROOT_DIRECTORY = Path(__file__).parent.resolve()
 SCHEMA_DIRECTORY = ROOT_DIRECTORY / 'schema'
+
+LATEXMKRC = ROOT_DIRECTORY / 'latexmkrc'
 
 
 def _find_files(file_types: Iterable[str], root=Path('.')) -> Iterable[Path]:
@@ -207,7 +210,7 @@ def _validate_files(file_types: Iterable[str]) -> None:
             raise ValueError(f'Unknown file type: {file_type}')
 
 
-def _convert_eps_to_pdf() -> None:
+def _convert_eps_files_to_pdf() -> None:
     for input_path in _find_files(file_types=['eps']):
         output_path = input_path.parent / f'{input_path.stem}-eps-converted-to.pdf'
         if not output_path.exists():
@@ -220,7 +223,7 @@ def _is_on_main_branch(path: Path) -> bool:
     return repo.active_branch.name == 'main'
 
 
-def _convert_xlsx_to_pdf() -> None:
+def _convert_xlsx_files_to_pdf() -> None:
     example_image_path = None
     for input_path in _find_files(file_types=['xlsx']):
         output_path = input_path.with_suffix('.pdf')
@@ -233,6 +236,26 @@ def _convert_xlsx_to_pdf() -> None:
                     example_image_path = _find_file_in_tex_live('example-image.pdf')
                 shutil.copy(example_image_path, output_path)
                 LOGGER.info('Copied file "%s" to "%s"', example_image_path, output_path)
+
+
+def _convert_tex_file_to_pdf(input_path: Path) -> Tuple[Path, Path]:
+    if (input_path.parent / 'NO_PDF').exists():
+        return
+    subprocess.check_output(['latexmk', '-gg', '-r', f'{LATEXMKRC}', f'{input_path}'])
+    if input_path.name != 'example-document.tex':
+        with input_path.with_suffix('.istqb_project_name').open('rt') as f:
+            output_path = Path(f'{project_name}.pdf')
+        input_path.with_suffix('.pdf').rename(output_path)
+    else:
+        output_path = input_path.with_suffix('.pdf')
+    return input_path, output_path
+
+
+def _convert_tex_files_to_pdf() -> None:
+    input_paths = _find_files(file_types=['tex'])
+    with Pool(None) as pool:
+        for input_path, output_path in pool.imap(_convert_tex_file_to_pdf, input_paths):
+            LOGGER.info('Compiled file "%s" to "%s"', input_path, output_path)
 
 
 def find_files(args: Namespace) -> None:
@@ -254,12 +277,16 @@ def validate_files(args: Namespace) -> None:
     _validate_files(file_types=[args.filetype])
 
 
-def convert_eps_to_pdf(args: Namespace) -> None:
-    _convert_eps_to_pdf()
+def convert_eps_files_to_pdf(args: Namespace) -> None:
+    _convert_eps_files_to_pdf()
 
 
-def convert_xlsx_to_pdf(args: Namespace) -> None:
-    _convert_xlsx_to_pdf()
+def convert_xlsx_files_to_pdf(args: Namespace) -> None:
+    _convert_xlsx_files_to_pdf()
+
+
+def compile_tex_files_to_pdf(args: Namespace) -> None:
+    _convert_tex_files_to_pdf()
 
 
 def main():
@@ -296,17 +323,23 @@ def main():
     parser_validate_files.add_argument('filetype', choices=VALIDATABLE_FILETYPES)
     parser_validate_files.set_defaults(func=validate_files)
 
-    parser_convert_eps_to_pdf = subparsers.add_parser(
+    parser_convert_eps_files_to_pdf = subparsers.add_parser(
         'convert-eps-to-pdf',
-        help='Convert EPS files in this repository to PDF',
+        help='Convert all EPS files in this repository to PDF',
     )
-    parser_convert_eps_to_pdf.set_defaults(func=convert_eps_to_pdf)
+    parser_convert_eps_files_to_pdf.set_defaults(func=convert_eps_files_to_pdf)
 
-    parser_convert_xlsx_to_pdf = subparsers.add_parser(
+    parser_convert_xlsx_files_to_pdf = subparsers.add_parser(
         'convert-xlsx-to-pdf',
-        help='Convert XLSX files in this repository to PDF',
+        help='Convert all XLSX files in this repository to PDF',
     )
-    parser_convert_xlsx_to_pdf.set_defaults(func=convert_xlsx_to_pdf)
+    parser_convert_xlsx_files_to_pdf.set_defaults(func=convert_xlsx_files_to_pdf)
+
+    parser_compile_tex_to_pdf = subparsers.add_parser(
+        'compile-tex-to-pdf',
+        help='Compile all TeX files in this repository to PDF',
+    )
+    parser_compile_tex_to_pdf.set_defaults(func=compile_tex_files_to_pdf)
 
     args = parser.parse_args()
     if not 'func' in args:

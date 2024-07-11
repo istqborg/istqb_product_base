@@ -113,7 +113,7 @@ jobs:
         run: |
           set -ex
           . ~/venv/bin/activate
-          python3 istqb_product_base/template.py find-files tex | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk -r istqb_product_base/latexmkrc {} '&&' '(test {} = ./example-document.tex || mv -v {.}.pdf "$(cat {.}.istqb_project_name).pdf")'
+          python3 istqb_product_base/template.py compile-tex-to-pdf
       - name: Upload PDF documents
         uses: actions/upload-artifact@v4
         with:
