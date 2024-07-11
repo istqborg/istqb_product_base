@@ -83,7 +83,6 @@ jobs:
           python3 -m venv ~/venv
           . ~/venv/bin/activate
           pip install -r requirements.txt
-          python3 template.py fixup-languages
       - name: Install LibreOffice
         if: github.ref == 'refs/heads/main'
         run: |
@@ -94,21 +93,6 @@ jobs:
             wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
             dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
           fi
-      - name: Ensure correct encoding of input files
-        run: |
-          set -ex
-          . ~/venv/bin/activate
-          python3 istqb_product_base/template.py fixup-line-endings
-      - name: Convert EPS images to PDF
-        run: |
-          set -ex
-          . ~/venv/bin/activate
-          python3 istqb_product_base/template.py convert-eps-to-pdf
-      - name: Convert XLSX spreadsheets to PDF
-        run: |
-          set -ex
-          . ~/venv/bin/activate
-          python3 istqb_product_base/template.py convert-xlsx-to-pdf
       - name: Compile LaTeX documents to PDF
         run: |
           set -ex

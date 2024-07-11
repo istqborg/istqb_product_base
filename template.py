@@ -167,21 +167,22 @@ def _fixup_language(path: Path) -> None:
         wf.write(input_yaml_text)
 
 
-def _fixup_line_endings(path: Path) -> None:
-    with path.open('rt', newline='') as rf:
-        input_text = rf.read()
-    if '\r' not in input_text:
-        return
+def _fixup_line_endings() -> None:
+    for path in _find_files(file_types=['all-yaml', 'markdown', 'tex', 'bib']):
+        with path.open('rt', newline='') as rf:
+            input_text = rf.read()
+        if '\r' not in input_text:
+            return
 
-    LOGGER.info('Translating line endings in file "%s"', path)
-    with path.open('rt') as rf:
-        input_lines = rf.readlines()
-    with path.open('wt', newline='\n') as wf:
-        wf.writelines(input_lines)
+        LOGGER.info('Translating line endings in file "%s"', path)
+        with path.open('rt') as rf:
+            input_lines = rf.readlines()
+        with path.open('wt', newline='\n') as wf:
+            wf.writelines(input_lines)
 
-    with path.open('rt', newline='') as rf:
-        input_text = rf.read()
-    assert '\r' not in input_text
+        with path.open('rt', newline='') as rf:
+            input_text = rf.read()
+        assert '\r' not in input_text
 
 
 def _validate_files(file_types: Iterable[str]) -> None:
@@ -252,6 +253,10 @@ def _convert_tex_file_to_pdf(input_path: Path) -> Tuple[Path, Path]:
 
 
 def _convert_tex_files_to_pdf() -> None:
+    _fixup_languages()
+    _fixup_line_endings()
+    _convert_eps_files_to_pdf()
+    _convert_xlsx_files_to_pdf()
     input_paths = _find_files(file_types=['tex'])
     with Pool(None) as pool:
         for input_path, output_path in pool.imap(_convert_tex_file_to_pdf, input_paths):
@@ -269,8 +274,7 @@ def fixup_languages(args: Namespace) -> None:
 
 
 def fixup_line_endings(args: Namespace) -> None:
-    for path in _find_files(file_types=['all-yaml', 'markdown', 'tex', 'bib']):
-        _fixup_line_endings(path)
+    _fixup_line_endings()
 
 
 def validate_files(args: Namespace) -> None:
