@@ -100,7 +100,7 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends git parallel tidy
+          apt -qy install --no-install-recommends git tidy
       - name: Set up Git repository
         uses: actions/checkout@v4
       - name: Clone repository istqb_product_base
@@ -145,7 +145,7 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends git parallel tidy
+          apt -qy install --no-install-recommends git tidy
       - name: Set up Git repository
         uses: actions/checkout@v4
       - name: Clone repository istqb_product_base
