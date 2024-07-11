@@ -118,8 +118,13 @@ def _fixup_languages() -> None:
         _fixup_language(path)
 
 
+def _run_command(*args: str) -> str:
+    output = subprocess.check_output(args, text=True, stderr=subprocess.STDOUT)
+    return output
+
+
 def _find_files_in_tex_live(pathname) -> List[Path]:
-    paths = subprocess.check_output(['kpsewhich', pathname], text=True).splitlines()
+    paths = _run_command('kpsewhich', pathname).splitlines()
     paths = list(map(Path, paths))
     return paths
 
@@ -190,7 +195,7 @@ def _validate_files(file_types: Iterable[str]) -> None:
     def validate_file(schema, path: Path):
         data = yamale.make_data(path)
         yamale.validate(schema, data)
-        subprocess.check_output(['texlua', f'{ROOT_DIRECTORY / "check-yaml.lua"}'])
+        _run_command('texlua', f'{ROOT_DIRECTORY / "check-yaml.lua"}')
         LOGGER.info('Validated file "%s" with schema "%s"', path, schema.name)
 
     for file_type in file_types:
@@ -215,7 +220,7 @@ def _convert_eps_files_to_pdf() -> None:
     for input_path in _find_files(file_types=['eps']):
         output_path = input_path.parent / f'{input_path.stem}-eps-converted-to.pdf'
         if not output_path.exists():
-            subprocess.check_output(['epstopdf', f'{input_path}', f'{output_path}'])
+            _run_command('epstopdf', f'{input_path}', f'{output_path}')
             LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
 
@@ -230,7 +235,7 @@ def _convert_xlsx_files_to_pdf() -> None:
         output_path = input_path.with_suffix('.pdf')
         if not output_path.exists():
             if _is_on_main_branch(input_path):
-                subprocess.check_output(['libreoffice7.3', '--headless', '--convert-to', 'pdf', f'{input_path}', '--outdir', f'{output_path.parent}'])
+                _run_command('libreoffice7.3', '--headless', '--convert-to', 'pdf', f'{input_path}', '--outdir', f'{output_path.parent}')
                 LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
             else:
                 if example_image_path is None:
@@ -242,7 +247,7 @@ def _convert_xlsx_files_to_pdf() -> None:
 def _convert_tex_file_to_pdf(input_path: Path) -> Tuple[Path, Path]:
     if (input_path.parent / 'NO_PDF').exists():
         return
-    subprocess.check_output(['latexmk', '-gg', '-r', f'{LATEXMKRC}', f'{input_path}'])
+    _run_command('latexmk', '-gg', '-r', f'{LATEXMKRC}', f'{input_path}')
     if input_path.name != 'example-document.tex':
         with input_path.with_suffix('.istqb_project_name').open('rt') as f:
             output_path = Path(f'{project_name}.pdf')
