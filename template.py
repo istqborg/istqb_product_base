@@ -193,6 +193,14 @@ def _validate_files(file_types: Iterable[str]) -> None:
             raise ValueError(f'Unknown file type: {file_type}')
 
 
+def _convert_eps_to_pdf() -> None:
+    for input_path in _find_files(file_types=['eps']):
+        output_path = input_path.parent / f'{input_path.stem}-eps-converted-to.pdf'
+        if not output_path.exists():
+            subprocess.check_output(['epstopdf', f'{input_path}', f'{output_path}'])
+            LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
+
+
 def find_files(args: Namespace) -> None:
     paths = sorted(_find_files(file_types=[args.filetype]))
     for path in paths:
@@ -210,6 +218,10 @@ def fixup_line_endings(args: Namespace) -> None:
 
 def validate_files(args: Namespace) -> None:
     _validate_files(file_types=[args.filetype])
+
+
+def convert_eps_to_pdf(args: Namespace) -> None:
+    _convert_eps_to_pdf()
 
 
 def main():
@@ -234,7 +246,7 @@ def main():
 
     parser_fixup_line_endings = subparsers.add_parser(
         'fixup-line-endings',
-        help='Convert all text files to unix-style line endings',
+        help='Convert all text files to Unix-style line endings',
     )
     parser_fixup_line_endings.set_defaults(func=fixup_line_endings)
 
@@ -244,6 +256,12 @@ def main():
     )
     parser_validate_files.add_argument('filetype', choices=VALIDATABLE_FILETYPES)
     parser_validate_files.set_defaults(func=validate_files)
+
+    parser_convert_eps_to_pdf = subparsers.add_parser(
+        'convert-eps-to-pdf',
+        help='Convert EPS files in this repository to PDF',
+    )
+    parser_convert_eps_to_pdf.set_defaults(func=convert_eps_to_pdf)
 
     args = parser.parse_args()
     if not 'func' in args:
