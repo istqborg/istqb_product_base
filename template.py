@@ -7,6 +7,7 @@ Processes ISTQB documents written with the LaTeX+Markdown template.
 
 from argparse import ArgumentParser, Namespace
 from configparser import ConfigParser
+from contextlib import contextmanager
 from itertools import repeat
 import json
 import logging
@@ -32,6 +33,7 @@ FILETYPES = METADATA_FILETYPES + DOCUMENT_FILETYPES
 
 VALIDATABLE_FILETYPES = ['all', 'all-yaml'] + sorted(['metadata', 'questions', 'languages'])
 
+CURRENT_DIRECTORY = Path('.').resolve()
 ROOT_DIRECTORY = Path(__file__).parent.resolve()
 SCHEMA_DIRECTORY = ROOT_DIRECTORY / 'schema'
 
@@ -245,6 +247,16 @@ def _convert_xlsx_files_to_pdf() -> None:
                 LOGGER.info('Copied file "%s" to "%s"', example_image_path, output_path)
 
 
+@contextmanager
+def change_directory(new_path):
+    original_path = os.getcwd()
+    try:
+        os.chdir(new_path)
+        yield
+    finally:
+        os.chdir(original_path)
+
+
 def _compile_tex_file_to_pdf(input_path: Path) -> Optional[Path]:
     if (input_path.parent / input_path.stem / 'NO_PDF').exists():
         # Creating a file `document/NO_PDF` will prevent `document.tex` from being compiled to PDF.
@@ -263,8 +275,33 @@ def _compile_tex_file_to_html(input_path: Path, output_directory: Path) -> Optio
     if (input_path.parent / input_path.stem / 'NO_HTML').exists():
         # Creating a file `document/NO_HTML` will prevent `document.tex` from being compiled to HTML.
         return
-    output_path = output_directory / input_path.name / input_path.with_suffix('.html').name
+    output_path = output_directory / input_path.stem / input_path.with_suffix('.html').name
     _run_command('make4ht', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_path.parent}', f'{input_path}')
+    return output_path
+
+
+def _compile_tex_file_to_epub(input_path: Path, output_directory: Path) -> Optional[Path]:
+    if (input_path.parent / input_path.stem / 'NO_HTML').exists() or (input_path.parent / input_path.stem / 'NO_EPUB').exists():
+        # Creating a file `document/NO_HTML` or `document/NO_EPUB` will prevent `document.tex` from being compiled to EPUB.
+        return
+
+    output_directory = output_directory.resolve()
+    build_directory = output_directory / 'build' / input_path.stem
+
+    def prune_output_directory(parent_directory: str, filenames: List[str]) -> bool:
+        if Path(parent_directory).resolve() == output_directory.parent:
+            return [filename for filename in filenames if filename != output_directory.name]
+        else:
+            return filenames
+
+    shutil.copytree(CURRENT_DIRECTORY, build_directory, ignore=prune_output_directory)
+
+    with change_directory(build_directory):
+        _run_command('tex4ebook', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', 'f{output_directory}', f'{input_path}')
+
+    shutil.rmtree(build_directory)
+
+    output_path = output_directory / input_path.with_suffix('.epub').name
     return output_path
 
 
@@ -289,7 +326,8 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
     _convert_xlsx_files_to_pdf()
     with Pool(None) as pool:
         input_paths = _find_files(file_types=['tex'])
-        for input_path, output_path in pool.imap(_compile_fn, zip(repeat(compile_fn), input_paths, repeat(args), repeat(kwargs))):
+        compile_parameters = zip(repeat(compile_fn), input_paths, repeat(args), repeat(kwargs))
+        for input_path, output_path in pool.imap_unordered(_compile_fn, compile_parameters):
             if output_path is None:
                 LOGGER.info('Skipped the compilation of file "%s"', input_path)
             else:
@@ -304,6 +342,11 @@ def _compile_tex_files_to_pdf() -> None:
 def _compile_tex_files_to_html(output_directory: Path) -> None:
     output_directory.mkdir(parents=True, exist_ok=True)
     _compile_tex_files(_compile_tex_file_to_html, output_directory)
+
+
+def _compile_tex_files_to_epub(output_directory: Path) -> None:
+    output_directory.mkdir(parents=True, exist_ok=True)
+    _compile_tex_files(_compile_tex_file_to_epub, output_directory)
 
 
 def find_files(args: Namespace) -> None:
@@ -338,6 +381,10 @@ def compile_tex_files_to_pdf(args: Namespace) -> None:
 
 def compile_tex_files_to_html(args: Namespace) -> None:
     _compile_tex_files_to_html(output_directory=Path(args.outputdir))
+
+
+def compile_tex_files_to_epub(args: Namespace) -> None:
+    _compile_tex_files_to_epub(output_directory=Path(args.outputdir))
 
 
 def main():
@@ -398,6 +445,13 @@ def main():
     )
     parser_compile_tex_to_html.add_argument('outputdir')
     parser_compile_tex_to_html.set_defaults(func=compile_tex_files_to_html)
+
+    parser_compile_tex_to_epub = subparsers.add_parser(
+        'compile-tex-to-epub',
+        help='Compile all TeX files in this repository to EPUB',
+    )
+    parser_compile_tex_to_epub.add_argument('outputdir')
+    parser_compile_tex_to_epub.set_defaults(func=compile_tex_files_to_epub)
 
     args = parser.parse_args()
     if not 'func' in args:
