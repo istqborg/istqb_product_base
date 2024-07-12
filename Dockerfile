@@ -16,7 +16,6 @@ EOF
 RUN <<EOF
 set -ex
 # Install Python packages
-pip install -U pip wheel setuptools
 pip install -r /opt/istqb_product_base/requirements.txt --break-system-packages
 EOF
 RUN <<EOF
