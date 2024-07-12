@@ -191,7 +191,7 @@ jobs:
         run: |
           set -ex
           apt -qy update
-          apt -qy install --no-install-recommends git
+          apt -qy install --no-install-recommends git python3 python3-venv
       - name: Set up Git repository
         uses: actions/checkout@v4
       - name: Clone repository istqb_product_base
