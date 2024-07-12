@@ -35,3 +35,4 @@ RUN <<EOF
 set -ex
 chmod +x /usr/local/bin/istqb-template
 EOF
+ENTRYPOINT ["/usr/local/bin/istqb-template"]
