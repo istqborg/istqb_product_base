@@ -21,67 +21,38 @@ jobs:
     name: Validate YAML documents
     runs-on: ubuntu-latest
     container:
-      image: witiko/markdown:3.6.0-10-g11b016ea-latest
+      image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
-      - name: Install required packages
-        shell: bash
-        run: |
-          set -ex
-          apt -qy update
-          apt -qy install --no-install-recommends git
       - name: Set up Git repository
         uses: actions/checkout@v4
       - name: Clone repository istqb_product_base
         run: |
           set -ex
-          git clone https://github.com/istqborg/istqb_product_base.git
-          cd istqb_product_base
+          rm -rf /opt/istqb_product_base
+          git clone https://github.com/istqborg/istqb_product_base.git /opt/istqb_product_base
+          cd /opt/istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-          python3 -m venv ~/venv
-          . ~/venv/bin/activate
-          pip install -r requirements.txt
       - name: Validate YAML documents
-        shell: bash
-        run: |
-          set -e; . ~/venv/bin/activate; set -x
-          python3 istqb_product_base/template.py validate-files all-yaml
+        run: istqb-template validate-files all-yaml
   produce-pdf:
     name: Produce PDF documents
     needs:
       - validate
     runs-on: ubuntu-latest
     container:
-      image: witiko/markdown:3.6.0-10-g11b016ea-latest
+      image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
-      - name: Install required packages
-        run: |
-          set -ex
-          apt -qy update
-          apt -qy install --no-install-recommends git
       - name: Set up Git repository
         uses: actions/checkout@v4
       - name: Clone repository istqb_product_base
         run: |
           set -ex
-          git clone https://github.com/istqborg/istqb_product_base.git
-          cd istqb_product_base
+          rm -rf /opt/istqb_product_base
+          git clone https://github.com/istqborg/istqb_product_base.git /opt/istqb_product_base
+          cd /opt/istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-          python3 -m venv ~/venv
-          . ~/venv/bin/activate
-          pip install -r requirements.txt
-      - name: Install LibreOffice
-        if: github.ref == 'refs/heads/main'
-        run: |
-          set -e; . ~/venv/bin/activate; set -x
-          if python3 istqb_product_base/template.py find-files xlsx | grep -q .
-          then
-            wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
-            dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
-          fi
       - name: Compile LaTeX documents to PDF
-        run: |
-          set -e; . ~/venv/bin/activate; set -x
-          python3 istqb_product_base/template.py compile-tex-to-pdf
+        run: istqb-template compile-tex-to-pdf
       - name: Upload PDF documents
         uses: actions/upload-artifact@v4
         with:
@@ -93,126 +64,74 @@ jobs:
       - validate
     runs-on: ubuntu-latest
     container:
-      image: witiko/markdown:3.6.0-10-g11b016ea-latest
+      image: ghcr.io/istqborg/istqb_product_base:latest
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Install required packages
-        run: |
-          set -ex
-          apt -qy update
-          apt -qy install --no-install-recommends git tidy
       - name: Set up Git repository
         uses: actions/checkout@v4
       - name: Clone repository istqb_product_base
         run: |
           set -ex
-          git clone https://github.com/istqborg/istqb_product_base.git
-          cd istqb_product_base
+          rm -rf /opt/istqb_product_base
+          git clone https://github.com/istqborg/istqb_product_base.git /opt/istqb_product_base
+          cd /opt/istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-          python3 -m venv ~/venv
-          . ~/venv/bin/activate
-          pip install -r requirements.txt
-          python3 template.py fixup-languages
-      - name: Install LibreOffice
-        if: github.ref == 'refs/heads/main'
-        run: |
-          set -e; . ~/venv/bin/activate; set -x
-          if python3 istqb_product_base/template.py find-files xlsx | grep -q .
-          then
-            wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
-            dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
-          fi
-      - name: Create output directory html/
-        run: mkdir html
       - name: Compile LaTeX documents to HTML
-        run: |
-          set -e; . ~/venv/bin/activate; set -x
-          python3 istqb_product_base/template.py compile-tex-to-html html/
+        run: istqb-template compile-tex-to-html html/
       - name: Upload HTML documents
         uses: actions/upload-artifact@v4
         with:
           name: HTML
-          path: html
+          path: html/
   produce-ebooks:
     name: Produce EPUB documents
     needs:
       - validate
     runs-on: ubuntu-latest
     container:
-      image: witiko/markdown:3.6.0-10-g11b016ea-latest
+      image: ghcr.io/istqborg/istqb_product_base:latest
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Install required packages
-        run: |
-          set -ex
-          apt -qy update
-          apt -qy install --no-install-recommends git tidy
       - name: Set up Git repository
         uses: actions/checkout@v4
       - name: Clone repository istqb_product_base
         run: |
           set -ex
-          git clone https://github.com/istqborg/istqb_product_base.git
-          cd istqb_product_base
+          rm -rf /opt/istqb_product_base
+          git clone https://github.com/istqborg/istqb_product_base.git /opt/istqb_product_base
+          cd /opt/istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-          python3 -m venv ~/venv
-          . ~/venv/bin/activate
-          pip install -r requirements.txt
-          python3 template.py fixup-languages
-      - name: Install LibreOffice
-        if: github.ref == 'refs/heads/main'
-        run: |
-          set -e; . ~/venv/bin/activate; set -x
-          if python3 istqb_product_base/template.py find-files xlsx | grep -q .
-          then
-            wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
-            dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
-          fi
       - name: Compile LaTeX documents to EPUB
-        shell: bash
-        run: |
-          set -e; . ~/venv/bin/activate; set -x
-          python3 istqb_product_base/template.py compile-tex-to-epub epub/
+        run: istqb-template compile-tex-to-epub epub/
       - name: Upload EPUB documents
         uses: actions/upload-artifact@v4
         with:
           name: EPUB
-          path: epub
+          path: epub/
   produce-docx:
     name: Produce DOCX documents
     needs:
       - validate
     runs-on: ubuntu-latest
     container:
-      image: pandoc/core:3.1.1.0-ubuntu
+      image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
-      - name: Install required packages
-        run: |
-          set -ex
-          apt -qy update
-          apt -qy install --no-install-recommends git python3 python3-venv
       - name: Set up Git repository
         uses: actions/checkout@v4
       - name: Clone repository istqb_product_base
         run: |
           set -ex
-          git clone https://github.com/istqborg/istqb_product_base.git
-          cd istqb_product_base
+          rm -rf /opt/istqb_product_base
+          git clone https://github.com/istqborg/istqb_product_base.git /opt/istqb_product_base
+          cd /opt/istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-          python3 -m venv ~/venv
-          . ~/venv/bin/activate
-          pip install -r requirements.txt
-      - name: Create output directory docx/
-        run: mkdir docx
       - name: Convert documents to DOCX
-        run: |
-          set -e; . ~/venv/bin/activate; set -x
-          python3 istqb_product_base/template.py convert-to-docx all docx/
+        run: istqb-template convert-to-docx all docx/
       - name: Upload DOCX documents
         uses: actions/upload-artifact@v4
         with:
           name: DOCX
-          path: docx
+          path: docx/
   prerelease:
     name: Create a prerelease
     if: github.ref == 'refs/heads/main' && inputs.skip-prerelease == false
