@@ -35,6 +35,7 @@ FILETYPES = METADATA_FILETYPES + DOCUMENT_FILETYPES
 VALIDATABLE_FILETYPES = ['all', 'all-yaml'] + sorted(['metadata', 'questions', 'languages'])
 CONVERT_TO_DOCX_FILETYPES = ['all', 'user-yaml'] + sorted(['markdown', 'bib'])
 
+CURRENT_DIRECTORY = Path('.').resolve()
 ROOT_DIRECTORY = Path(__file__).parent.resolve()
 SCHEMA_DIRECTORY = ROOT_DIRECTORY / 'schema'
 
@@ -336,16 +337,21 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
     _fixup_line_endings()
     _convert_eps_files_to_pdf()
     _convert_xlsx_files_to_pdf()
-    os.environ['TEXINPUTS'] = f'.:{ROOT_DIRECTORY}/template:'
-    with Pool(None) as pool:
-        input_paths = _find_files(file_types=['tex'])
-        compile_parameters = zip(repeat(compile_fn), input_paths, repeat(args), repeat(kwargs))
-        for input_path, output_path in pool.imap_unordered(_compile_fn, compile_parameters):
-            if output_path is None:
-                LOGGER.info('Skipped the compilation of file "%s"', input_path)
-            else:
-                assert output_path.exists(), f'File "{output_path}" does not exist'
-                LOGGER.info('Compiled file "%s" to "%s"', input_path, output_path)
+    try:
+        shutil.copytree(ROOT_DIRECTORY, CURRENT_DIRECTORY / 'istqb_product_base')
+        os.environ['TEXINPUTS'] = f'.:./istqb_product_base/template:'
+        with Pool(None) as pool:
+            input_paths = _find_files(file_types=['tex'])
+            compile_parameters = zip(repeat(compile_fn), input_paths, repeat(args), repeat(kwargs))
+            for input_path, output_path in pool.imap_unordered(_compile_fn, compile_parameters):
+                if output_path is None:
+                    LOGGER.info('Skipped the compilation of file "%s"', input_path)
+                else:
+                    assert output_path.exists(), f'File "{output_path}" does not exist'
+                    LOGGER.info('Compiled file "%s" to "%s"', input_path, output_path)
+    finally:
+        shutil.rmtree(CURRENT_DIRECTORY / 'istqb_product_base')
+        del os.environ['TEXINPUTS']
 
 
 def _compile_tex_files_to_pdf() -> None:
