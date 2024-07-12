@@ -336,6 +336,7 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
     _fixup_line_endings()
     _convert_eps_files_to_pdf()
     _convert_xlsx_files_to_pdf()
+    os.environ['TEXINPUTS'] = f'.:{ROOT_DIRECTORY}/template:'
     with Pool(None) as pool:
         input_paths = _find_files(file_types=['tex'])
         compile_parameters = zip(repeat(compile_fn), input_paths, repeat(args), repeat(kwargs))

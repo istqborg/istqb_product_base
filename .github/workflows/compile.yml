@@ -16,7 +16,6 @@ permissions:
   contents: write
 env:
   DEBIAN_FRONTEND: noninteractive
-  TEXINPUTS: '.:./istqb_product_base/template:'
 jobs:
   validate:
     name: Validate YAML documents
