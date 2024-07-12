@@ -28,7 +28,7 @@ EOF
 # Install the script `istqb-template`
 COPY <<EOF /usr/local/bin/istqb-template
 #!/bin/bash
-python3 /opt/istqb_product_base/template.py "$@"
+python3 /opt/istqb_product_base/template.py \"\$@\"
 exit $?
 EOF
 RUN <<EOF
