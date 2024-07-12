@@ -26,3 +26,13 @@ wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/d
 dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
 rm -rf LibreOffice_7.3.7.2_Linux_x86-64_deb
 EOF
+# Install the script `istqb-template`
+COPY <<EOF /usr/local/bin/istqb-template
+#!/bin/bash
+python3 /opt/istqb_product_base/template.py "$@"
+exit $?
+EOF
+RUN <<EOF
+set -ex
+chmod +x /usr/local/bin/istqb-template
+EOF
