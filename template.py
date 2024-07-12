@@ -337,9 +337,10 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
     _fixup_line_endings()
     _convert_eps_files_to_pdf()
     _convert_xlsx_files_to_pdf()
+
+    os.environ['TEXINPUTS'] = f'.:./istqb_product_base/template:'
+    shutil.copytree(ROOT_DIRECTORY, CURRENT_DIRECTORY / 'istqb_product_base')
     try:
-        shutil.copytree(ROOT_DIRECTORY, CURRENT_DIRECTORY / 'istqb_product_base')
-        os.environ['TEXINPUTS'] = f'.:./istqb_product_base/template:'
         with Pool(None) as pool:
             input_paths = _find_files(file_types=['tex'])
             compile_parameters = zip(repeat(compile_fn), input_paths, repeat(args), repeat(kwargs))
@@ -350,8 +351,8 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
                     assert output_path.exists(), f'File "{output_path}" does not exist'
                     LOGGER.info('Compiled file "%s" to "%s"', input_path, output_path)
     finally:
-        shutil.rmtree(CURRENT_DIRECTORY / 'istqb_product_base')
         del os.environ['TEXINPUTS']
+        shutil.rmtree(CURRENT_DIRECTORY / 'istqb_product_base')
 
 
 def _compile_tex_files_to_pdf() -> None:
