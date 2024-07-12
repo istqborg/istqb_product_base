@@ -1,8 +1,6 @@
 name: Build Docker image
 on:
   push:
-    branches:
-      - main
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * TUE'
@@ -50,6 +48,7 @@ jobs:
       - flake8
       - pytype
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout Git repository witiko/markdown
         uses: actions/checkout@v4
