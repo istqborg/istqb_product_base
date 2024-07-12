@@ -1,6 +1,6 @@
 # Custom latexmk configuration
 ## Enable shell escape
-set_tex_cmds('--shell-escape %O %S');
+set_tex_cmds('--shell-escape -interaction=nonstopmode %O %S');
 
 ## Output PDF by default
 $pdf_mode = 1;
