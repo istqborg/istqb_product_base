@@ -181,10 +181,10 @@ def _fixup_language(path: Path) -> None:
     assert len(babel_names) > 0
     babel_name, *_ = babel_names
     if len(babel_names) > 1:
-        LOGGER.info('Found multiple babel names in file "%s": %s; using the first one: %s', config_filename, ', '.join(babel_names), babel_name)
+        LOGGER.info('Found multiple babel names in file "%s": %s; using the first one: "%s"', config_filename, ', '.join(f'"{name}"' for name in babel_names), babel_name)
 
     # Add `babel-language` on top of the language definitions.
-    LOGGER.info('Adding "babel-language: %s" to file "%s"', babel_name, path)
+    LOGGER.info('Added "babel-language: %s" to file "%s"', babel_name, path)
     with path.open('wt') as wf:
         print(f'babel-language: {json.dumps(babel_name)}', file=wf)
         wf.write(input_yaml_text)
