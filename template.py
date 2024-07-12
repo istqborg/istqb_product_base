@@ -367,7 +367,7 @@ def _convert_files_to_docx(output_directory: Path, file_types: Iterable[str]) ->
     def create_nested_output_directory(input_path: Path) -> Tuple[Path, Path]:
         nested_output_directory = output_directory / input_path.relative_to('.').parent
         nested_output_directory.mkdir(parents=True, exist_ok=True)
-        output_path = nested_output_directory / input_path.with_suffix('.docx').name
+        output_path = nested_output_directory / f'{input_path.name}.docx'
         return nested_output_directory, output_path
 
     pandoc_from_format = '+'.join([PANDOC_INPUT_FORMAT, *PANDOC_EXTENSIONS])
@@ -510,7 +510,7 @@ def main():
 
     parser_convert_files_to_docx = subparsers.add_parser(
         'convert-to-docx',
-        help='Validate the different types of files in this repository to DOCX',
+        help='Convert the different types of files in this repository to DOCX',
     )
     parser_convert_files_to_docx.add_argument('filetype', choices=CONVERT_TO_DOCX_FILETYPES)
     parser_convert_files_to_docx.add_argument('outputdir')
