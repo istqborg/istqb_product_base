@@ -11,8 +11,44 @@ permissions:
 env:
   DEBIAN_FRONTEND: noninteractive
 jobs:
+  flake8:
+    name: Style check (Python)
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.12
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install additional packages
+        run: |
+          set -ex
+          pip install -U pip wheel setuptools
+          pip install flake8
+      - name: Run Flake8
+        run: flake8 template.py
+  pytype:
+    name: Type check (Python)
+    needs:
+      - flake8
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install additional packages
+        run: |
+          set -ex
+          pip install -U pip wheel setuptools
+          pip install -r requirements.txt
+          pip install pytype libcst==1.2.0
+      - name: Run Pytype
+        run: pytype template.py
   build:
-    name: Build Docker image
+    name: Build and publish Docker image
+    needs:
+      - flake8
+      - pytype
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Git repository witiko/markdown

@@ -16,10 +16,9 @@ from pathlib import Path
 import re
 import subprocess
 from tempfile import NamedTemporaryFile
-from typing import Any, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, TYPE_CHECKING
 import os
 import shutil
-import sys
 
 from git import Repo
 import yamale
@@ -76,25 +75,25 @@ def _find_files(file_types: Iterable[str], root=Path('.')) -> Iterable[Path]:
                 languages_match = Path(parent_directory).name == 'languages' and re.fullmatch(r'..\.ya?ml', filename, flags=re.IGNORECASE)
 
                 if file_type == 'metadata':
-                    return metadata_match
+                    return bool(metadata_match)
                 elif file_type == 'questions':
-                    return questions_match
+                    return bool(questions_match)
                 elif file_type == 'languages':
-                    return languages_match
+                    return bool(languages_match)
                 elif file_type == 'user-yaml':
-                    return not languages_match
+                    return bool(not languages_match)
                 else:
                     raise ValueError(f'Unknown file type: {file_type}')
             elif file_type == 'xlsx':
-                return re.search(r'\.xlsx$', filename, flags=re.IGNORECASE)
+                return bool(re.search(r'\.xlsx$', filename, flags=re.IGNORECASE))
             elif file_type == 'eps':
-                return re.search(r'\.eps$', filename, flags=re.IGNORECASE)
+                return bool(re.search(r'\.eps$', filename, flags=re.IGNORECASE))
             elif file_type == 'tex':
-                return re.search(r'\.tex$', filename, flags=re.IGNORECASE)
+                return bool(re.search(r'\.tex$', filename, flags=re.IGNORECASE))
             elif file_type == 'bib':
-                return re.search(r'\.bib$', filename, flags=re.IGNORECASE)
+                return bool(re.search(r'\.bib$', filename, flags=re.IGNORECASE))
             elif file_type == 'markdown':
-                return re.search(r'\.(md|mdown|markdown)$', filename, flags=re.IGNORECASE)
+                return bool(re.search(r'\.(md|mdown|markdown)$', filename, flags=re.IGNORECASE))
             else:
                 raise ValueError(f'Unknown file type: {file_type}')
 
@@ -128,7 +127,7 @@ def _fixup_languages() -> None:
         _fixup_language(path)
 
 
-def _run_command(*args: str, text=False) -> str:
+def _run_command(*args: str, text=False) -> Union[str, bytes]:
     try:
         output = subprocess.check_output(args, text=text, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
@@ -163,7 +162,7 @@ def _fixup_language(path: Path) -> None:
         input_yaml_text = rf.read()
     input_yaml = yaml.safe_load(input_yaml_text)
     if 'babel-language' in input_yaml:
-        LOGGER.debug(f'File %s already contains `babel-language`', path)
+        LOGGER.debug('File %s already contains `babel-language`', path)
         return
 
     # Determine the babel name of the language.
@@ -181,7 +180,10 @@ def _fixup_language(path: Path) -> None:
     assert len(babel_names) > 0
     babel_name, *_ = babel_names
     if len(babel_names) > 1:
-        LOGGER.info('Found multiple babel names in file "%s": %s; using the first one: "%s"', config_filename, ', '.join(f'"{name}"' for name in babel_names), babel_name)
+        LOGGER.info(
+            'Found multiple babel names in file "%s": %s; using the first one: "%s"',
+            config_filename, ', '.join(f'"{name}"' for name in babel_names), babel_name,
+        )
 
     # Add `babel-language` on top of the language definitions.
     LOGGER.info('Added "babel-language: %s" to file "%s"', babel_name, path)
@@ -277,6 +279,7 @@ def _compile_tex_file_to_pdf(input_path: Path) -> Optional[Path]:
     _run_command('latexmk', '-gg', '-r', f'{LATEXMKRC}', f'{input_path}')
     if input_path.name != 'example-document.tex':
         with input_path.with_suffix('.istqb_project_name').open('rt') as f:
+            project_name = f.read().strip()
             output_path = Path(f'{project_name}.pdf')
         input_path.with_suffix('.pdf').rename(output_path)
     else:
@@ -301,7 +304,7 @@ def _compile_tex_file_to_epub(input_path: Path, output_directory: Path) -> Optio
     output_directory = output_directory.resolve()
     build_directory = output_directory / 'build' / input_path.stem
 
-    def prune_output_directory(parent_directory: str, filenames: List[str]) -> bool:
+    def prune_output_directory(parent_directory: str, filenames: List[str]) -> List[str]:
         parent_directory = Path(parent_directory).resolve()
         if parent_directory == output_directory.parent:
             return [output_directory.name]
@@ -322,10 +325,10 @@ if TYPE_CHECKING:  # The Protocol class is unavailable in Python <3.8 but that s
     from typing import Protocol
 
     class CompilationFunction(Protocol):
-        def __call__(self, input_path: Path, *args, **kwargs) -> Path: ...
+        def __call__(self, input_path: Path, *args, **kwargs) -> Optional[Path]: ...
 
 
-def _compile_fn(args: Tuple['CompilationFunction', Path, Tuple[Any], Dict[Any, Any]]) -> Tuple[Path, Path]:
+def _compile_fn(args: Tuple['CompilationFunction', Path, Tuple[Any], Dict[Any, Any]]) -> Tuple[Path, Optional[Path]]:
     compile_fn, input_path, args, kwargs = args
     output_path = compile_fn(input_path, *args, *kwargs)
     return input_path, output_path
@@ -338,7 +341,7 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
     _convert_eps_files_to_pdf()
     _convert_xlsx_files_to_pdf()
 
-    os.environ['TEXINPUTS'] = f'.:./istqb_product_base/template:'
+    os.environ['TEXINPUTS'] = '.:./istqb_product_base/template:'
     shutil.copytree(ROOT_DIRECTORY, CURRENT_DIRECTORY / 'istqb_product_base')
     try:
         with Pool(None) as pool:
@@ -525,7 +528,7 @@ def main():
     parser_convert_files_to_docx.set_defaults(func=convert_files_to_docx)
 
     args = parser.parse_args()
-    if not 'func' in args:
+    if 'func' not in args:
         parser.print_help()
     else:
         args.func(args)
