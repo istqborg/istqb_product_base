@@ -57,22 +57,22 @@ def _find_files(file_types: Iterable[str], root=Path('.')) -> Iterable[Path]:
                 return False
             if filename.startswith('markdowntheme'):
                 return False
-            if re.search('\.(sty|cls|lua)$', filename):
+            if re.search(r'\.(sty|cls|lua)$', filename):
                 return False
 
             if file_type == 'all':
                 return True
             if file_type in ('all-yaml', 'user-yaml', 'metadata', 'questions', 'languages'):
-                all_yaml_match = re.search('\.ya?ml$', filename, flags=re.IGNORECASE)
+                all_yaml_match = re.search(r'\.ya?ml$', filename, flags=re.IGNORECASE)
 
                 if not all_yaml_match:
                     return False
                 if file_type == 'all-yaml':
                     return True
 
-                metadata_match = re.fullmatch('metadata\.ya?ml', filename, flags=re.IGNORECASE)
-                questions_match = re.fullmatch('questions\.ya?ml', filename, flags=re.IGNORECASE)
-                languages_match = Path(parent_directory).name == 'languages' and re.fullmatch('..\.ya?ml', filename, flags=re.IGNORECASE)
+                metadata_match = re.fullmatch(r'metadata\.ya?ml', filename, flags=re.IGNORECASE)
+                questions_match = re.fullmatch(r'questions\.ya?ml', filename, flags=re.IGNORECASE)
+                languages_match = Path(parent_directory).name == 'languages' and re.fullmatch(r'..\.ya?ml', filename, flags=re.IGNORECASE)
 
                 if file_type == 'metadata':
                     return metadata_match
@@ -85,15 +85,15 @@ def _find_files(file_types: Iterable[str], root=Path('.')) -> Iterable[Path]:
                 else:
                     raise ValueError(f'Unknown file type: {file_type}')
             elif file_type == 'xlsx':
-                return re.search('\.xlsx$', filename, flags=re.IGNORECASE)
+                return re.search(r'\.xlsx$', filename, flags=re.IGNORECASE)
             elif file_type == 'eps':
-                return re.search('\.eps$', filename, flags=re.IGNORECASE)
+                return re.search(r'\.eps$', filename, flags=re.IGNORECASE)
             elif file_type == 'tex':
-                return re.search('\.tex$', filename, flags=re.IGNORECASE)
+                return re.search(r'\.tex$', filename, flags=re.IGNORECASE)
             elif file_type == 'bib':
-                return re.search('\.bib$', filename, flags=re.IGNORECASE)
+                return re.search(r'\.bib$', filename, flags=re.IGNORECASE)
             elif file_type == 'markdown':
-                return re.search('\.(md|mdown|markdown)$', filename, flags=re.IGNORECASE)
+                return re.search(r'\.(md|mdown|markdown)$', filename, flags=re.IGNORECASE)
             else:
                 raise ValueError(f'Unknown file type: {file_type}')
 
