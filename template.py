@@ -253,7 +253,7 @@ def _convert_xlsx_files_to_pdf() -> None:
         output_path = input_path.with_suffix('.pdf')
         if not output_path.exists():
             if _is_on_main_branch(input_path):
-                _run_command('libreoffice7.3', '--headless', '--convert-to', 'pdf', f'{input_path}', '--outdir', f'{output_path.parent}')
+                _run_command('libreoffice', '--headless', '--convert-to', 'pdf', f'{input_path}', '--outdir', f'{output_path.parent}')
                 LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
             else:
                 if example_image_path is None:
