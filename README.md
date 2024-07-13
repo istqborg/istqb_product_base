@@ -8,17 +8,23 @@ to typeset ISTQB documents.
 To typeset ISTQB documents on your computer, take the following steps:
 
 1. **Install [Docker][install-docker] and [Git][installing-git].**
+
 2. **Download the Docker image [`istqb_product_base`][istqb-product-base].**
+
    For example, here is how you would do this in a terminal of a Linux system:
    ``` sh
    $ docker pull ghcr.io/istqborg/istqb_product_base
    ```
+
 3. **Download one of [ISTQB document repositories][istqborg] with Git.**
+
    For example, here is how you would download the CTAL-TA documents from the [`istqb-ctal-ta`][istqb-ctal-ta] repository in a terminal of a Linux system:
    ``` sh
    $ git clone https://github.com/istqborg/istqb-ctal-ta
    ```
+
 4. **Typeset the documents with the Docker image.**
+
    For example, here is how you would typeset the CTAL-TA documents to PDF in a terminal of a Linux system:
    ``` sh
    $ docker run --rm -it -v "$PWD"/istqb-ctal-ta/:/mnt -w /mnt ghcr.io/istqborg/istqb_product_base compile-tex-to-pdf
@@ -27,6 +33,7 @@ To typeset ISTQB documents on your computer, take the following steps:
    Compiled file "release-notes.tex" to "ISTQB-CT-TEMP-Release Notes-Version v0.1-EN.pdf"
    Compiled file "accreditation-guidelines.tex" to "ISTQB-CT-TEMP-Accreditation Guidelines-Version v0.1-EN.pdf"
    ```
+
    Besides typesetting documents to PDF with the `compile-tex-to-pdf` command, you can also convert them to HTML, EPUB, and DOCX, among other things. Here is how you would list the available commands in a terminal of a Linux system:
    ``` sh
    $ docker run --rm -it ghcr.io/istqborg/istqb_product_base --help
