@@ -4,6 +4,8 @@ set -ex
 # Install OS dependencies
 apt -qy update
 apt -qy install --no-install-recommends git pandoc python3 python3-pip retry tidy
+# Configure Git to consider all directories safe
+git config --system --add safe.directory '*'
 EOF
 COPY . /opt/istqb_product_base
 RUN <<EOF
