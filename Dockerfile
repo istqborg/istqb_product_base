@@ -25,7 +25,6 @@ RUN <<EOF
 set -ex
 # Validate and fixup the template
 cd /opt/istqb_product_base
-python3 template.py fixup-languages
 python3 template.py validate-files all
 python3 template.py fixup-line-endings
 EOF

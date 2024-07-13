@@ -109,7 +109,7 @@ def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Pa
 
                 metadata_match = METADATA_REGEXP.fullmatch(path.name)
                 questions_match = QUESTIONS_REGEXP.fullmatch(path.name)
-                languages_match = path.parent.name == 'languages' and MARKDOWN_REGEXP.fullmatch(path.name)
+                languages_match = path.parent.name == 'languages' and LANGUAGES_REGEXP.fullmatch(path.name)
 
                 if file_type == 'metadata':
                     return bool(metadata_match)
@@ -589,7 +589,6 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
             pass
         shutil.copytree(ROOT_DIRECTORY, ROOT_COPY_DIRECTORY)
 
-        _fixup_languages()
         _validate_files(file_types=['all'])
         _fixup_line_endings()
         _convert_eps_files_to_pdf()
