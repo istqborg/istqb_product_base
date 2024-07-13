@@ -278,7 +278,7 @@ def _convert_xlsx_files_to_pdf() -> None:
             LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
 
-def _changed_paths(base_branch='main') -> Iterable[Path]:
+def _changed_paths(base_branch='origin/main') -> Iterable[Path]:
     if CURRENT_REPOSITORY is None:
         return []
     base_commit = CURRENT_REPOSITORY.commit(base_branch)

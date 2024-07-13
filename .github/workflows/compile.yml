@@ -23,8 +23,10 @@ jobs:
     container:
       image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
-      - name: Set up Git repository
+      - name: Checkout Git repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Clone repository istqb_product_base
         run: |
           set -ex
@@ -42,8 +44,10 @@ jobs:
     container:
       image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
-      - name: Set up Git repository
+      - name: Checkout Git repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Clone repository istqb_product_base
         run: |
           set -ex
@@ -67,8 +71,10 @@ jobs:
       image: ghcr.io/istqborg/istqb_product_base:latest
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Set up Git repository
+      - name: Checkout Git repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Clone repository istqb_product_base
         run: |
           set -ex
@@ -92,8 +98,10 @@ jobs:
       image: ghcr.io/istqborg/istqb_product_base:latest
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Set up Git repository
+      - name: Checkout Git repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Clone repository istqb_product_base
         run: |
           set -ex
@@ -116,8 +124,10 @@ jobs:
     container:
       image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
-      - name: Set up Git repository
+      - name: Checkout Git repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Clone repository istqb_product_base
         run: |
           set -ex
