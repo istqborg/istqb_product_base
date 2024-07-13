@@ -37,6 +37,7 @@ CONVERT_TO_DOCX_FILETYPES = ['all', 'user-yaml'] + sorted(['markdown', 'bib'])
 CURRENT_DIRECTORY = Path('.').resolve()
 ROOT_DIRECTORY = Path(__file__).parent.resolve()
 SCHEMA_DIRECTORY = ROOT_DIRECTORY / 'schema'
+ROOT_COPY_DIRECTORY = CURRENT_DIRECTORY / 'istqb_product_base'
 
 LATEXMKRC = ROOT_DIRECTORY / 'latexmkrc'
 ISTQB_CFG = ROOT_DIRECTORY / 'istqb.cfg'
@@ -335,15 +336,15 @@ def _compile_fn(args: Tuple['CompilationFunction', Path, Tuple[Any], Dict[Any, A
 
 
 def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> None:
-    _fixup_languages()
-    _validate_files(file_types=['all'])
-    _fixup_line_endings()
-    _convert_eps_files_to_pdf()
-    _convert_xlsx_files_to_pdf()
-
-    os.environ['TEXINPUTS'] = '.:./istqb_product_base/template:'
-    shutil.copytree(ROOT_DIRECTORY, CURRENT_DIRECTORY / 'istqb_product_base')
+    os.environ['TEXINPUTS'] = f'.:{TEMPLATE_COPY_DIRECTORY}/template:'
     try:
+        shutil.rmtree(ROOT_COPY_DIRECTORY)
+        shutil.copytree(ROOT_DIRECTORY, ROOT_COPY_DIRECTORY)
+        _fixup_languages()
+        _validate_files(file_types=['all'])
+        _fixup_line_endings()
+        _convert_eps_files_to_pdf()
+        _convert_xlsx_files_to_pdf()
         with Pool(None) as pool:
             input_paths = _find_files(file_types=['tex'])
             compile_parameters = zip(repeat(compile_fn), input_paths, repeat(args), repeat(kwargs))
@@ -355,7 +356,7 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
                     LOGGER.info('Compiled file "%s" to "%s"', input_path, output_path)
     finally:
         del os.environ['TEXINPUTS']
-        shutil.rmtree(CURRENT_DIRECTORY / 'istqb_product_base')
+        shutil.rmtree(ROOT_COPY_DIRECTORY)
 
 
 def _compile_tex_files_to_pdf() -> None:
