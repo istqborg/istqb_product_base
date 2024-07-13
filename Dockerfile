@@ -7,6 +7,7 @@ apt -qy install --no-install-recommends git pandoc python3 python3-pip retry tid
 # Configure Git to consider all directories safe
 git config --system --add safe.directory '*'
 EOF
+# Copy the template
 COPY . /opt/istqb_product_base
 RUN <<EOF
 set -ex
@@ -19,6 +20,14 @@ RUN <<EOF
 set -ex
 # Install Python packages
 pip install -r /opt/istqb_product_base/requirements.txt --break-system-packages
+EOF
+RUN <<EOF
+set -ex
+# Validate and fixup the template
+cd /opt/istqb_product_base
+python3 template.py fixup-languages
+python3 template.py validate-files all
+python3 template.py fixup-line-endings
 EOF
 RUN <<EOF
 set -ex
