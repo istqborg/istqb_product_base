@@ -243,28 +243,25 @@ def _convert_eps_files_to_pdf() -> None:
             LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
 
-def _is_on_main_branch(path: Path) -> bool:
-    repo = Repo(path.parent, search_parent_directories=True)
-    return repo.active_branch.name == 'main'
-
-
 def _convert_xlsx_files_to_pdf() -> None:
     example_image_path = None
     for input_path in _find_files(file_types=['xlsx']):
         output_path = input_path.with_suffix('.pdf')
         if not output_path.exists():
-            if _is_on_main_branch(input_path):
-                _run_command('libreoffice', '--headless', '--convert-to', 'pdf', f'{input_path}', '--outdir', f'{output_path.parent}')
-                LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
-            else:
-                if example_image_path is None:
-                    example_image_path = _find_file_in_tex_live('example-image.pdf')
-                shutil.copy(example_image_path, output_path)
-                LOGGER.info('Copied file "%s" to "%s"', example_image_path, output_path)
+            _run_command('libreoffice', '--headless', '--convert-to', 'pdf', f'{input_path}', '--outdir', f'{output_path.parent}')
+            LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
+
+
+def _should_do_full_compile() -> bool:
+    try:
+        repo = Repo(CURRENT_DIRECTORY, search_parent_directories=True)
+        return repo.active_branch.name == 'main'
+    except InvalidGitRepositoryError:
+        return False
 
 
 @contextmanager
-def change_directory(new_path):
+def _change_directory(new_path):
     original_path = os.getcwd()
     try:
         os.chdir(new_path)
@@ -313,7 +310,7 @@ def _compile_tex_file_to_epub(input_path: Path, output_directory: Path) -> Optio
 
     shutil.copytree(input_path.parent, build_directory, ignore=prune_output_directory)
 
-    with change_directory(build_directory):
+    with _change_directory(build_directory):
         _run_command('tex4ebook', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_directory}', input_path.name)
 
     shutil.rmtree(build_directory)
