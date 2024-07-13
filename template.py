@@ -54,6 +54,7 @@ PANDOC_INPUT_FORMAT = 'commonmark'
 PANDOC_EXTENSIONS = ['bracketed_spans', 'fancy_lists', 'pipe_tables', 'raw_attribute']
 
 MARKDOWNINPUT_REGEXP = re.compile(r'\\markdownInput(\[.*?\])?{(?P<filename>.*?)}', re.DOTALL)
+ADDBIBRESOURCE_REGEXP = re.compile(r'\\addbibresource{(?P<filename>.*?)}', re.DOTALL)
 
 XLSX_REGEXP = re.compile(r'\.xlsx$', flags=re.IGNORECASE)
 EPS_REGEXP = re.compile(r'\.eps$', flags=re.IGNORECASE)
@@ -72,12 +73,13 @@ def _get_references_from_tex_file(tex_input_paths: Iterable[Path]) -> Iterable[P
     for tex_input_path in tex_input_paths:
         with tex_input_path.open('rt') as f:
             text = f.read()
-            for match in MARKDOWNINPUT_REGEXP.finditer(text):
-                path = Path(match.group('filename'))
-                if not path.is_absolute():
-                    path = tex_input_path.parent / path
-                path = path.resolve()
-                yield path
+            for pattern in [MARKDOWNINPUT_REGEXP, ADDBIBRESOURCE_REGEXP]:
+                for match in pattern.finditer(text):
+                    path = Path(match.group('filename'))
+                    if not path.is_absolute():
+                        path = tex_input_path.parent / path
+                    path = path.resolve()
+                    yield path
 
 
 def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Path]] = None, root: Path = Path('.')) -> Iterable[Path]:
