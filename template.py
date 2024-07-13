@@ -20,7 +20,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, TYPE_CHECK
 import os
 import shutil
 
-from git import Repo
+from git import Repo, InvalidGitRepositoryError
 import yamale
 import yaml
 
@@ -271,7 +271,6 @@ def _convert_eps_files_to_pdf() -> None:
 
 
 def _convert_xlsx_files_to_pdf() -> None:
-    example_image_path = None
     for input_path in _find_files(file_types=['xlsx']):
         output_path = input_path.with_suffix('.pdf')
         if not output_path.exists():
