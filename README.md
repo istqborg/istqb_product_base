@@ -18,20 +18,24 @@ To typeset ISTQB documents on your computer, take the following steps:
 
 3. **Download one of [ISTQB document repositories][istqborg] with Git.**
 
-   For example, here is how you would download the CTAL-TA documents from the [`istqb-ctal-ta`][istqb-ctal-ta] repository in a terminal of a Linux system:
+   For example, here is how you would download the example documents from the [`istqb_product_template`][istqb_product_template] repository in a terminal of a Linux system:
    ``` sh
-   $ git clone https://github.com/istqborg/istqb-ctal-ta
+   $ git clone https://github.com/istqborg/istqb_product_template
    ```
 
 4. **Typeset the documents with the Docker image.**
 
-   For example, here is how you would typeset the CTAL-TA documents to PDF in a terminal of a Linux system:
+   For example, here is how you would typeset the example documents to PDF in a terminal of a Linux system:
    ``` sh
-   $ docker run --rm -it -v "$PWD"/istqb-ctal-ta/:/mnt -w /mnt ghcr.io/istqborg/istqb_product_base compile-tex-to-pdf
+   $ docker run --rm -it -v "$PWD"/istqb_product_template/:/mnt -w /mnt ghcr.io/istqborg/istqb_product_base compile-tex-to-pdf
    ```
    ```
-   Compiled file "release-notes.tex" to "ISTQB-CT-TEMP-Release Notes-Version v0.1-EN.pdf"
-   Compiled file "accreditation-guidelines.tex" to "ISTQB-CT-TEMP-Accreditation Guidelines-Version v0.1-EN.pdf"
+   Compiled file "/mnt/accreditation-guidelines.tex" to "ISTQB-CT-TEMP-Accreditation Guidelines-v0.1-EN.pdf"
+   Compiled file "/mnt/body-of-knowledge.tex" to "ISTQB-CT-TEMP-Body of Knowledge-v0.1-EN.pdf"
+   Compiled file "/mnt/release-notes.tex" to "ISTQB-CT-TEMP-Release Notes-v0.1-EN.pdf"
+   Compiled file "/mnt/sample-exam-answers.tex" to "ISTQB-CT-TEMP-Sample Exam -- Answers-v0.1-EN.pdf"
+   Compiled file "/mnt/sample-exam-questions.tex" to "ISTQB-CT-TEMP-Sample Exam -- Questions-v0.1-EN.pdf"
+   Compiled file "/mnt/syllabus.tex" to "ISTQB-CT-TEMP-Syllabus-v0.1-EN.pdf"
    ```
 
    Besides typesetting documents to PDF with the `compile-tex-to-pdf` command, you can also convert them to HTML, EPUB, and DOCX, among other things. Here is how you would list the available commands in a terminal of a Linux system:
@@ -67,7 +71,7 @@ To typeset ISTQB documents on your computer, take the following steps:
  [installing-git]: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git "Git - Installing Git"
  [istqb-product-base]: https://github.com/istqborg/istqb_product_base/pkgs/container/istqb_product_base "Package istqb_product_base"
  [istqborg]: https://github.com/istqborg "ISTQB.ORG"
- [istqb-ctal-ta]: https://github.com/istqborg/istqb-ctal-ta "istqborg/istqb-ctal-ta: Certified Tester Advanced Level Test Analyst (CTAL-TA)"
+ [istqb_product_template]: https://github.com/istqborg/istqb_product_template "istqborg/istqb_product_template: Example documents for the LaTeX+Markdown template that can be forked as a base for new products"
 
 ## Further Reading
 
