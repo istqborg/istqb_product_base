@@ -253,13 +253,14 @@ def _fixup_line_endings() -> None:
         assert '\r' not in input_text
 
 
-def _validate_files(file_types: Iterable[str]) -> None:
+def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
 
     def validate_file(schema, path: Path):
         data = yamale.make_data(path)
         yamale.validate(schema, data)
         _run_command('texlua', f'{ROOT_DIRECTORY / "check-yaml.lua"}')
-        LOGGER.info('Validated file "%s" with schema "%s"', path, schema.name)
+        if not silent:
+            LOGGER.info('Validated file "%s" with schema "%s"', path, schema.name)
 
     for file_type in file_types:
         if file_type in ('metadata', 'all', 'all-yaml'):
@@ -589,7 +590,7 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
             pass
         shutil.copytree(ROOT_DIRECTORY, ROOT_COPY_DIRECTORY)
 
-        _validate_files(file_types=['all'])
+        _validate_files(file_types=['all'], silent=True)
         _fixup_line_endings()
         _convert_eps_files_to_pdf()
         _convert_xlsx_files_to_pdf()
