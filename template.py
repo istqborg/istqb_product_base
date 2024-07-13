@@ -431,7 +431,7 @@ def _convert_files_to_docx(output_directory: Path, file_types: Iterable[str]) ->
     output_directory.mkdir(parents=True, exist_ok=True)
 
     def create_nested_output_directory(input_path: Path) -> Tuple[Path, Path]:
-        nested_output_directory = output_directory / input_path.relative_to('.').parent
+        nested_output_directory = output_directory / input_path.relative_to(CURRENT_DIRECTORY).parent
         nested_output_directory.mkdir(parents=True, exist_ok=True)
         output_path = nested_output_directory / f'{input_path.name}.docx'
         return nested_output_directory, output_path
