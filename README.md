@@ -61,7 +61,8 @@ To typeset ISTQB documents on your computer, take the following steps:
                            Compile all TeX files in this repository to HTML
        compile-tex-to-epub
                            Compile all TeX files in this repository to EPUB
-       convert-to-docx     Convert the different types of files in this repository to DOCX
+       compile-tex-to-docx
+                           Compile all TeX files in this repository to DOCX
 
    options:
      -h, --help            show this help message and exit

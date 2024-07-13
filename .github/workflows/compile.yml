@@ -134,7 +134,7 @@ jobs:
           cd /opt/istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
       - name: Convert documents to DOCX
-        run: istqb-template convert-to-docx all docx/
+        run: istqb-template compile-tex-to-docx docx/
       - name: Upload DOCX documents
         uses: actions/upload-artifact@v4
         with:

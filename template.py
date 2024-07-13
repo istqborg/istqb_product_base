@@ -55,6 +55,18 @@ PANDOC_EXTENSIONS = ['bracketed_spans', 'fancy_lists', 'pipe_tables', 'raw_attri
 
 MARKDOWNINPUT_REGEXP = re.compile(r'\\markdownInput(\[.*?\])?{(?P<filename>.*?)}', re.DOTALL)
 
+XLSX_REGEXP = re.compile(r'\.xlsx$', flags=re.IGNORECASE)
+EPS_REGEXP = re.compile(r'\.eps$', flags=re.IGNORECASE)
+TEX_REGEXP = re.compile(r'\.tex$', flags=re.IGNORECASE)
+BIB_REGEXP = re.compile(r'\.bib$', flags=re.IGNORECASE)
+MARKDOWN_REGEXP = re.compile(r'\.(md|mdown|markdown)$', flags=re.IGNORECASE)
+YAML_REGEXP = re.compile(r'\.ya?ml$', flags=re.IGNORECASE)
+TEMPLATE_REGEXP = re.compile(r'\.(sty|cls|lua)$', flags=re.IGNORECASE)
+
+METADATA_REGEXP = re.compile(r'metadata\.ya?ml', flags=re.IGNORECASE)
+QUESTIONS_REGEXP = re.compile(r'questions\.ya?ml', flags=re.IGNORECASE)
+LANGUAGES_REGEXP = re.compile(r'..\.ya?ml', flags=re.IGNORECASE)
+
 
 def _get_references_from_tex_file(tex_input_paths: Iterable[Path]) -> Iterable[Path]:
     for tex_input_path in tex_input_paths:
@@ -80,22 +92,22 @@ def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Pa
                 return False
             if path.name.startswith('markdowntheme'):
                 return False
-            if re.search(r'\.(sty|cls|lua)$', path.name):
+            if TEMPLATE_REGEXP.search(path.name):
                 return False
 
             if file_type == 'all':
                 return True
             if file_type in ('all-yaml', 'user-yaml', 'metadata', 'questions', 'languages'):
-                all_yaml_match = re.search(r'\.ya?ml$', path.name, flags=re.IGNORECASE)
+                all_yaml_match = YAML_REGEXP.search(path.name)
 
                 if not all_yaml_match:
                     return False
                 if file_type == 'all-yaml':
                     return True
 
-                metadata_match = re.fullmatch(r'metadata\.ya?ml', path.name, flags=re.IGNORECASE)
-                questions_match = re.fullmatch(r'questions\.ya?ml', path.name, flags=re.IGNORECASE)
-                languages_match = path.parent.name == 'languages' and re.fullmatch(r'..\.ya?ml', path.name, flags=re.IGNORECASE)
+                metadata_match = METADATA_REGEXP.fullmatch(path.name)
+                questions_match = QUESTIONS_REGEXP.fullmatch(path.name)
+                languages_match = path.parent.name == 'languages' and MARKDOWN_REGEXP.fullmatch(path.name)
 
                 if file_type == 'metadata':
                     return bool(metadata_match)
@@ -108,15 +120,15 @@ def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Pa
                 else:
                     raise ValueError(f'Unknown file type: {file_type}')
             elif file_type == 'xlsx':
-                return bool(re.search(r'\.xlsx$', path.name, flags=re.IGNORECASE))
+                return bool(XLSX_REGEXP.search(path.name))
             elif file_type == 'eps':
-                return bool(re.search(r'\.eps$', path.name, flags=re.IGNORECASE))
+                return bool(EPS_REGEXP.search(path.name))
             elif file_type == 'tex':
-                return bool(re.search(r'\.tex$', path.name, flags=re.IGNORECASE))
+                return bool(TEX_REGEXP.search(path.name))
             elif file_type == 'bib':
-                return bool(re.search(r'\.bib$', path.name, flags=re.IGNORECASE))
+                return bool(BIB_REGEXP.search(path.name))
             elif file_type == 'markdown':
-                return bool(re.search(r'\.(md|mdown|markdown)$', path.name, flags=re.IGNORECASE))
+                return bool(MARKDOWN_REGEXP.search(path.name))
             else:
                 raise ValueError(f'Unknown file type: {file_type}')
 
@@ -420,6 +432,39 @@ def _should_compile_tex_file_to_epub(input_path: Path) -> bool:
     return False
 
 
+def _should_compile_tex_file_to_docx(input_path: Path) -> bool:
+    if (input_path.parent / input_path.stem / 'NO_DOCX').exists():
+        return False
+
+    metadata_paths = _get_metadata_paths(input_path)
+    if len(metadata_paths) == 0:
+        LOGGER.warning(
+            'Found no metadata of file "%s" when trying to determine whether it should be compiled to DOCX; will not compile',
+            input_path,
+        )
+        return False
+    if len(metadata_paths) > 1:
+        LOGGER.warning(
+            'Found multiple metadata (%s) of file "%s" when trying to determine whether it should be compiled to DOCX; will not compile',
+            ', '.join(f'"{path}"' for path in sorted(metadata_paths)), input_path,
+        )
+        return False
+
+    metadata_path, = metadata_paths
+    with metadata_path.open('rt') as f:
+        metadata_yaml_text = f.read()
+    metadata_yaml = yaml.safe_load(metadata_yaml_text)
+
+    if 'docx-output' in metadata_yaml:
+        docx_output = bool(metadata_yaml['docx_output'])
+        return docx_output
+    if 'version' in metadata_yaml:
+        version = str(metadata_yaml['version'])
+        return not _is_release_version(version)
+
+    return False
+
+
 def _compile_tex_file_to_pdf(input_path: Path) -> Optional[Path]:
     if not _should_compile_tex_file_to_pdf(input_path):
         return
@@ -463,6 +508,39 @@ def _compile_tex_file_to_epub(input_path: Path, output_directory: Path) -> Optio
     shutil.rmtree(build_directory)
 
     output_path = output_directory / input_path.with_suffix('.epub').name
+    return output_path
+
+
+def _compile_tex_file_to_docx(input_path: Path, output_directory: Path) -> Optional[Path]:
+    if not _should_compile_tex_file_to_docx(input_path):
+        return
+
+    # Collect files referenced from the TeX file.
+    markdown_texts = []
+    for nested_path in _get_references_from_tex_file(tex_input_paths=[input_path]):
+        if MARKDOWN_REGEXP.search(nested_path.name):
+            with nested_path.open('rt') as f:
+                markdown_text = f.read()
+                markdown_texts.append(markdown_text)
+        elif YAML_REGEXP.search(nested_path.name):
+            with nested_path.open('rt') as f:
+                markdown_text = f'``` yml\n{f.read()}\n```'
+                markdown_texts.append(markdown_text)
+        elif BIB_REGEXP.search(nested_path.name):
+            with nested_path.open('rt') as f:
+                markdown_text = f'``` bib\n{f.read()}\n```'
+                markdown_texts.append(markdown_text)
+
+    # Convert the collected files to DOCX.
+    markdown_text = '\n\n'.join(markdown_texts)
+    pandoc_from_format = '+'.join([PANDOC_INPUT_FORMAT, *PANDOC_EXTENSIONS])
+    output_path = output_directory / input_path.with_suffix('.docx').name
+    with NamedTemporaryFile('wt', delete=False) as f:
+        print(markdown_text, file=f)
+        f.close()
+        _run_command('pandoc', '-f', f'{pandoc_from_format}', '-i', f'{f.name}', '-o', f'{output_path}')
+        os.unlink(f.name)
+
     return output_path
 
 
@@ -545,43 +623,9 @@ def _compile_tex_files_to_epub(output_directory: Path) -> None:
     _compile_tex_files(_compile_tex_file_to_epub, output_directory)
 
 
-def _convert_files_to_docx(output_directory: Path, file_types: Iterable[str]) -> None:
+def _compile_tex_files_to_docx(output_directory: Path) -> None:
     output_directory.mkdir(parents=True, exist_ok=True)
-
-    def create_nested_output_directory(input_path: Path) -> Tuple[Path, Path]:
-        nested_output_directory = output_directory / input_path.relative_to(CURRENT_DIRECTORY).parent
-        nested_output_directory.mkdir(parents=True, exist_ok=True)
-        output_path = nested_output_directory / f'{input_path.name}.docx'
-        return nested_output_directory, output_path
-
-    pandoc_from_format = '+'.join([PANDOC_INPUT_FORMAT, *PANDOC_EXTENSIONS])
-    for file_type in file_types:
-        if file_type in ('all', 'markdown'):
-            for input_path in _find_files(file_types=['markdown']):
-                nested_output_directory, output_path = create_nested_output_directory(input_path)
-                _run_command('pandoc', '-f', pandoc_from_format, '-i', f'{input_path}', '-o', f'{output_path}')
-                assert output_path.exists(), f'File "{output_path}" does not exist'
-                LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
-        if file_type in ('all', 'user-yaml'):
-            for input_path in _find_files(file_types=['user-yaml']):
-                nested_output_directory, output_path = create_nested_output_directory(input_path)
-                with NamedTemporaryFile('wt', delete=False) as wf, input_path.open('rt') as rf:
-                    print(f'``` yml\n{rf.read()}\n```', file=wf)
-                    wf.close()
-                    _run_command('pandoc', '-f', f'{pandoc_from_format}+hard_line_breaks', '-i', f'{wf.name}', '-o', f'{output_path}')
-                    os.unlink(wf.name)
-                assert output_path.exists(), f'File "{output_path}" does not exist'
-                LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
-        if file_type in ('all', 'bib'):
-            for input_path in _find_files(file_types=['bib']):
-                nested_output_directory, output_path = create_nested_output_directory(input_path)
-                with NamedTemporaryFile('wt', delete=False) as wf, input_path.open('rt') as rf:
-                    print(f'``` bib\n{rf.read()}\n```', file=wf)
-                    wf.close()
-                    _run_command('pandoc', '-f', f'{pandoc_from_format}+hard_line_breaks', '-i', f'{wf.name}', '-o', f'{output_path}')
-                    os.unlink(wf.name)
-                assert output_path.exists(), f'File "{output_path}" does not exist'
-                LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
+    _compile_tex_files(_compile_tex_file_to_docx, output_directory)
 
 
 def find_files(args: Namespace) -> None:
@@ -624,8 +668,8 @@ def compile_tex_files_to_epub(args: Namespace) -> None:
     _compile_tex_files_to_epub(output_directory=Path(args.outputdir))
 
 
-def convert_files_to_docx(args: Namespace) -> None:
-    _convert_files_to_docx(output_directory=Path(args.outputdir), file_types=[args.filetype])
+def compile_tex_files_to_docx(args: Namespace) -> None:
+    _compile_tex_files_to_docx(output_directory=Path(args.outputdir))
 
 
 def main():
@@ -695,13 +739,12 @@ def main():
     parser_compile_tex_to_epub.add_argument('outputdir')
     parser_compile_tex_to_epub.set_defaults(func=compile_tex_files_to_epub)
 
-    parser_convert_files_to_docx = subparsers.add_parser(
-        'convert-to-docx',
-        help='Convert the different types of files in this repository to DOCX',
+    parser_compile_tex_files_to_docx = subparsers.add_parser(
+        'compile-tex-to-docx',
+        help='Compile all TeX files in this repository to DOCX',
     )
-    parser_convert_files_to_docx.add_argument('filetype', choices=CONVERT_TO_DOCX_FILETYPES)
-    parser_convert_files_to_docx.add_argument('outputdir')
-    parser_convert_files_to_docx.set_defaults(func=convert_files_to_docx)
+    parser_compile_tex_files_to_docx.add_argument('outputdir')
+    parser_compile_tex_files_to_docx.set_defaults(func=compile_tex_files_to_docx)
 
     args = parser.parse_args()
     if 'func' not in args:
