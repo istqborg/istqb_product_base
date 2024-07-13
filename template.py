@@ -336,7 +336,7 @@ def _compile_fn(args: Tuple['CompilationFunction', Path, Tuple[Any], Dict[Any, A
 
 
 def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> None:
-    os.environ['TEXINPUTS'] = f'.:{TEMPLATE_COPY_DIRECTORY}/template:'
+    os.environ['TEXINPUTS'] = f'.:{ROOT_COPY_DIRECTORY}/template:'
     try:
         shutil.rmtree(ROOT_COPY_DIRECTORY)
         shutil.copytree(ROOT_DIRECTORY, ROOT_COPY_DIRECTORY)
