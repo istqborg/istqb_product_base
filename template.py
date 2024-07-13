@@ -338,7 +338,10 @@ def _compile_fn(args: Tuple['CompilationFunction', Path, Tuple[Any], Dict[Any, A
 def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> None:
     os.environ['TEXINPUTS'] = f'.:{ROOT_COPY_DIRECTORY}/template:'
     try:
-        shutil.rmtree(ROOT_COPY_DIRECTORY)
+        try:
+            shutil.rmtree(ROOT_COPY_DIRECTORY)
+        except FileNotFoundError:
+            pass
         shutil.copytree(ROOT_DIRECTORY, ROOT_COPY_DIRECTORY)
         _fixup_languages()
         _validate_files(file_types=['all'])
@@ -356,7 +359,10 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
                     LOGGER.info('Compiled file "%s" to "%s"', input_path, output_path)
     finally:
         del os.environ['TEXINPUTS']
-        shutil.rmtree(ROOT_COPY_DIRECTORY)
+        try:
+            shutil.rmtree(ROOT_COPY_DIRECTORY)
+        except FileNotFoundError:
+            pass
 
 
 def _compile_tex_files_to_pdf() -> None:
