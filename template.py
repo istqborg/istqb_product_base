@@ -8,7 +8,7 @@ Processes ISTQB documents written with the LaTeX+Markdown template.
 from argparse import ArgumentParser, Namespace
 from configparser import ConfigParser
 from contextlib import contextmanager
-from itertools import repeat
+from itertools import chain, repeat
 import json
 import logging
 from multiprocessing import Pool
@@ -39,6 +39,12 @@ ROOT_DIRECTORY = Path(__file__).parent.resolve()
 SCHEMA_DIRECTORY = ROOT_DIRECTORY / 'schema'
 ROOT_COPY_DIRECTORY = CURRENT_DIRECTORY / 'istqb_product_base'
 
+CURRENT_REPOSITORY: Optional[Repo]
+try:
+    CURRENT_REPOSITORY = Repo(CURRENT_DIRECTORY, search_parent_directories=True)
+except InvalidGitRepositoryError:
+    CURRENT_REPOSITORY = None
+
 LATEXMKRC = ROOT_DIRECTORY / 'latexmkrc'
 ISTQB_CFG = ROOT_DIRECTORY / 'istqb.cfg'
 ISTQB_MK4 = ROOT_DIRECTORY / 'istqb.mk4'
@@ -46,34 +52,49 @@ ISTQB_MK4 = ROOT_DIRECTORY / 'istqb.mk4'
 PANDOC_INPUT_FORMAT = 'commonmark'
 PANDOC_EXTENSIONS = ['bracketed_spans', 'fancy_lists', 'pipe_tables', 'raw_attribute']
 
+MARKDOWNINPUT_REGEXP = re.compile(r'\\markdownInput(\[.*?\])?{(?P<filename>.*?)}', re.DOTALL)
 
-def _find_files(file_types: Iterable[str], root=Path('.')) -> Iterable[Path]:
+
+def _get_references_from_tex_file(tex_input_paths: Iterable[Path]) -> Iterable[Path]:
+    for tex_input_path in tex_input_paths:
+        with tex_input_path.open('rt') as f:
+            text = f.read()
+            for match in MARKDOWNINPUT_REGEXP.finditer(text):
+                path = Path(match.group('filename'))
+                if not path.is_absolute():
+                    path = tex_input_path.parent / path
+                path = path.resolve()
+                yield path
+
+
+def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Path]] = None, root: Path = Path('.')) -> Iterable[Path]:
     file_types = list(file_types)
+    referenced_files = set(_get_references_from_tex_file(tex_input_paths)) if tex_input_paths is not None else None
     for parent_directory, subdirectories, filenames in os.walk(root, topdown=True, onerror=print, followlinks=True):
 
-        def _keep_filename(file_type: str, filename: str) -> bool:
-            if filename.startswith('.'):
+        def keep_path(file_type: str, path: Path) -> bool:
+            if path.name.startswith('.'):
                 return False
-            if filename in {'template.py', 'check-yaml.lua', 'istqb.cfg', 'istqb.mk4', 'latexmkrc', 'requirements.txt'}:
+            if path.name in {'template.py', 'check-yaml.lua', 'istqb.cfg', 'istqb.mk4', 'latexmkrc', 'requirements.txt'}:
                 return False
-            if filename.startswith('markdowntheme'):
+            if path.name.startswith('markdowntheme'):
                 return False
-            if re.search(r'\.(sty|cls|lua)$', filename):
+            if re.search(r'\.(sty|cls|lua)$', path.name):
                 return False
 
             if file_type == 'all':
                 return True
             if file_type in ('all-yaml', 'user-yaml', 'metadata', 'questions', 'languages'):
-                all_yaml_match = re.search(r'\.ya?ml$', filename, flags=re.IGNORECASE)
+                all_yaml_match = re.search(r'\.ya?ml$', path.name, flags=re.IGNORECASE)
 
                 if not all_yaml_match:
                     return False
                 if file_type == 'all-yaml':
                     return True
 
-                metadata_match = re.fullmatch(r'metadata\.ya?ml', filename, flags=re.IGNORECASE)
-                questions_match = re.fullmatch(r'questions\.ya?ml', filename, flags=re.IGNORECASE)
-                languages_match = Path(parent_directory).name == 'languages' and re.fullmatch(r'..\.ya?ml', filename, flags=re.IGNORECASE)
+                metadata_match = re.fullmatch(r'metadata\.ya?ml', path.name, flags=re.IGNORECASE)
+                questions_match = re.fullmatch(r'questions\.ya?ml', path.name, flags=re.IGNORECASE)
+                languages_match = path.parent.name == 'languages' and re.fullmatch(r'..\.ya?ml', path.name, flags=re.IGNORECASE)
 
                 if file_type == 'metadata':
                     return bool(metadata_match)
@@ -86,20 +107,25 @@ def _find_files(file_types: Iterable[str], root=Path('.')) -> Iterable[Path]:
                 else:
                     raise ValueError(f'Unknown file type: {file_type}')
             elif file_type == 'xlsx':
-                return bool(re.search(r'\.xlsx$', filename, flags=re.IGNORECASE))
+                return bool(re.search(r'\.xlsx$', path.name, flags=re.IGNORECASE))
             elif file_type == 'eps':
-                return bool(re.search(r'\.eps$', filename, flags=re.IGNORECASE))
+                return bool(re.search(r'\.eps$', path.name, flags=re.IGNORECASE))
             elif file_type == 'tex':
-                return bool(re.search(r'\.tex$', filename, flags=re.IGNORECASE))
+                return bool(re.search(r'\.tex$', path.name, flags=re.IGNORECASE))
             elif file_type == 'bib':
-                return bool(re.search(r'\.bib$', filename, flags=re.IGNORECASE))
+                return bool(re.search(r'\.bib$', path.name, flags=re.IGNORECASE))
             elif file_type == 'markdown':
-                return bool(re.search(r'\.(md|mdown|markdown)$', filename, flags=re.IGNORECASE))
+                return bool(re.search(r'\.(md|mdown|markdown)$', path.name, flags=re.IGNORECASE))
             else:
                 raise ValueError(f'Unknown file type: {file_type}')
 
-        def keep_filename(filename: str) -> bool:
-            return any(_keep_filename(file_type, filename) for file_type in file_types)
+        def keep_filename(filename: str) -> Tuple[bool, Optional[Path]]:
+            path = (Path(parent_directory) / filename).resolve()
+            if referenced_files is not None and path not in referenced_files:
+                return False, None
+            if not any(keep_path(file_type, path) for file_type in file_types):
+                return False, None
+            return True, path
 
         def prune_subdirectory(subdirectory: str) -> bool:
             if subdirectory.startswith('.'):
@@ -119,8 +145,9 @@ def _find_files(file_types: Iterable[str], root=Path('.')) -> Iterable[Path]:
             del subdirectories[index]
 
         for filename in filenames:
-            if keep_filename(filename):
-                yield Path(parent_directory) / filename
+            should_keep, path = keep_filename(filename)
+            if should_keep:
+                yield path
 
 
 def _fixup_languages() -> None:
@@ -252,12 +279,21 @@ def _convert_xlsx_files_to_pdf() -> None:
             LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
 
+def _changed_paths(base_branch='main') -> Iterable[Path]:
+    if CURRENT_REPOSITORY is None:
+        return []
+    base_commit = CURRENT_REPOSITORY.commit(base_branch)
+    head_commit = CURRENT_REPOSITORY.head.commit
+    for diff in base_commit.diff(head_commit):
+        if diff.change_type in ('A', 'M'):
+            yield (Path(CURRENT_REPOSITORY.git_dir) / diff.b_path).resolve()
+
+
 def _should_do_full_compile() -> bool:
-    try:
-        repo = Repo(CURRENT_DIRECTORY, search_parent_directories=True)
-        return repo.active_branch.name == 'main'
-    except InvalidGitRepositoryError:
+    if CURRENT_REPOSITORY is None:
         return False
+    branch_name = CURRENT_REPOSITORY.active_branch.name
+    return branch_name == 'main'
 
 
 @contextmanager
@@ -333,6 +369,21 @@ def _compile_fn(args: Tuple['CompilationFunction', Path, Tuple[Any], Dict[Any, A
 
 
 def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> None:
+    input_paths = list(_find_files(file_types=['tex']))
+    if not _should_do_full_compile():
+        changed_paths = set(_changed_paths())
+        removed_indexes = []
+        for input_path_index, input_path in enumerate(input_paths):
+            referenced_paths = set(chain([input_path], _get_references_from_tex_file([input_path])))
+            if not referenced_paths & changed_paths:
+                removed_indexes.append(input_path_index)
+                LOGGER.info('Skipped the compilation of file "%s" because it has not changed in this branch', input_path)
+        for removed_index in reversed(removed_indexes):
+            del input_paths[removed_index]
+
+    if not input_paths:
+        return
+
     os.environ['TEXINPUTS'] = f'.:{ROOT_COPY_DIRECTORY}/template:'
     try:
         try:
@@ -340,17 +391,18 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
         except FileNotFoundError:
             pass
         shutil.copytree(ROOT_DIRECTORY, ROOT_COPY_DIRECTORY)
+
         _fixup_languages()
         _validate_files(file_types=['all'])
         _fixup_line_endings()
         _convert_eps_files_to_pdf()
         _convert_xlsx_files_to_pdf()
+
+        compile_parameters = zip(repeat(compile_fn), input_paths, repeat(args), repeat(kwargs))
         with Pool(None) as pool:
-            input_paths = _find_files(file_types=['tex'])
-            compile_parameters = zip(repeat(compile_fn), input_paths, repeat(args), repeat(kwargs))
             for input_path, output_path in pool.imap_unordered(_compile_fn, compile_parameters):
                 if output_path is None:
-                    LOGGER.info('Skipped the compilation of file "%s"', input_path)
+                    LOGGER.info('Skipped the compilation of file "%s" because it has been disabled', input_path)
                 else:
                     assert output_path.exists(), f'File "{output_path}" does not exist'
                     LOGGER.info('Compiled file "%s" to "%s"', input_path, output_path)
@@ -416,7 +468,9 @@ def _convert_files_to_docx(output_directory: Path, file_types: Iterable[str]) ->
 
 
 def find_files(args: Namespace) -> None:
-    paths = sorted(_find_files(file_types=[args.filetype]))
+    file_types = [args.filetype]
+    tex_input_paths = [Path(vars(args)['from'])] if vars(args)['from'] is not None else None
+    paths = sorted(_find_files(file_types=file_types, tex_input_paths=tex_input_paths))
     for path in paths:
         print(path)
 
@@ -470,6 +524,7 @@ def main():
         help='Produce a newline-separated list of different types of files in this repository',
     )
     parser_find_files.add_argument('filetype', choices=FILETYPES)
+    parser_find_files.add_argument('-f', '--from', help='a TeX document in which the files should be used')
     parser_find_files.set_defaults(func=find_files)
 
     parser_fixup_languages = subparsers.add_parser(
