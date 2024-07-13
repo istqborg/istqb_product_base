@@ -69,7 +69,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/istqborg/istqb_product_base:latest
-    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout Git repository
         uses: actions/checkout@v4
@@ -96,7 +95,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/istqborg/istqb_product_base:latest
-    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout Git repository
         uses: actions/checkout@v4

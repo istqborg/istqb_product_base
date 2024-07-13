@@ -9,6 +9,7 @@ from argparse import ArgumentParser, Namespace
 from configparser import ConfigParser
 from contextlib import contextmanager
 from itertools import chain, repeat
+from functools import lru_cache
 import json
 import logging
 from multiprocessing import Pool
@@ -278,14 +279,17 @@ def _convert_xlsx_files_to_pdf() -> None:
             LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
 
-def _changed_paths(base_branch='origin/main') -> Iterable[Path]:
+@lru_cache(maxsize=None)
+def _changed_paths(base_branch='origin/main') -> List[Path]:
     if CURRENT_REPOSITORY is None:
         return []
     base_commit = CURRENT_REPOSITORY.commit(base_branch)
     head_commit = CURRENT_REPOSITORY.head.commit
+    changed_paths = []
     for diff in base_commit.diff(head_commit):
         if diff.change_type in ('A', 'M'):
-            yield (Path(CURRENT_REPOSITORY.git_dir) / diff.b_path).resolve()
+            changed_paths.append((Path(CURRENT_REPOSITORY.git_dir) / diff.b_path).resolve())
+    return changed_paths
 
 
 def _should_do_full_compile() -> bool:
@@ -305,9 +309,119 @@ def _change_directory(new_path):
         os.chdir(original_path)
 
 
-def _compile_tex_file_to_pdf(input_path: Path) -> Optional[Path]:
+def _get_metadata_paths(input_path: Path) -> List[Path]:
+    referenced_paths = set(chain([input_path], _get_references_from_tex_file([input_path])))
+    metadata_paths = set(_find_files(file_types=['metadata'])) & referenced_paths
+    return sorted(metadata_paths)
+
+
+def _should_compile_tex_file_to_pdf(input_path: Path) -> bool:
     if (input_path.parent / input_path.stem / 'NO_PDF').exists():
-        # Creating a file `document/NO_PDF` will prevent `document.tex` from being compiled to PDF.
+        return False
+
+    metadata_paths = _get_metadata_paths(input_path)
+    if len(metadata_paths) == 0:
+        LOGGER.warning(
+            'Found no metadata of file "%s" when trying to determine whether it should be compiled to PDF; will compile',
+            input_path,
+        )
+        return True
+    if len(metadata_paths) > 1:
+        LOGGER.warning(
+            'Found multiple metadata (%s) of file "%s" when trying to determine whether it should be compiled to PDF; will compile',
+            ', '.join(f'"{path}"' for path in sorted(metadata_paths)), input_path,
+        )
+        return True
+
+    metadata_path, = metadata_paths
+    with metadata_path.open('rt') as f:
+        metadata_yaml_text = f.read()
+    metadata_yaml = yaml.safe_load(metadata_yaml_text)
+
+    if 'pdf-output' in metadata_yaml:
+        pdf_output = bool(metadata_yaml['pdf_output'])
+        return pdf_output
+
+    return True
+
+
+def _is_release_version(version: str) -> bool:
+    return version.lower().strip() == 'release'
+
+
+def _should_compile_tex_file_to_html(input_path: Path) -> bool:
+    if (input_path.parent / input_path.stem / 'NO_HTML').exists():
+        return False
+
+    metadata_paths = _get_metadata_paths(input_path)
+    if len(metadata_paths) == 0:
+        LOGGER.warning(
+            'Found no metadata of file "%s" when trying to determine whether it should be compiled to HTML; will not compile',
+            input_path,
+        )
+        return False
+    if len(metadata_paths) > 1:
+        LOGGER.warning(
+            'Found multiple metadata (%s) of file "%s" when trying to determine whether it should be compiled to HTML; will not compile',
+            ', '.join(f'"{path}"' for path in sorted(metadata_paths)), input_path,
+        )
+        return False
+
+    metadata_path, = metadata_paths
+    with metadata_path.open('rt') as f:
+        metadata_yaml_text = f.read()
+    metadata_yaml = yaml.safe_load(metadata_yaml_text)
+
+    if 'html-output' in metadata_yaml:
+        html_output = bool(metadata_yaml['html_output'])
+        return html_output
+    if 'version' in metadata_yaml:
+        version = str(metadata_yaml['version'])
+        return _is_release_version(version)
+
+    return False
+
+
+def _should_compile_tex_file_to_epub(input_path: Path) -> bool:
+    if (input_path.parent / input_path.stem / 'NO_EPUB').exists():
+        return False
+    if (input_path.parent / input_path.stem / 'NO_HTML').exists():
+        return False
+
+    metadata_paths = _get_metadata_paths(input_path)
+    if len(metadata_paths) == 0:
+        LOGGER.warning(
+            'Found no metadata of file "%s" when trying to determine whether it should be compiled to EPUB; will not compile',
+            input_path,
+        )
+        return False
+    if len(metadata_paths) > 1:
+        LOGGER.warning(
+            'Found multiple metadata (%s) of file "%s" when trying to determine whether it should be compiled to EPUB; will not compile',
+            ', '.join(f'"{path}"' for path in sorted(metadata_paths)), input_path,
+        )
+        return False
+
+    metadata_path, = metadata_paths
+    with metadata_path.open('rt') as f:
+        metadata_yaml_text = f.read()
+    metadata_yaml = yaml.safe_load(metadata_yaml_text)
+
+    if 'epub-output' in metadata_yaml:
+        epub_output = bool(metadata_yaml['epub_output'])
+        return epub_output
+    if 'html-output' in metadata_yaml:
+        html_output = bool(metadata_yaml['html_output'])
+        return html_output
+    if 'version' in metadata_yaml:
+        version = str(metadata_yaml['version'])
+        return _is_release_version(version)
+
+    return False
+
+
+def _compile_tex_file_to_pdf(input_path: Path) -> Optional[Path]:
+    if not _should_compile_tex_file_to_pdf(input_path):
         return
     _run_command('latexmk', '-gg', '-r', f'{LATEXMKRC}', f'{input_path}')
     if input_path.name != 'example-document.tex':
@@ -321,8 +435,7 @@ def _compile_tex_file_to_pdf(input_path: Path) -> Optional[Path]:
 
 
 def _compile_tex_file_to_html(input_path: Path, output_directory: Path) -> Optional[Path]:
-    if (input_path.parent / input_path.stem / 'NO_HTML').exists():
-        # Creating a file `document/NO_HTML` will prevent `document.tex` from being compiled to HTML.
+    if not _should_compile_tex_file_to_html(input_path):
         return
     output_path = output_directory / input_path.stem / input_path.with_suffix('.html').name
     _run_command('make4ht', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_path.parent}', f'{input_path}')
@@ -330,8 +443,7 @@ def _compile_tex_file_to_html(input_path: Path, output_directory: Path) -> Optio
 
 
 def _compile_tex_file_to_epub(input_path: Path, output_directory: Path) -> Optional[Path]:
-    if (input_path.parent / input_path.stem / 'NO_HTML').exists() or (input_path.parent / input_path.stem / 'NO_EPUB').exists():
-        # Creating a file `document/NO_HTML` or `document/NO_EPUB` will prevent `document.tex` from being compiled to EPUB.
+    if not _should_compile_tex_file_to_epub(input_path):
         return
 
     output_directory = output_directory.resolve()
@@ -367,14 +479,20 @@ def _compile_fn(args: Tuple['CompilationFunction', Path, Tuple[Any], Dict[Any, A
     return input_path, output_path
 
 
+def _should_compile_tex_file(input_path: Path) -> bool:
+    if _should_do_full_compile():
+        return True
+    changed_paths = set(_changed_paths())
+    referenced_paths = set(chain([input_path], _get_references_from_tex_file([input_path])))
+    return bool(referenced_paths & changed_paths)
+
+
 def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> None:
     input_paths = list(_find_files(file_types=['tex']))
     if not _should_do_full_compile():
-        changed_paths = set(_changed_paths())
         removed_indexes = []
         for input_path_index, input_path in enumerate(input_paths):
-            referenced_paths = set(chain([input_path], _get_references_from_tex_file([input_path])))
-            if not referenced_paths & changed_paths:
+            if not _should_compile_tex_file(input_path):
                 removed_indexes.append(input_path_index)
                 LOGGER.info('Skipped the compilation of file "%s" because it has not changed in this branch', input_path)
         for removed_index in reversed(removed_indexes):
