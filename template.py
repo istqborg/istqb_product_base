@@ -39,6 +39,7 @@ CURRENT_DIRECTORY = Path('.').resolve()
 ROOT_DIRECTORY = Path(__file__).parent.resolve()
 SCHEMA_DIRECTORY = ROOT_DIRECTORY / 'schema'
 ROOT_COPY_DIRECTORY = CURRENT_DIRECTORY / 'istqb_product_base'
+EXAMPLE_DOCUMENT = CURRENT_DIRECTORY / 'example-document.tex'
 
 CURRENT_REPOSITORY: Optional[Repo]
 try:
@@ -472,7 +473,7 @@ def _compile_tex_file_to_pdf(input_path: Path) -> Optional[Path]:
     if not _should_compile_tex_file_to_pdf(input_path):
         return
     _run_command('latexmk', '-gg', '-r', f'{LATEXMKRC}', f'{input_path}')
-    if input_path.name != 'example-document.tex':
+    if input_path != EXAMPLE_DOCUMENT:
         with input_path.with_suffix('.istqb_project_name').open('rt') as f:
             project_name = f.read().strip()
             output_path = Path(f'{project_name}.pdf')
@@ -563,6 +564,9 @@ def _compile_fn(args: Tuple['CompilationFunction', Path, Tuple[Any], Dict[Any, A
 def _should_compile_tex_file(input_path: Path) -> bool:
     if _should_do_full_compile():
         return True
+    if input_path == EXAMPLE_DOCUMENT:
+        return True
+
     changed_paths = set(_changed_paths())
     referenced_paths = set(chain([input_path], _get_references_from_tex_file([input_path])))
     return bool(referenced_paths & changed_paths)
