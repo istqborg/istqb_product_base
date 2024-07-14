@@ -16,95 +16,47 @@ permissions:
   contents: write
 env:
   DEBIAN_FRONTEND: noninteractive
-  TEXINPUTS: '.:./istqb_product_base/template:'
-  FIND: 'find -follow -path ./.github -prune -o -path ./istqb_product_base -prune -o -path ./template -prune -o -path ./schema -prune -o'
 jobs:
   validate:
     name: Validate YAML documents
     runs-on: ubuntu-latest
     container:
-      image: witiko/markdown:3.6.0-10-g11b016ea-latest
+      image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
-      - name: Install required packages
-        shell: bash
-        run: |
-          set -ex
-          apt -qy update
-          apt -qy install --no-install-recommends git parallel
-          python3 -m venv ~/venv
-          source ~/venv/bin/activate
-          pip install yamale~=4.0.4
-      - name: Set up Git repository
+      - name: Checkout Git repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Clone repository istqb_product_base
         run: |
           set -ex
-          git clone https://github.com/istqborg/istqb_product_base.git
-          cd istqb_product_base
+          rm -rf /opt/istqb_product_base
+          git clone https://github.com/istqborg/istqb_product_base.git /opt/istqb_product_base
+          cd /opt/istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}' ::: languages/*.yml
-      - name: Validate metadata*.yml
-        shell: bash
-        run: |
-          set -ex
-          source ~/venv/bin/activate
-          $FIND -type f -iregex '.*/metadata.*\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/metadata.yml {}
-      - name: Validate questions.yml
-        shell: bash
-        run: |
-          set -ex
-          source ~/venv/bin/activate
-          $FIND -type f -iregex '.*/questions\.yml$' -print | parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/questions.yml {}
-      - name: Validate languages/*.yml
-        shell: bash
-        run: |
-          set -ex
-          source ~/venv/bin/activate
-          parallel --halt now,fail=1 yamale --schema=istqb_product_base/schema/language.yml {} ::: istqb_product_base/languages/*.yml
-      - name: Check the well-formedness of all YAML documents
-        run: |
-          set -ex
-          $FIND -type f -iregex '.*\.yml$' -print | parallel --halt now,fail=1 istqb_product_base/check-yaml.lua {}
-          parallel --halt now,fail=1 istqb_product_base/check-yaml.lua {} ::: istqb_product_base/languages/*.yml
+      - name: Validate YAML documents
+        run: istqb-template validate-files all-yaml
   produce-pdf:
     name: Produce PDF documents
     needs:
       - validate
     runs-on: ubuntu-latest
     container:
-      image: witiko/markdown:3.6.0-10-g11b016ea-latest
+      image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
-      - name: Install required packages
-        run: |
-          set -ex
-          apt -qy update
-          apt -qy install --no-install-recommends dos2unix git parallel
-      - name: Set up Git repository
+      - name: Checkout Git repository
         uses: actions/checkout@v4
-      - name: Install LibreOffice
-        if: github.ref == 'refs/heads/main'
-        run: |
-          set -ex
-          if $FIND -type f -iregex '.*\.xlsx$' -print | grep -q .
-          then
-            wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
-            dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
-          fi
+        with:
+          fetch-depth: 0
       - name: Clone repository istqb_product_base
         run: |
           set -ex
-          git clone https://github.com/istqborg/istqb_product_base.git
-          cd istqb_product_base
+          rm -rf /opt/istqb_product_base
+          git clone https://github.com/istqborg/istqb_product_base.git /opt/istqb_product_base
+          cd /opt/istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}' ::: languages/*.yml
-      - name: Ensure correct encoding of input files
-        run: $FIND -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
-      - name: Convert EPS images to PDF
-        run: $FIND -type f -iregex '.*\.eps$' -print | parallel --halt now,fail=1 epstopdf {} {.}-eps-converted-to.pdf
-      - name: Convert XLSX spreadsheets to PDF
-        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 test ${{github.ref == 'refs/heads/main'}} = true '&&' libreoffice7.3 --headless --convert-to pdf {} --outdir {//} '||' ln -s '$(kpsewhich example-image.pdf)' {.}.pdf
       - name: Compile LaTeX documents to PDF
-        run: $FIND -type f -iregex '.*\.tex$'  -print | parallel --halt now,fail=1 test -e {//}/NO_PDF '||' latexmk -r istqb_product_base/latexmkrc {} '&&' '(test {} = ./example-document.tex || mv -v {.}.pdf "$(cat {.}.istqb_project_name).pdf")'
+        run: istqb-template compile-tex-to-pdf
       - name: Upload PDF documents
         uses: actions/upload-artifact@v4
         with:
@@ -116,130 +68,78 @@ jobs:
       - validate
     runs-on: ubuntu-latest
     container:
-      image: witiko/markdown:3.6.0-10-g11b016ea-latest
-    if: github.ref == 'refs/heads/main'
+      image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
-      - name: Install required packages
-        run: |
-          set -ex
-          apt -qy update
-          apt -qy install --no-install-recommends dos2unix git parallel tidy
-      - name: Set up Git repository
+      - name: Checkout Git repository
         uses: actions/checkout@v4
-      - name: Install LibreOffice
-        run: |
-          set -ex
-          if $FIND -type f -iregex '.*\.xlsx$' -print | grep -q .
-          then
-            wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
-            dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
-          fi
+        with:
+          fetch-depth: 0
       - name: Clone repository istqb_product_base
         run: |
           set -ex
-          git clone https://github.com/istqborg/istqb_product_base.git
-          cd istqb_product_base
+          rm -rf /opt/istqb_product_base
+          git clone https://github.com/istqborg/istqb_product_base.git /opt/istqb_product_base
+          cd /opt/istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}' ::: languages/*.yml
-      - name: Ensure correct encoding of input files
-        run: $FIND -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
-      - name: Convert XLSX spreadsheets to PDF
-        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice7.3 --headless --convert-to pdf {} --outdir {//}
-      - name: Create output directory html/
-        run: mkdir html
       - name: Compile LaTeX documents to HTML
-        run: $FIND -type f -iregex '.*\.tex$' -print | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' make4ht -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d html/{.} {}
+        run: istqb-template compile-tex-to-html html/
       - name: Upload HTML documents
         uses: actions/upload-artifact@v4
         with:
           name: HTML
-          path: html
+          path: html/
   produce-ebooks:
     name: Produce EPUB documents
     needs:
       - validate
     runs-on: ubuntu-latest
     container:
-      image: witiko/markdown:3.6.0-10-g11b016ea-latest
-    if: github.ref == 'refs/heads/main'
+      image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
-      - name: Install required packages
-        run: |
-          set -ex
-          apt -qy update
-          apt -qy install --no-install-recommends dos2unix git parallel tidy
-      - name: Set up Git repository
+      - name: Checkout Git repository
         uses: actions/checkout@v4
-      - name: Install LibreOffice
-        run: |
-          set -ex
-          if $FIND -type f -iregex '.*\.xlsx$' -print | grep -q .
-          then
-            wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
-            dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
-          fi
+        with:
+          fetch-depth: 0
       - name: Clone repository istqb_product_base
         run: |
           set -ex
-          git clone https://github.com/istqborg/istqb_product_base.git
-          cd istqb_product_base
+          rm -rf /opt/istqb_product_base
+          git clone https://github.com/istqborg/istqb_product_base.git /opt/istqb_product_base
+          cd /opt/istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}' ::: languages/*.yml
-      - name: Ensure correct encoding of input files
-        run: $FIND -type f \( -iregex '.*\.md$' -o -iregex '.*\.yml$' \) -exec dos2unix {} +
-      - name: Convert XLSX spreadsheets to PDF
-        run: $FIND -type f -iregex '.*\.xlsx$' -print | parallel --halt now,fail=1 libreoffice7.3 --headless --convert-to pdf {} --outdir {//}
-      - name: Create output directory epub/
-        run: mkdir epub
       - name: Compile LaTeX documents to EPUB
-        shell: bash
-        run: |
-          set -ex
-          shopt -s extglob
-          $FIND -type f -iregex '.*\.tex$' -print | parallel --halt now,fail=1 test -e {.}/NO_HTML '||' '(' mkdir -p epub/build/{.} '&&' cp -ar !(epub) epub/build/{.}/ '&&' cd epub/build/{.} '&&' tex4ebook -s -c istqb_product_base/istqb.cfg -e istqb_product_base/istqb.mk4 -d ../.. {} ')'
-          rm -rf epub/build
+        run: istqb-template compile-tex-to-epub epub/
       - name: Upload EPUB documents
         uses: actions/upload-artifact@v4
         with:
           name: EPUB
-          path: epub
+          path: epub/
   produce-docx:
     name: Produce DOCX documents
     needs:
       - validate
     runs-on: ubuntu-latest
     container:
-      image: pandoc/core:3.1.1.0-ubuntu
-    env:
-      PANDOC_EXTENSIONS: commonmark+bracketed_spans+fancy_lists+pipe_tables+raw_attribute
+      image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
-      - name: Install required packages
-        run: |
-          set -ex
-          apt -qy update
-          apt -qy install --no-install-recommends git parallel
-      - name: Set up Git repository
+      - name: Checkout Git repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Clone repository istqb_product_base
         run: |
           set -ex
-          git clone https://github.com/istqborg/istqb_product_base.git
-          cd istqb_product_base
+          rm -rf /opt/istqb_product_base
+          git clone https://github.com/istqborg/istqb_product_base.git /opt/istqb_product_base
+          cd /opt/istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-          parallel --halt now,fail=1 'sed -i "1s/^/$(sed -rn "/^name\.babel = /s/name\.babel = (\S*).*/babel-language: \1/p" "$(kpsewhich {/.}/babel-{/.}.ini)")\n/" {}' ::: languages/*.yml
-      - name: Create output directory docx/
-        run: mkdir docx
-      - name: Convert MD documents to DOCX
-        run: $FIND -type f -iregex '.*\.md$' -print | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' pandoc -f "${PANDOC_EXTENSIONS}" -i {} -o docx/{}.docx
-      - name: Convert YAML documents to DOCX
-        run: $FIND -path ./.github -prune -o -path ./languages -prune -o -type f -iregex '.*\.yml$' -print | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` yml\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
-      - name: Convert BIB documents to DOCX
-        run: $FIND -type f -iregex '.*\.bib$' -print | parallel --halt now,fail=1 mkdir -p docx/{//} '&&' 'sed -e "1s/^/\`\`\` bib\\n/" -e "\$s/\$/\\n\`\`\`/"' {} '|' pandoc -f "${PANDOC_EXTENSIONS}+hard_line_breaks" -i - -o docx/{}.docx
+      - name: Convert documents to DOCX
+        run: istqb-template compile-tex-to-docx docx/
       - name: Upload DOCX documents
         uses: actions/upload-artifact@v4
         with:
           name: DOCX
-          path: docx
+          path: docx/
   prerelease:
     name: Create a prerelease
     if: github.ref == 'refs/heads/main' && inputs.skip-prerelease == false

@@ -1,0 +1,72 @@
+name: Build Docker image
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * TUE'
+permissions:
+  packages: write
+env:
+  DEBIAN_FRONTEND: noninteractive
+jobs:
+  flake8:
+    name: Style check (Python)
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.12
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install additional packages
+        run: |
+          set -ex
+          pip install -U pip wheel setuptools
+          pip install flake8
+      - name: Run Flake8
+        run: flake8 template.py
+  pytype:
+    name: Type check (Python)
+    needs:
+      - flake8
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install additional packages
+        run: |
+          set -ex
+          pip install -U pip wheel setuptools
+          pip install -r requirements.txt
+          pip install pytype libcst==1.2.0
+      - name: Run Pytype
+        run: pytype template.py
+  build:
+    name: Build and publish Docker image
+    needs:
+      - flake8
+      - pytype
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout Git repository witiko/markdown
+        uses: actions/checkout@v4
+        with:
+          repository: witiko/markdown
+          ref: 3.6.2
+          fetch-depth: 0
+      - name: Build intermediate image witiko/markdown:latest-minimal
+        run: DOCKER_BUILDKIT=1 docker build --build-arg TEXLIVE_TAG=latest-minimal --build-arg DEV_IMAGE=true -t witiko/markdown:latest-minimal .
+      - name: Checkout Git repository istqborg/istqb_product_base
+        uses: actions/checkout@v4
+      - name: Build final image ghcr.io/istqborg/istqb_product_base:latest
+        run: DOCKER_BUILDKIT=1 docker build -t ghcr.io/istqborg/istqb_product_base:latest .
+      - name: Login to GitHub Packages
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push Docker image ghcr.io/istqborg/istqb_product_base:latest
+        run: docker push ghcr.io/istqborg/istqb_product_base:latest
