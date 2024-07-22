@@ -65,8 +65,8 @@ MARKDOWN_REGEXP = re.compile(r'\.(md|mdown|markdown)$', flags=re.IGNORECASE)
 YAML_REGEXP = re.compile(r'\.ya?ml$', flags=re.IGNORECASE)
 TEMPLATE_REGEXP = re.compile(r'\.(sty|cls|lua)$', flags=re.IGNORECASE)
 
-METADATA_REGEXP = re.compile(r'metadata\.ya?ml', flags=re.IGNORECASE)
-QUESTIONS_REGEXP = re.compile(r'questions\.ya?ml', flags=re.IGNORECASE)
+METADATA_REGEXP = re.compile(r'metadata.*\.ya?ml', flags=re.IGNORECASE)
+QUESTIONS_REGEXP = re.compile(r'questions.*\.ya?ml', flags=re.IGNORECASE)
 LANGUAGES_REGEXP = re.compile(r'..\.ya?ml', flags=re.IGNORECASE)
 
 
