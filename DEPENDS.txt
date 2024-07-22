@@ -13,10 +13,10 @@ lastpage
 latexmk
 lipsum
 makeindex
-mdframed
 needspace
 newunicodechar
 supertabular
+tcolorbox
 tex-gyre
 titlesec
 tocbibind
