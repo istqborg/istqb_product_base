@@ -59,7 +59,7 @@ ADDBIBRESOURCE_REGEXP = re.compile(r'\\addbibresource{(?P<filename>.*?)}', re.DO
 
 XLSX_REGEXP = re.compile(r'\.xlsx$', flags=re.IGNORECASE)
 EPS_REGEXP = re.compile(r'\.eps$', flags=re.IGNORECASE)
-TEX_REGEXP = re.compile(r'\.tex$', flags=re.IGNORECASE)
+TEX_REGEXP = re.compile(r'(?<!\.md)\.tex$', flags=re.IGNORECASE)
 BIB_REGEXP = re.compile(r'\.bib$', flags=re.IGNORECASE)
 MARKDOWN_REGEXP = re.compile(r'\.(md|mdown|markdown)$', flags=re.IGNORECASE)
 YAML_REGEXP = re.compile(r'\.ya?ml$', flags=re.IGNORECASE)
