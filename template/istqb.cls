@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{istqb}[2024/11/11 1.2.1 LaTeX class for ISTQB Documents]
+\ProvidesClass{istqb}[2025/01/20 1.2.2 LaTeX class for ISTQB Documents]
 
 % Fonts
 \LoadClass[10pt]{article}
@@ -166,8 +166,30 @@
 \renewcommand{\footrulewidth}{0pt}
 \PassOptionsToPackage{table}{xcolor}
 \RequirePackage{xcolor}
-\PassOptionsToPackage{framemethod=tikz}{mdframed}
-\RequirePackage{mdframed}
+\RequirePackage{tcolorbox}
+\tcbset{
+  istqb/footer/upper/.style={
+    boxrule=0.75pt,
+    colframe=black!25!white,
+    colback=white,
+    left=0.08in,
+    right=8pt,
+    top=3pt,
+    bottom=3pt,
+    before skip=\baselineskip,
+    after skip=\topskip,
+    left skip=-8pt,
+    right skip=-8pt,
+    boxsep=0pt,
+    arc=0mm,
+    outer arc=0mm,
+  },
+  istqb/footer/lower/.style={
+    istqb/footer/upper,
+    left skip=0pt,
+    after skip=1.75\topskip,
+  }
+}
 \@ifundefined
   {HCode}%
   {\RequirePackage{lastpage}}%
@@ -180,17 +202,7 @@
 \tl_gset:Nn
   \g_istqb_footer_tl
   {
-    \begin{mdframed}[
-      linewidth=0.75pt,
-      linecolor=black!25!white,
-      innerleftmargin=0.08in,
-      innerrightmargin=8pt,
-      innertopmargin=3pt,
-      innerbottommargin=3pt,
-      skipabove=\baselineskip,
-      leftmargin=-8pt,
-      rightmargin=-8pt,
-    ]
+    \begin{tcolorbox}[istqb/footer/upper]
       \fontsize{9}{10.8}\selectfont
       \begin{minipage}{0.4\linewidth}
       \mbox{\g_istqb_version_tl{}~\g_istqb_release_tl}
@@ -232,7 +244,7 @@
       \end{minipage}~
       \fontsize{6}{12}\selectfont
       \textcopyright{}~\istqborgname
-    \end{mdframed}
+    \end{tcolorbox}
   }
 \box_new:N \l_istqb_footer_box
 \AtBeginDocument
@@ -613,22 +625,38 @@
   { VF }
 \ExplSyntaxOff
 %% Sections, subsections, and subsubsections
-\RequirePackage{xpatch, mdframed}
+\RequirePackage{tcolorbox}
+\tcbset{
+  istqb/section/.style={
+    boxrule=0.95pt,
+    colframe=black,
+    colback=white,
+    left=0.08in,
+    right=0.2in,
+    top=0.05in,
+    bottom=0in,
+    before skip=0pt,
+    after skip=0pt,
+    left skip=0in,
+    right skip=0in,
+    boxsep=0pt,
+    arc=0mm,
+    outer arc=0mm,
+  },
+  istqb/subsection/.style={
+    istqb/section,
+    boxrule=0.63pt,
+    top=0.035in,
+  }
+}
+\RequirePackage{xpatch}
 \xpatchcmd{\section}{\normalfont\Large\bfseries}{\istqbsectionbox}{}{\PatchFailed}
 \xpatchcmd{\subsection}{\normalfont\large\bfseries}{\istqbsubsectionbox}{}{\PatchFailed}
 \RequirePackage{titlesec, etoolbox}
 \pretocmd{\section}{\clearpage}{}{\PatchFailed}
 \newcommand\istqbsectionbox[1]{%
-  \begin{mdframed}[
-    linewidth=0.95pt,
-    linecolor=black,
-    innerleftmargin=0.08in,
-    innerrightmargin=0.2in,
-    innertopmargin=0.05in,
-    innerbottommargin=0in,
-    leftmargin=0in,
-    rightmargin=0in,
-  ]%
+  \clearpage
+  \begin{tcolorbox}[istqb/section]
     \normalfont
     \bfseries
     \fontsize{16}{19.2}\selectfont
@@ -637,19 +665,10 @@
     \titlelabel{\thetitle\kern0.3em}
     #1%
     \endgroup
-  \end{mdframed}%
+  \end{tcolorbox}%
 }
 \newcommand\istqbsubsectionbox[1]{%
-  \begin{mdframed}[
-    linewidth=0.63pt,
-    linecolor=black,
-    innerleftmargin=0.08in,
-    innerrightmargin=0.2in,
-    innertopmargin=0.035in,
-    innerbottommargin=0in,
-    leftmargin=0in,
-    rightmargin=0in,
-  ]%
+  \begin{tcolorbox}[istqb/subsection]
     \normalfont
     \mdseries
     \fontsize{14}{16.8}\selectfont
@@ -658,7 +677,7 @@
     \titlelabel{\thetitle\kern0.3em}
     #1%
     \endgroup
-  \end{mdframed}%
+  \end{tcolorbox}%
 }
 \titleformat\subsubsection
 {% format
@@ -669,8 +688,8 @@
 {\thesubsubsection}% label
 {0.5em}% sep
 {}% before-code
-\titlespacing\section{0pt}{0pt}{*3.2}
-\titlespacing\subsection{0pt}{*5.5}{*0.8}
+\titlespacing\section{0pt}{0pt}{*2.35}
+\titlespacing\subsection{0pt}{*5.5}{*2.3}
 \titlespacing\subsubsection{0pt}{*3.25}{*1}
 %%% Document commands
 \ExplSyntaxOn
