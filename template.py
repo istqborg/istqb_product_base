@@ -143,7 +143,7 @@ def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Pa
                 return False, None
             return True, path
 
-        def prune_subdirectory(subdirectory: str) -> bool:
+        def keep_subdirectory(subdirectory: str) -> bool:
             if subdirectory.startswith('.'):
                 return False
             if subdirectory == 'istqb_product_base' and 'languages' not in file_types:
@@ -155,7 +155,7 @@ def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Pa
         removed_subdirectory_indexes = [
             index
             for index, subdirectory in enumerate(subdirectories)
-            if not prune_subdirectory(subdirectory)
+            if not keep_subdirectory(subdirectory)
         ]
         for index in sorted(removed_subdirectory_indexes, reverse=True):
             del subdirectories[index]
@@ -206,7 +206,7 @@ def _fixup_language(path: Path) -> None:
         input_yaml_text = rf.read()
     input_yaml = yaml.safe_load(input_yaml_text)
     if 'babel-language' in input_yaml:
-        LOGGER.debug('File %s already contains `babel-language`', path)
+        LOGGER.debug('File "%s" already contains `babel-language`', path)
         return
 
     # Determine the babel name of the language.
