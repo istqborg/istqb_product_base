@@ -247,7 +247,7 @@ def _fixup_language(path: Path) -> None:
     # Add `babel-language` on top of the language definitions.
     LOGGER.info('Added "babel-language: %s" to file "%s"', babel_name, path)
     with path.open('wt') as wf:
-        print(f'babel-language: {json.dumps(babel_name)}', file=wf)
+        print(f'babel-language: {json.dumps(babel_name, ensure_ascii=False)}', file=wf)
         wf.write(input_yaml_text)
 
 
@@ -420,7 +420,16 @@ def _convert_md_questions_to_yaml() -> None:
             LOGGER.warning('Found no questions in file "%s", skipping creation of empty file "%s"', input_path, output_path)
         else:
             with output_path.open('wt') as f:
-                json.dump(output_yaml, f, indent=4)
+                print('questions:', file=f)
+                for question_number, question in sorted(output_yaml['questions'].items()):
+                    print(f'  {question_number}:', file=f)
+                    print(f'    learning-objective: {json.dumps(question["learning-objective"], ensure_ascii=False)}', file=f)
+                    print(f'    k-level: {json.dumps(question["k-level"], ensure_ascii=False)}', file=f)
+                    print(f'    number-of-points: {json.dumps(question["number-of-points"], ensure_ascii=False)}', file=f)
+                    print(f'    question: {json.dumps(question["question"], ensure_ascii=False)}', file=f)
+                    print(f'    answers: {json.dumps(question["answers"], ensure_ascii=False)}', file=f)
+                    print(f'    correct: {json.dumps(question["correct"], ensure_ascii=False)}', file=f)
+                    print(f'    explanation: {json.dumps(question["explanation"], ensure_ascii=False)}', file=f)
                 LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
 
