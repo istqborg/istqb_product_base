@@ -462,14 +462,15 @@ def _convert_yaml_questions_to_md() -> None:
                 print(f'correct: {question["correct"]}', file=f)
                 print(file=f)
                 print('## question', file=f)
-                print(question['question'], file=f)
+                print(question['question'].rstrip('\r\n'), file=f)
                 print(file=f)
                 print('## answers', file=f)
                 for answer_index, (answer_letter, answer) in enumerate(sorted(question['answers'].items())):
+                    answer = answer.rstrip('\r\n')
                     print(f'{answer_index + 1}. {answer}', file=f)
                 print(file=f)
                 print('## justification', file=f)
-                print(question['explanation'], file=f)
+                print(question['explanation'].rstrip('\r\n'), file=f)
             LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
 
