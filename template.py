@@ -87,11 +87,18 @@ def _get_references_from_tex_file(tex_input_paths: Iterable[Path]) -> Iterable[P
             text = f.read()
             for pattern in [MARKDOWNINPUT_REGEXP, ADDBIBRESOURCE_REGEXP]:
                 for match in pattern.finditer(text):
+                    # Yield directly referenced paths.
                     path = Path(match.group('filename'))
                     if not path.is_absolute():
                         path = tex_input_path.parent / path
                     path = path.resolve()
                     yield path
+                    # For YAML questions, yield also MD question source files.
+                    if QUESTIONS_YAML_REGEXP.fullmatch(path.name):
+                        for md_path in path.parent.glob(f'{path.stem}.*'):
+                            if QUESTIONS_MARKDOWN_REGEXP.fullmatch(md_path.name):
+                                md_path = md_path.resolve()
+                                yield md_path
 
 
 def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Path]] = None, root: Path = Path('.')) -> Iterable[Path]:
@@ -475,7 +482,7 @@ def _changed_paths(base_branch='origin/main') -> List[Path]:
     changed_paths = []
     for diff in base_commit.diff(head_commit):
         if diff.change_type in ('A', 'M'):
-            changed_paths.append((Path(CURRENT_REPOSITORY.git_dir) / diff.b_path).resolve())
+            changed_paths.append((Path(CURRENT_REPOSITORY.git_dir) / '..' / diff.b_path).resolve())
     return changed_paths
 
 
