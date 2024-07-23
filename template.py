@@ -15,6 +15,7 @@ import logging
 from multiprocessing import Pool
 from pathlib import Path
 import re
+import string
 import subprocess
 from tempfile import NamedTemporaryFile
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, TYPE_CHECKING
@@ -28,11 +29,11 @@ import yaml
 
 LOGGER = logging.getLogger(__name__)
 
-METADATA_FILETYPES = ['all', 'all-yaml', 'user-yaml'] + sorted(['metadata', 'questions', 'languages'])
+METADATA_FILETYPES = ['all', 'all-yaml', 'user-yaml'] + sorted(['metadata', 'questions-yaml', 'questions-markdown', 'languages'])
 DOCUMENT_FILETYPES = sorted(['xlsx', 'markdown', 'eps', 'tex', 'bib'])
 FILETYPES = METADATA_FILETYPES + DOCUMENT_FILETYPES
 
-VALIDATABLE_FILETYPES = ['all', 'all-yaml'] + sorted(['metadata', 'questions', 'languages'])
+VALIDATABLE_FILETYPES = ['all', 'all-yaml'] + sorted(['metadata', 'questions-yaml', 'languages'])
 CONVERT_TO_DOCX_FILETYPES = ['all', 'user-yaml'] + sorted(['markdown', 'bib'])
 
 CURRENT_DIRECTORY = Path('.').resolve()
@@ -66,8 +67,18 @@ YAML_REGEXP = re.compile(r'\.ya?ml$', flags=re.IGNORECASE)
 TEMPLATE_REGEXP = re.compile(r'\.(sty|cls|lua)$', flags=re.IGNORECASE)
 
 METADATA_REGEXP = re.compile(r'metadata.*\.ya?ml', flags=re.IGNORECASE)
-QUESTIONS_REGEXP = re.compile(r'questions.*\.ya?ml', flags=re.IGNORECASE)
+QUESTIONS_YAML_REGEXP = re.compile(r'questions.*\.ya?ml', flags=re.IGNORECASE)
+QUESTIONS_MARKDOWN_REGEXP = re.compile(r'questions.*\.(md|mdown|markdown)', flags=re.IGNORECASE)
 LANGUAGES_REGEXP = re.compile(r'..\.ya?ml', flags=re.IGNORECASE)
+
+QUESTIONS_METADATA_REGEXP = re.compile(r'\s{0,3}#\s*metadata\s*', flags=re.IGNORECASE)
+QUESTIONS_QUESTION_REGEXP = re.compile(r'\s{0,3}##\s*question\s*', flags=re.IGNORECASE)
+QUESTIONS_ANSWERS_REGEXP = re.compile(r'\s{0,3}##\s*answers\s*', flags=re.IGNORECASE)
+QUESTIONS_ANSWER_REGEXP = re.compile(
+    r'^\s{0,3}(?P<number>[0-9])[.]\s*(?P<text>(.(?!^\s{0,3}[0-9][.]))*)',
+    flags=re.IGNORECASE | re.MULTILINE | re.DOTALL,
+)
+QUESTIONS_EXPLANATION_REGEXP = re.compile(r'\s{0,3}##\s*(explanation|justification)\s*', flags=re.IGNORECASE)
 
 
 def _get_references_from_tex_file(tex_input_paths: Iterable[Path]) -> Iterable[Path]:
@@ -86,6 +97,7 @@ def _get_references_from_tex_file(tex_input_paths: Iterable[Path]) -> Iterable[P
 def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Path]] = None, root: Path = Path('.')) -> Iterable[Path]:
     file_types = list(file_types)
     referenced_files = set(_get_references_from_tex_file(tex_input_paths)) if tex_input_paths is not None else None
+    seen_paths = set()
     for parent_directory, subdirectories, filenames in os.walk(root, topdown=True, onerror=print, followlinks=True):
 
         def keep_path(file_type: str, path: Path) -> bool:
@@ -100,7 +112,7 @@ def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Pa
 
             if file_type == 'all':
                 return True
-            if file_type in ('all-yaml', 'user-yaml', 'metadata', 'questions', 'languages'):
+            if file_type in ('all-yaml', 'user-yaml', 'metadata', 'questions-yaml', 'languages'):
                 all_yaml_match = YAML_REGEXP.search(path.name)
 
                 if not all_yaml_match:
@@ -109,12 +121,12 @@ def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Pa
                     return True
 
                 metadata_match = METADATA_REGEXP.fullmatch(path.name)
-                questions_match = QUESTIONS_REGEXP.fullmatch(path.name)
+                questions_match = QUESTIONS_YAML_REGEXP.fullmatch(path.name)
                 languages_match = path.parent.name == 'languages' and LANGUAGES_REGEXP.fullmatch(path.name)
 
                 if file_type == 'metadata':
                     return bool(metadata_match)
-                elif file_type == 'questions':
+                elif file_type == 'questions-yaml':
                     return bool(questions_match)
                 elif file_type == 'languages':
                     return bool(languages_match)
@@ -132,6 +144,8 @@ def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Pa
                 return bool(BIB_REGEXP.search(path.name))
             elif file_type == 'markdown':
                 return bool(MARKDOWN_REGEXP.search(path.name))
+            elif file_type == 'questions-markdown':
+                return bool(QUESTIONS_MARKDOWN_REGEXP.fullmatch(path.name))
             else:
                 raise ValueError(f'Unknown file type: {file_type}')
 
@@ -162,7 +176,8 @@ def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Pa
 
         for filename in filenames:
             should_keep, path = keep_filename(filename)
-            if should_keep:
+            if should_keep and path not in seen_paths:
+                seen_paths.add(path)
                 yield path
 
 
@@ -268,9 +283,10 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
             schema = yamale.make_schema(SCHEMA_DIRECTORY / 'metadata.yml')
             for path in _find_files(file_types=['metadata']):
                 validate_file(schema, path)
-        if file_type in ('questions', 'all', 'all-yaml'):
+        if file_type in ('questions-yaml', 'all', 'all-yaml'):
+            _convert_md_questions_to_yaml()
             schema = yamale.make_schema(SCHEMA_DIRECTORY / 'questions.yml')
-            for path in _find_files(file_types=['questions']):
+            for path in _find_files(file_types=['questions-yaml']):
                 validate_file(schema, path)
         if file_type in ('languages', 'all', 'all-yaml'):
             _fixup_languages()
@@ -293,6 +309,119 @@ def _convert_xlsx_files_to_pdf() -> None:
         if not output_path.exists():
             _run_command('libreoffice', '--headless', '--convert-to', 'pdf', f'{input_path}', '--outdir', f'{output_path.parent}')
             LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
+
+
+def _read_md_questions(input_file: Path) -> Iterable[Tuple[int, Dict]]:
+    with input_file.open('rt') as f:
+        input_md_lines = f.read().splitlines()
+
+    question_number = 1
+    question: Optional[Dict] = None
+    section: Optional[str] = None
+    section_line_numbers = []
+    heading_line_number: Optional[int] = None
+
+    def finish_section():
+        assert question is not None
+        assert section is not None
+        assert heading_line_number is not None
+        if not section_line_numbers:
+            raise ValueError(f'An empty section in file "{input_file}" below line {heading_line_number+1}')
+        section_lines = [input_md_lines[index] for index in section_line_numbers]
+        section_text = '\n'.join(section_lines)
+        line_range = f'{heading_line_number+1}-{max(section_line_numbers)+1}'
+        if section == 'metadata':
+            input_yaml = yaml.safe_load(section_text)
+            if 'lo' not in input_yaml:
+                raise ValueError(f'Missing YAML key "lo" in file "{input_file}" on lines {line_range}')
+            question['learning-objective'] = input_yaml['lo']
+            if 'k-level' not in input_yaml:
+                raise ValueError(f'Missing YAML key "k-level" in file "{input_file}" on lines {line_range}')
+            question['k-level'] = input_yaml['k-level']
+            if 'points' not in input_yaml:
+                raise ValueError(f'Missing YAML key "points" in file "{input_file}" on lines {line_range}')
+            question['number-of-points'] = input_yaml['points']
+            if 'correct' not in input_yaml:
+                raise ValueError(f'Missing YAML key "correct" in file "{input_file}" on lines {line_range}')
+            question['correct'] = input_yaml['correct']
+        elif section == 'question':
+            question['question'] = section_text
+        elif section == 'answers':
+            answers = {}
+            for answer_match in QUESTIONS_ANSWER_REGEXP.finditer(section_text):
+                answer_number = int(answer_match.group('number'))
+                answer_letter = string.ascii_lowercase[answer_number-1]
+                answer_text = answer_match.group('text').strip()
+                answers[answer_letter] = answer_text
+            question['answers'] = answers
+        elif section == 'explanation':
+            question['explanation'] = section_text
+        else:
+            raise ValueError(f'Unknown section "{section}" in file "{input_file}" on lines {line_range}')
+        section_line_numbers.clear()
+
+    for line_number, line in enumerate(input_md_lines):
+        # Check whether a new question has started.
+        metadata_match = QUESTIONS_METADATA_REGEXP.fullmatch(line)
+        if question is None and not metadata_match:
+            if not line.strip():
+                continue
+            raise ValueError(f'Unexpected line {line_number+1} of file "{input_file}": "{line}"; expected "# metadata" or similar')
+        if metadata_match:
+            if section is not None:
+                finish_section()
+            if question is not None:
+                yield question_number, question
+                question_number += 1
+            question = {}
+            section = 'metadata'
+            heading_line_number = line_number
+            continue
+
+        # Check whether a new section has started.
+        question_match = QUESTIONS_QUESTION_REGEXP.fullmatch(line)
+        answers_match = QUESTIONS_ANSWERS_REGEXP.fullmatch(line)
+        explanation_match = QUESTIONS_EXPLANATION_REGEXP.fullmatch(line)
+        if question_match:
+            finish_section()
+            section = 'question'
+            heading_line_number = line_number
+            continue
+        if answers_match:
+            finish_section()
+            section = 'answers'
+            heading_line_number = line_number
+            continue
+        if explanation_match:
+            finish_section()
+            section = 'explanation'
+            heading_line_number = line_number
+            continue
+
+        # Otherwise, accumulate the lines.
+        section_line_numbers.append(line_number)
+
+    if section is not None:
+        finish_section()
+    if question is not None:
+        yield question_number, question
+
+
+def _convert_md_questions_to_yaml() -> None:
+    for input_path in _find_files(['questions-markdown']):
+        output_path = input_path.with_suffix('.yml')
+        if output_path.exists():
+            LOGGER.warning('Skipping creation of existing file "%s"', output_path)
+            return
+
+        output_yaml = {'questions': dict(_read_md_questions(input_path))}
+
+        if not output_yaml:
+            LOGGER.warning('Found no questions in file "%s", skipping creation of empty file "%s"', input_path, output_path)
+        else:
+            with output_path.open('wt') as f:
+                json.dump(output_yaml, f, indent=4)
+                LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
 
 @lru_cache(maxsize=None)
@@ -642,6 +771,13 @@ def find_files(args: Namespace) -> None:
         print(path)
 
 
+def find_directories(args: Namespace) -> None:
+    file_types = [args.dirtype]
+    paths = sorted(_find_directories(file_types=file_types))
+    for path in paths:
+        print(path)
+
+
 def fixup_languages(args: Namespace) -> None:
     _fixup_languages()
 
@@ -660,6 +796,10 @@ def convert_eps_files_to_pdf(args: Namespace) -> None:
 
 def convert_xlsx_files_to_pdf(args: Namespace) -> None:
     _convert_xlsx_files_to_pdf()
+
+
+def convert_md_questions_to_yaml(args: Namespace) -> None:
+    _convert_md_questions_to_yaml()
 
 
 def compile_tex_files_to_pdf(args: Namespace) -> None:
@@ -724,6 +864,12 @@ def main():
         help='Convert all XLSX files in this repository to PDF',
     )
     parser_convert_xlsx_files_to_pdf.set_defaults(func=convert_xlsx_files_to_pdf)
+
+    parser_convert_md_questions_to_yaml = subparsers.add_parser(
+        'convert-md-questions-to-yaml',
+        help='Convert all MD files with questions definitions to YAML',
+    )
+    parser_convert_md_questions_to_yaml.set_defaults(func=convert_md_questions_to_yaml)
 
     parser_compile_tex_to_pdf = subparsers.add_parser(
         'compile-tex-to-pdf',
