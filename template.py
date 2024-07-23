@@ -433,6 +433,39 @@ def _convert_md_questions_to_yaml() -> None:
                 LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
 
+def _convert_yaml_questions_to_md() -> None:
+    for input_path in _find_files(['questions-yaml']):
+        output_path = input_path.with_suffix('.md')
+        if output_path.exists():
+            LOGGER.warning('Skipping creation of existing file "%s"', output_path)
+            return
+
+        with input_path.open('rt') as f:
+            input_yaml_text = f.read()
+        input_yaml = yaml.safe_load(input_yaml_text)
+
+        with output_path.open('wt') as f:
+            for question_index, (question_number, question) in enumerate(sorted(input_yaml['questions'].items())):
+                if question_index > 0:
+                    print(file=f)
+                print('# metadata', file=f)
+                print(f'lo: {question["learning-objective"]}', file=f)
+                print(f'k-level: {question["k-level"]}', file=f)
+                print(f'points: {question["number-of-points"]}', file=f)
+                print(f'correct: {question["correct"]}', file=f)
+                print(file=f)
+                print('## question', file=f)
+                print(question['question'], file=f)
+                print(file=f)
+                print('## answers', file=f)
+                for answer_index, (answer_letter, answer) in enumerate(sorted(question['answers'].items())):
+                    print(f'{answer_index + 1}. {answer}', file=f)
+                print(file=f)
+                print('## justification', file=f)
+                print(question['explanation'], file=f)
+            LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
+
+
 @lru_cache(maxsize=None)
 def _changed_paths(base_branch='origin/main') -> List[Path]:
     if CURRENT_REPOSITORY is None:
@@ -804,6 +837,10 @@ def convert_md_questions_to_yaml(args: Namespace) -> None:
     _convert_md_questions_to_yaml()
 
 
+def convert_yaml_questions_to_md(args: Namespace) -> None:
+    _convert_yaml_questions_to_md()
+
+
 def compile_tex_files_to_pdf(args: Namespace) -> None:
     _compile_tex_files_to_pdf()
 
@@ -872,6 +909,12 @@ def main():
         help='Convert all MD files with questions definitions to YAML',
     )
     parser_convert_md_questions_to_yaml.set_defaults(func=convert_md_questions_to_yaml)
+
+    parser_convert_yaml_questions_to_md = subparsers.add_parser(
+        'convert-yaml-questions-to-md',
+        help='Convert all YAML files with questions definitions to MD',
+    )
+    parser_convert_yaml_questions_to_md.set_defaults(func=convert_yaml_questions_to_md)
 
     parser_compile_tex_to_pdf = subparsers.add_parser(
         'compile-tex-to-pdf',
