@@ -771,13 +771,6 @@ def find_files(args: Namespace) -> None:
         print(path)
 
 
-def find_directories(args: Namespace) -> None:
-    file_types = [args.dirtype]
-    paths = sorted(_find_directories(file_types=file_types))
-    for path in paths:
-        print(path)
-
-
 def fixup_languages(args: Namespace) -> None:
     _fixup_languages()
 
