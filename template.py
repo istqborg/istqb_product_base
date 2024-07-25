@@ -466,7 +466,7 @@ def _convert_yaml_questions_to_md() -> None:
                 print(file=f)
                 print('## answers', file=f)
                 for answer_index, (answer_letter, answer) in enumerate(sorted(question['answers'].items())):
-                    answer = answer.rstrip('\r\n')
+                    answer = str(answer).rstrip('\r\n')
                     print(f'{answer_index + 1}. {answer}', file=f)
                 print(file=f)
                 print('## justification', file=f)
