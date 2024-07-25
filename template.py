@@ -419,7 +419,7 @@ def _convert_md_questions_to_yaml() -> None:
         output_path = input_path.with_suffix('.yml')
         if output_path.exists():
             LOGGER.warning('Skipping creation of existing file "%s"', output_path)
-            return
+            continue
 
         output_yaml = {'questions': dict(_read_md_questions(input_path))}
 
@@ -445,7 +445,7 @@ def _convert_yaml_questions_to_md() -> None:
         output_path = input_path.with_suffix('.md')
         if output_path.exists():
             LOGGER.warning('Skipping creation of existing file "%s"', output_path)
-            return
+            continue
 
         with input_path.open('rt') as f:
             input_yaml_text = f.read()
