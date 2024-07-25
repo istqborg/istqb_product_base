@@ -1,8 +1,10 @@
-duration: [int(), int()]  # minutes
-num-questions: int()
-max-score: int()
-pass-score: int()  # percent
+duration: include('duration', required=False)
+num-questions: int(required=False)
+max-score: int(required=False)
+pass-score: int(required=False)  # percent
 questions: map(include('question'), key=any(str(), int()))
+---
+duration: [int(), int()]  # minutes
 ---
 question:
   learning-objective: str()
