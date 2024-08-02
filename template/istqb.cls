@@ -570,10 +570,16 @@
 \titlespacing\subsection{0pt}{*5.5}{*0.8}
 \titlespacing\subsubsection{0pt}{*3.25}{*1}
 %%% Document commands
-\newcommand\istqbsection[1]{%
-  \istqbupdateheadinglevel{1}%
-  \section{#1}%
+\ExplSyntaxOn
+\tl_new:N \g_istqb_current_chapter_name_tl
+\newcommand\istqbsection[1]{
+  \istqbupdateheadinglevel{1}
+  \section{#1}
+  \tl_gset:Nn
+    \g_istqb_current_chapter_name_tl
+    { #1 }
 }
+\ExplSyntaxOff
 \newcommand\istqbsubsection[1]{%
   \istqbupdateheadinglevel{2}%
   \subsection{#1}%
@@ -603,33 +609,112 @@
 \RequirePackage{longtable}
 \newcounter{istqbobjective}[section]
 \newcounter{istqbsubobjective}[istqbobjective]
-\newenvironment{istqbobjectives}{%
-  \def\istqbobjective##1{%
-    \stepcounter{istqbobjective}%
+\ExplSyntaxOn
+\seq_new:N \g_istqb_learning_objective_chapter_numbers_seq
+\prop_new:N \g_istqb_learning_objective_chapter_names_prop
+\prop_new:N \g_istqb_learning_objective_subchapter_numbers_prop
+\seq_new:N \l_istqb_learning_objective_subchapter_numbers_seq
+\prop_new:N \g_istqb_learning_objective_subchapter_names_prop
+\newenvironment{istqbobjectives}{
+  \seq_gput_right:Nx
+    \g_istqb_learning_objective_chapter_numbers_seq
+    { \thesection }
+  \prop_gput:NxV
+    \g_istqb_learning_objective_chapter_names_prop
+    { \thesection }
+    \g_istqb_current_chapter_name_tl
+  \def\istqbobjective##1{
+    \stepcounter{istqbobjective}
     \par\kern -0.03in
-    \paragraph{\thesection.\theistqbobjective\enspace##1}%
+    \paragraph{\thesection.\theistqbobjective\enspace##1}
     \par\leavevmode
-  }%
-}{%
-  \setcounter{istqbobjective}{0}%
+    \prop_gput:Nxn
+      \g_istqb_learning_objective_subchapter_names_prop
+      { \thesection . \theistqbobjective }
+      { ##1 }
+    \seq_put_right:Nx
+      \l_istqb_learning_objective_subchapter_numbers_seq
+      { \theistqbobjective }
+  }
+}{
+  \clist_set_from_seq:NN
+    \l_tmpa_clist
+    \l_istqb_learning_objective_subchapter_numbers_seq
+  \prop_gput:NxV
+    \g_istqb_learning_objective_subchapter_numbers_prop
+    { \thesection }
+    \l_tmpa_clist
+  \setcounter{istqbobjective}{0}
   \par\kern 0.12in
 }
-\ExplSyntaxOn
+\cs_generate_variant:Nn
+  \prop_gput:Nnn
+  { Nxn, NxV }
 \tl_new:N \g_istqb_prefix_tl
 \tl_gset:Nn \g_istqb_prefix_tl { ?? }
+\prop_new:N \g_istqb_learning_objective_numbers_prop
+\seq_new:N \g_istqb_learning_objective_numbers_seq
+\prop_new:N \g_istqb_learning_objective_names_prop
+\prop_new:N \g_istqb_learning_objective_k_levels_prop
+\tl_new:N \l_istqb_current_learning_objective_text_tl
+\regex_const:Nn \c_istqb_learning_objective_regex { ^\((K[0-9])\)\ +(.+)$ }
 \newenvironment{istqbsubobjectives}{
+  \seq_gclear:N
+    \g_istqb_learning_objective_numbers_seq
   \def\istqbsubobjective##1{
     \stepcounter{istqbsubobjective}
     \g_istqb_prefix_tl-\thesection.\theistqbobjective.\theistqbsubobjective & ##1 \\[0.07in]
+    \tl_set:Nn
+      \l_istqb_current_learning_objective_text_tl
+      { ##1 }
+    \regex_replace_once:NnNTF
+      \c_istqb_learning_objective_regex
+      {
+        \c{prop_gput:Nxn}
+	  \c{g_istqb_learning_objective_k_levels_prop}
+	  \cB\{ \c{thesection} . \c{theistqbobjective} . \c{theistqbsubobjective} \cE\}
+          \cB\{ \1 \cE\}
+        \c{prop_gput:Nxn}
+	  \c{g_istqb_learning_objective_names_prop}
+	  \cB\{ \c{thesection} . \c{theistqbobjective} . \c{theistqbsubobjective} \cE\}
+          \cB\{ \2 \cE\}
+      }
+      \l_istqb_current_learning_objective_text_tl
+      {
+        \tl_use:N
+          \l_istqb_current_learning_objective_text_tl
+      }
+      {
+        \msg_error:nnV
+	  { istqb }
+	  { malformed-learning-objective }
+          \l_istqb_current_learning_objective_text_tl
+      }
+    \seq_gput_right:Nx
+      \g_istqb_learning_objective_numbers_seq
+      { \theistqbsubobjective }
   }
   \LTpre=0.08in
   \LTpost=0.12in
   \begin{longtable}{@{}p{1in}@{}p{\dimexpr(\linewidth - 1in)}@{}}
 }{
   \end{longtable}
+  \clist_set_from_seq:NN
+    \l_tmpa_clist
+    \g_istqb_learning_objective_numbers_seq
+  \prop_gput:NxV
+    \g_istqb_learning_objective_numbers_prop
+    { \thesection . \theistqbobjective }
+    \l_tmpa_clist
   \setcounter{istqbsubobjective}{0}
   \par\kern -0.2in
 }
+\msg_new:nnn
+  { istqb }
+  { malformed-learning-objective }
+  {
+    Learning~objective~"#1"~is~not~in~the~expected~format~"(K?)~OBJECTIVE".
+  }
 \ExplSyntaxOff
 
 %% Appendices
