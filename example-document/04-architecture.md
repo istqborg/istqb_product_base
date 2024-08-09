@@ -1,4 +1,4 @@
-# Architecture of the solution
+# Architecture of the solution {#architecture-of-the-solution}
 
 This example document contains several files with different purpose and structure:
 
