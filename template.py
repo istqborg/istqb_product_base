@@ -195,7 +195,7 @@ def _fixup_languages() -> None:
 
 def _run_command(*args: str, text=False, timeout=60) -> Union[str, bytes]:
     try:
-        output = subprocess.check_output(args, text=text, stderr=subprocess.STDOUT)
+        output = subprocess.check_output(args, text=text, stderr=subprocess.STDOUT, timeout=timeout)
     except subprocess.CalledProcessError as e:
         try:
             output = e.output.decode()
