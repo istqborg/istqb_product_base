@@ -686,7 +686,10 @@ def _compile_tex_file_to_epub(input_path: Path, output_directory: Path) -> Optio
     shutil.copytree(input_path.parent, build_directory, ignore=prune_output_directory)
 
     with _change_directory(build_directory):
-        _run_command('tex4ebook', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_directory}', input_path.name, timeout=600)
+        _run_command(
+            'tex4ebook', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_directory}', input_path.name,
+            timeout=600,
+        )
 
     shutil.rmtree(build_directory)
 
