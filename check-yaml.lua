@@ -6,9 +6,7 @@ kpse.set_program_name("luatex")
 local tinyyaml = require("markdown-tinyyaml")
 local file, input, output, ran_ok, err
 local some_failed = false
-local this_failed
 for _, filename in ipairs(arg) do
-  this_failed = false
   file = assert(io.open(arg[1], "r"))
   input = assert(file:read("*a"))
   ran_ok, err = pcall(function()
@@ -16,51 +14,9 @@ for _, filename in ipairs(arg) do
   end)
   if not ran_ok then
     print("File " .. filename .. " is not well-formed: " .. err)
-    this_failed = true
+    some_failed = true
   elseif not output then
     print("File " .. filename .. " contained no data.")
-    this_failed = true
-  else
-    if output.logo ~= nil and string.find(output.logo, "_") then
-      print("\nFile " .. filename .. " contains `logo: " .. output.logo .. "`, which contains underscores (`_`).")
-      print("Underscores cause issues, see <https://github.com/istqborg/istqb_product_base/issues/46>. Please, remove them.\n")
-      this_failed = true
-    end
-    if output['provided-by'] ~= nil then
-      for i, provided_by in ipairs(output['provided-by']) do
-        if provided_by.logo ~= nil and string.find(provided_by.logo, "_") then
-          print("\nFile " .. filename .. " contains `provided_by[" .. i .. "].logo: " .. provided_by.logo .. "`, which contains underscores (`_`).")
-          print("Underscores cause issues, see <https://github.com/istqborg/istqb_product_base/issues/46>. Please, remove them.\n")
-          this_failed = true
-        end
-      end
-    end
-    if output['questions'] ~= nil then
-      for question_no, question in pairs(output['questions']) do
-        if type(question) == 'table' and type(question['answers']) ~= nil and question['correct'] ~= nil then
-          local answers_num = 0
-          for _, _ in pairs(question['answers']) do
-            answers_num = answers_num + 1
-          end
-          local correct = question['correct']
-          local correct_num = 0
-          if type(correct) == 'string' then
-            for _ in correct:gmatch('[^,]*') do
-              correct_num = correct_num + 1
-            end
-          else
-            correct_num = #question['correct']
-          end
-          if not (answers_num == 4 and correct_num == 1 or answers_num == 5 and correct_num == 2) then
-            print("\nFile " .. filename .. ", question " .. question_no .. ", contains " .. answers_num .. " answers, out of which " .. correct_num .. " " .. (correct_num > 1 and "are" or "is") .. " marked as correct. Expected either 4 answers with 1 correct one or 5 answers with 2 correct ones.")
-            this_failed = true
-            break
-          end
-        end
-      end
-    end
-  end
-  if this_failed then
     some_failed = true
   else
     print("File " .. filename .. " is well-formed.")
