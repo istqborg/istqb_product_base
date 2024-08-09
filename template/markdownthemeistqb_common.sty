@@ -1,7 +1,7 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_common}%
-  {2024-06-15}%
+  {2024-08-09}%
   {1.0.0}%
   {LaTeX theme for the Markdown Package that contains common code for different types of ISTQB documents}
 
@@ -62,6 +62,7 @@
   {
     jekyllData,
     expectJekyllData,
+    ensureJekyllData,
     renderers = {
       jekyllData(Sequence|Mapping)Begin = {
         \group_begin:
@@ -222,6 +223,7 @@
   {
     jekyllData,
     expectJekyllData,
+    ensureJekyllData,
     renderers = {
       jekyllData(String|Number|Boolean) = {
         \keys_set:nn
