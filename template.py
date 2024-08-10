@@ -510,25 +510,28 @@ def _get_metadata_paths(input_path: Path) -> List[Path]:
     return sorted(metadata_paths)
 
 
+def _get_metadata_path(input_path: Path, action: str) -> Optional[Path]:
+    metadata_paths = _get_metadata_paths(input_path)
+    if len(metadata_paths) == 0:
+        if action:
+            LOGGER.warning('Found no metadata of file "%s" when trying to %s', input_path, action)
+        return None
+    if len(metadata_paths) > 1:
+        if action:
+            formatted_paths = ', '.join(f'"{path}"' for path in sorted(metadata_paths))
+            LOGGER.warning('Found multiple metadata (%s) of file "%s" when trying to %s', formatted_paths, input_path, action)
+        return None
+    metadata_path, = metadata_paths
+    return metadata_path
+
+
 def _should_compile_tex_file_to_pdf(input_path: Path) -> bool:
     if (input_path.parent / input_path.stem / 'NO_PDF').exists():
         return False
 
-    metadata_paths = _get_metadata_paths(input_path)
-    if len(metadata_paths) == 0:
-        LOGGER.warning(
-            'Found no metadata of file "%s" when trying to determine whether it should be compiled to PDF; will compile',
-            input_path,
-        )
+    metadata_path = _get_metadata_path(input_path, 'determine whether it should be compiled to PDF; will compile')
+    if metadata_path is None:
         return True
-    if len(metadata_paths) > 1:
-        LOGGER.warning(
-            'Found multiple metadata (%s) of file "%s" when trying to determine whether it should be compiled to PDF; will compile',
-            ', '.join(f'"{path}"' for path in sorted(metadata_paths)), input_path,
-        )
-        return True
-
-    metadata_path, = metadata_paths
     with metadata_path.open('rt') as f:
         metadata_yaml_text = f.read()
     metadata_yaml = yaml.safe_load(metadata_yaml_text)
@@ -548,21 +551,10 @@ def _should_compile_tex_file_to_html(input_path: Path) -> bool:
     if (input_path.parent / input_path.stem / 'NO_HTML').exists():
         return False
 
-    metadata_paths = _get_metadata_paths(input_path)
-    if len(metadata_paths) == 0:
-        LOGGER.warning(
-            'Found no metadata of file "%s" when trying to determine whether it should be compiled to HTML; will not compile',
-            input_path,
-        )
-        return False
-    if len(metadata_paths) > 1:
-        LOGGER.warning(
-            'Found multiple metadata (%s) of file "%s" when trying to determine whether it should be compiled to HTML; will not compile',
-            ', '.join(f'"{path}"' for path in sorted(metadata_paths)), input_path,
-        )
+    metadata_path = _get_metadata_path(input_path, 'determine whether it should be compiled to HTML; will not compile')
+    if metadata_path is None:
         return False
 
-    metadata_path, = metadata_paths
     with metadata_path.open('rt') as f:
         metadata_yaml_text = f.read()
     metadata_yaml = yaml.safe_load(metadata_yaml_text)
@@ -583,21 +575,10 @@ def _should_compile_tex_file_to_epub(input_path: Path) -> bool:
     if (input_path.parent / input_path.stem / 'NO_HTML').exists():
         return False
 
-    metadata_paths = _get_metadata_paths(input_path)
-    if len(metadata_paths) == 0:
-        LOGGER.warning(
-            'Found no metadata of file "%s" when trying to determine whether it should be compiled to EPUB; will not compile',
-            input_path,
-        )
-        return False
-    if len(metadata_paths) > 1:
-        LOGGER.warning(
-            'Found multiple metadata (%s) of file "%s" when trying to determine whether it should be compiled to EPUB; will not compile',
-            ', '.join(f'"{path}"' for path in sorted(metadata_paths)), input_path,
-        )
+    metadata_path = _get_metadata_path(input_path, 'determine whether it should be compiled to EPUB; will not compile')
+    if metadata_path is None:
         return False
 
-    metadata_path, = metadata_paths
     with metadata_path.open('rt') as f:
         metadata_yaml_text = f.read()
     metadata_yaml = yaml.safe_load(metadata_yaml_text)
@@ -619,21 +600,10 @@ def _should_compile_tex_file_to_docx(input_path: Path) -> bool:
     if (input_path.parent / input_path.stem / 'NO_DOCX').exists():
         return False
 
-    metadata_paths = _get_metadata_paths(input_path)
-    if len(metadata_paths) == 0:
-        LOGGER.warning(
-            'Found no metadata of file "%s" when trying to determine whether it should be compiled to DOCX; will not compile',
-            input_path,
-        )
-        return False
-    if len(metadata_paths) > 1:
-        LOGGER.warning(
-            'Found multiple metadata (%s) of file "%s" when trying to determine whether it should be compiled to DOCX; will not compile',
-            ', '.join(f'"{path}"' for path in sorted(metadata_paths)), input_path,
-        )
+    metadata_path = _get_metadata_path(input_path, 'determine whether it should be compiled to DOCX; will not compile')
+    if metadata_path is None:
         return False
 
-    metadata_path, = metadata_paths
     with metadata_path.open('rt') as f:
         metadata_yaml_text = f.read()
     metadata_yaml = yaml.safe_load(metadata_yaml_text)
@@ -648,17 +618,34 @@ def _should_compile_tex_file_to_docx(input_path: Path) -> bool:
     return False
 
 
+def _get_project_name(input_path: Path) -> str:
+    basename = input_path.stem
+    if input_path == EXAMPLE_DOCUMENT:
+        return basename
+    metadata_path = _get_metadata_path(input_path, f'determine the project name; will use "{basename}"')
+    if metadata_path is None:
+        return basename
+
+    with metadata_path.open('rt') as f:
+        metadata_yaml_text = f.read()
+    metadata_yaml = yaml.safe_load(metadata_yaml_text)
+
+    organization = metadata_yaml.get('organization', 'ISTQB®').replace('®', '').strip()
+    code = metadata_yaml.get('code', 'CODE').strip()
+    document_type = metadata_yaml.get('type', 'TYPE').strip()
+    version = metadata_yaml.get('version', 'VERSION').strip()
+    language = metadata_yaml.get('language', 'en').upper().strip()
+    project_name = f'{organization}-{code}-{document_type}-{version}-{language}'
+    return project_name
+
+
 def _compile_tex_file_to_pdf(input_path: Path) -> Optional[Path]:
     if not _should_compile_tex_file_to_pdf(input_path):
         return
     _run_command('latexmk', '-gg', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=600)
-    if input_path != EXAMPLE_DOCUMENT:
-        with input_path.with_suffix('.istqb_project_name').open('rt') as f:
-            project_name = f.read().strip()
-            output_path = Path(f'{project_name}.pdf')
-        input_path.with_suffix('.pdf').rename(output_path)
-    else:
-        output_path = input_path.with_suffix('.pdf')
+    project_name = _get_project_name(input_path)
+    output_path = Path(f'{project_name}.pdf')
+    input_path.with_suffix('.pdf').rename(output_path)
     return output_path
 
 
