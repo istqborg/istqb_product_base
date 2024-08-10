@@ -618,6 +618,14 @@ def _should_compile_tex_file_to_docx(input_path: Path) -> bool:
     return False
 
 
+def _is_sample_exam_questions(input_path: Path) -> bool:
+    return 'questions' in input_path.name
+
+
+def _is_sample_exam_answers(input_path: Path) -> bool:
+    return 'answers' in input_path.name
+
+
 def _get_project_name(input_path: Path) -> str:
     basename = input_path.stem
     if input_path == EXAMPLE_DOCUMENT:
@@ -633,6 +641,10 @@ def _get_project_name(input_path: Path) -> str:
     organization = metadata_yaml.get('organization', 'ISTQB®').replace('®', '').strip()
     code = metadata_yaml.get('code', 'CODE').strip()
     document_type = metadata_yaml.get('type', 'TYPE').strip()
+    if _is_sample_exam_questions(input_path):
+        document_type = f'{document_type} Questions'
+    elif _is_sample_exam_answers(input_path):
+        document_type = f'{document_type} Answers'
     version = metadata_yaml.get('version', 'VERSION').strip()
     language = metadata_yaml.get('language', 'en').upper().strip()
     project_name = f'{organization}-{code}-{document_type}-{version}-{language}'
