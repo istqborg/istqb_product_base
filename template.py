@@ -600,6 +600,9 @@ def _should_compile_tex_file_to_docx(input_path: Path) -> bool:
     if (input_path.parent / input_path.stem / 'NO_DOCX').exists():
         return False
 
+    if _is_sample_exam_answers(input_path):
+        return False
+
     metadata_path = _get_metadata_path(input_path, 'determine whether it should be compiled to DOCX; will not compile')
     if metadata_path is None:
         return False
