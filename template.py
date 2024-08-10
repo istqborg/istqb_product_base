@@ -667,7 +667,8 @@ def _compile_tex_file_to_pdf(input_path: Path) -> Optional[Path]:
 def _compile_tex_file_to_html(input_path: Path, output_directory: Path) -> Optional[Path]:
     if not _should_compile_tex_file_to_html(input_path):
         return
-    output_path = output_directory / input_path.stem / input_path.with_suffix('.html').name
+    project_name = _get_project_name(input_path)
+    output_path = output_directory / project_name / input_path.with_suffix('.html').name
     _run_command('make4ht', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_path.parent}', f'{input_path}', timeout=600)
     return output_path
 
