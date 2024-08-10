@@ -708,7 +708,7 @@ def _compile_tex_file_to_docx(input_path: Path, output_directory: Path) -> Optio
             with nested_path.open('rt') as f:
                 markdown_text = f.read()
                 markdown_texts.append(markdown_text)
-        elif YAML_REGEXP.search(nested_path.name):
+        elif YAML_REGEXP.search(nested_path.name) and not QUESTIONS_YAML_REGEXP.fullmatch(nested_path.name):
             with nested_path.open('rt') as f:
                 markdown_text = f'``` yml\n{f.read()}\n```'
                 markdown_texts.append(markdown_text)
