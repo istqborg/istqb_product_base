@@ -696,7 +696,9 @@ def _compile_tex_file_to_epub(input_path: Path, output_directory: Path) -> Optio
 
     shutil.rmtree(build_directory)
 
-    output_path = output_directory / input_path.with_suffix('.epub').name
+    project_name = _get_project_name(input_path)
+    output_path = output_directory / f'{project_name}.epub'
+    (output_directory / input_path.with_suffix('.epub').name).rename(output_path)
     return output_path
 
 
