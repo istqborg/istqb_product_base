@@ -1,7 +1,7 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_common}%
-  {2024-06-15}%
+  {2024-08-09}%
   {1.0.0}%
   {LaTeX theme for the Markdown Package that contains common code for different types of ISTQB documents}
 
@@ -62,6 +62,7 @@
   {
     jekyllData,
     expectJekyllData,
+    ensureJekyllData,
     renderers = {
       jekyllData(Sequence|Mapping)Begin = {
         \group_begin:
@@ -77,7 +78,8 @@
       jekyllData(Sequence|Mapping)End = {
         \group_end:
       },
-      jekyllDataString = {
+      jekyllDataTypographicString = ,
+      jekyllDataProgrammaticString = {
         \tl_set:Nx
           \l_tmpa_tl
           { { \l_istqb_language_position #1 } }
@@ -222,8 +224,10 @@
   {
     jekyllData,
     expectJekyllData,
+    ensureJekyllData,
     renderers = {
-      jekyllData(String|Number|Boolean) = {
+      jekyllDataTypographicString = ,
+      jekyllData(ProgrammaticString|Number|Boolean) = {
         \keys_set:nn
           { istqb/metadata }
           { { #1 } = { #2 } }
@@ -292,7 +296,7 @@
   { metadata / provided-by }
   {
     renderers = {
-      jekyllData(String|Number) = {
+      jekyllData(ProgrammaticString|Number) = {
         % Short-hand definition
         \seq_gput_right:Nn
           \g_istqb_third_parties_seq
@@ -330,7 +334,7 @@
   { metadata / provided-by / verbose }
   {
     renderers = {
-      jekyllData(String|Number) = {
+      jekyllData(ProgrammaticString|Number) = {
         \keys_set:nn
           { istqb / metadata / provided-by }
           { { #1 } = { #2 } }

@@ -193,9 +193,9 @@ def _fixup_languages() -> None:
         _fixup_language(path)
 
 
-def _run_command(*args: str, text=False) -> Union[str, bytes]:
+def _run_command(*args: str, text=False, timeout=60) -> Union[str, bytes]:
     try:
-        output = subprocess.check_output(args, text=text, stderr=subprocess.STDOUT)
+        output = subprocess.check_output(args, text=text, stderr=subprocess.STDOUT, timeout=timeout)
     except subprocess.CalledProcessError as e:
         try:
             output = e.output.decode()
@@ -651,7 +651,7 @@ def _should_compile_tex_file_to_docx(input_path: Path) -> bool:
 def _compile_tex_file_to_pdf(input_path: Path) -> Optional[Path]:
     if not _should_compile_tex_file_to_pdf(input_path):
         return
-    _run_command('latexmk', '-gg', '-r', f'{LATEXMKRC}', f'{input_path}')
+    _run_command('latexmk', '-gg', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=600)
     if input_path != EXAMPLE_DOCUMENT:
         with input_path.with_suffix('.istqb_project_name').open('rt') as f:
             project_name = f.read().strip()
@@ -666,7 +666,7 @@ def _compile_tex_file_to_html(input_path: Path, output_directory: Path) -> Optio
     if not _should_compile_tex_file_to_html(input_path):
         return
     output_path = output_directory / input_path.stem / input_path.with_suffix('.html').name
-    _run_command('make4ht', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_path.parent}', f'{input_path}')
+    _run_command('make4ht', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_path.parent}', f'{input_path}', timeout=600)
     return output_path
 
 
@@ -686,7 +686,10 @@ def _compile_tex_file_to_epub(input_path: Path, output_directory: Path) -> Optio
     shutil.copytree(input_path.parent, build_directory, ignore=prune_output_directory)
 
     with _change_directory(build_directory):
-        _run_command('tex4ebook', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_directory}', input_path.name)
+        _run_command(
+            'tex4ebook', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_directory}', input_path.name,
+            timeout=600,
+        )
 
     shutil.rmtree(build_directory)
 
