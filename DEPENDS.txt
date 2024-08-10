@@ -12,6 +12,8 @@ imakeidx
 lastpage
 latexmk
 lipsum
+luaxml
+make4ht
 makeindex
 mdframed
 needspace

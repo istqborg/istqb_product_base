@@ -537,7 +537,7 @@ def _should_compile_tex_file_to_pdf(input_path: Path) -> bool:
     metadata_yaml = yaml.safe_load(metadata_yaml_text)
 
     if 'pdf-output' in metadata_yaml:
-        pdf_output = bool(metadata_yaml['pdf_output'])
+        pdf_output = bool(metadata_yaml['pdf-output'])
         return pdf_output
 
     return True
@@ -560,7 +560,7 @@ def _should_compile_tex_file_to_html(input_path: Path) -> bool:
     metadata_yaml = yaml.safe_load(metadata_yaml_text)
 
     if 'html-output' in metadata_yaml:
-        html_output = bool(metadata_yaml['html_output'])
+        html_output = bool(metadata_yaml['html-output'])
         return html_output
     if 'version' in metadata_yaml:
         version = str(metadata_yaml['version'])
@@ -584,10 +584,10 @@ def _should_compile_tex_file_to_epub(input_path: Path) -> bool:
     metadata_yaml = yaml.safe_load(metadata_yaml_text)
 
     if 'epub-output' in metadata_yaml:
-        epub_output = bool(metadata_yaml['epub_output'])
+        epub_output = bool(metadata_yaml['epub-output'])
         return epub_output
     if 'html-output' in metadata_yaml:
-        html_output = bool(metadata_yaml['html_output'])
+        html_output = bool(metadata_yaml['html-output'])
         return html_output
     if 'version' in metadata_yaml:
         version = str(metadata_yaml['version'])
@@ -612,7 +612,7 @@ def _should_compile_tex_file_to_docx(input_path: Path) -> bool:
     metadata_yaml = yaml.safe_load(metadata_yaml_text)
 
     if 'docx-output' in metadata_yaml:
-        docx_output = bool(metadata_yaml['docx_output'])
+        docx_output = bool(metadata_yaml['docx-output'])
         return docx_output
     if 'version' in metadata_yaml:
         version = str(metadata_yaml['version'])
