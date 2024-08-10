@@ -719,7 +719,8 @@ def _compile_tex_file_to_docx(input_path: Path, output_directory: Path) -> Optio
     # Convert the collected files to DOCX.
     markdown_text = '\n\n'.join(markdown_texts)
     pandoc_from_format = '+'.join([PANDOC_INPUT_FORMAT, *PANDOC_EXTENSIONS])
-    output_path = output_directory / input_path.with_suffix('.docx').name
+    project_name = _get_project_name(input_path)
+    output_path = output_directory / f'{project_name}.docx'
     with NamedTemporaryFile('wt', delete=False) as f:
         print(markdown_text, file=f)
         f.close()
