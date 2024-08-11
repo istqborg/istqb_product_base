@@ -18,6 +18,7 @@ makeindex
 mdframed
 needspace
 newunicodechar
+nicematrix
 supertabular
 tex-gyre
 tex4ebook
