@@ -16,6 +16,7 @@ makeindex
 mdframed
 needspace
 newunicodechar
+nicematrix
 supertabular
 tex-gyre
 titlesec
