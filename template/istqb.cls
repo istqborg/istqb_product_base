@@ -669,7 +669,8 @@
   { istqbtable }
   [ 1 ]
   {
-    \renewcommand { \arraystretch }{ 1.5 }  % Increase line spread
+    \renewcommand { \arraystretch }{ 1.25 }  % Set vertical cell margins
+    \setlength \tabcolsep { 3pt }  % Set horizontal cell margins
     \str_if_in:nnTF
       { #1 }
       { X }
