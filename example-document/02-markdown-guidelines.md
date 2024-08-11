@@ -39,9 +39,43 @@ provided-by:
 - Hungarian Testing Board
 ```
 
-## Learning objectives and keywords
+## Business outcomes {.business-outcomes}
 
-You can write keywords and learning objectives as follows:
+You can write business outcomes at the beginning of Chapter 0 as follows:
+
+``` md
+## Business outcomes {.business-outcomes}
+
+1. Support and perform appropriate testing based on the software development lifecycle
+   followed
+2. Apply the principles of risk-based testing
+3. Select and apply appropriate test techniques to support the achievement of test
+   objectives
+4. Provide documentation with appropriate levels of detail and quality
+5. Determine the appropriate types of functional testing to be performed
+6. Contribute to non-functional testing
+7. Contribute to defect prevention
+8. Improve the efficiency of the test process with the use of tools
+9. Specify the requirements for test environments and test data
+```
+
+This will produce the following output:
+
+1. Support and perform appropriate testing based on the software development lifecycle
+   followed
+2. Apply the principles of risk-based testing
+3. Select and apply appropriate test techniques to support the achievement of test
+   objectives
+4. Provide documentation with appropriate levels of detail and quality
+5. Determine the appropriate types of functional testing to be performed
+6. Contribute to non-functional testing
+7. Contribute to defect prevention
+8. Improve the efficiency of the test process with the use of tools
+9. Specify the requirements for test environments and test data
+
+## Keywords and learning objectives
+
+You can write keywords and learning objectives at beginnings of chapters as follows:
 
 ``` md
 #### Keywords

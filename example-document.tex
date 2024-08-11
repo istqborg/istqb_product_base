@@ -44,4 +44,53 @@
 % Index
 \printindex
 
+% Learning objectives
+\istqbsection{Learning objectives}
+\ExplSyntaxOn
+\begin{itemize}
+\seq_map_inline:Nn
+  \g_istqb_learning_objective_chapter_numbers_seq
+  {
+    \item Chapter~#1:~{}
+    \prop_item:Nn
+      \g_istqb_learning_objective_chapter_names_prop
+      { #1 }
+    \begin{itemize}
+    \prop_get:NnN
+      \g_istqb_learning_objective_subchapter_numbers_prop
+      { #1 }
+      \l_tmpa_clist
+    \clist_map_inline:Nn
+      \l_tmpa_clist
+      {
+        \item Subchapter~#1.##1:~{}
+        \prop_item:Nn
+          \g_istqb_learning_objective_subchapter_names_prop
+          { #1.##1 }
+        \begin{itemize}
+        \prop_get:NnN
+          \g_istqb_learning_objective_numbers_prop
+          { #1.##1 }
+          \l_tmpb_clist
+        \clist_map_inline:Nn
+          \l_tmpb_clist
+          {
+            \item Learning~objective~#1.##1.####1:~{}
+            \prop_item:Nn
+              \g_istqb_learning_objective_names_prop
+              { #1.##1.####1 }
+            \begin{itemize}
+            \item K-Level:~{}
+            \prop_item:Nn
+              \g_istqb_learning_objective_k_levels_prop
+              { #1.##1.####1 }
+            \end{itemize}
+          }
+        \end{itemize}
+      }
+    \end{itemize}
+  }
+\end{itemize}
+\ExplSyntaxOff
+
 \end{document}

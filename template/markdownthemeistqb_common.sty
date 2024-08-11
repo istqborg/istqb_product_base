@@ -405,6 +405,7 @@
 
 % Headings
 \seq_new:N \l_istqb_header_identifiers_seq
+\tl_new:N \l_istqb_business_outcomes_table_tl
 \markdownSetup
   {
     headerAttributes,
@@ -596,6 +597,59 @@
                         }
                       }
                     \begin { istqb objectives }
+                  }
+              },
+              attributeClassName += {
+                %% Business outcomes
+                \tl_if_eq:nnT
+                  { ##1 }
+                  { business-outcomes }
+                  {
+                    \group_begin:
+                    \markdownSetup
+                      {
+                        rendererPrototypes = {
+                          olBegin = {
+                            \group_begin:
+                            \tl_set:Nn
+                              \l_istqb_business_outcomes_table_tl
+                              {
+                                \begin { istqbtable } { |l|X| }
+                                Code & Name \\ \hline
+                              }
+                            \markdownSetup
+                              {
+                                rendererPrototypes = {
+                                  olItemWithNumber = {
+                                    \def\next################1\markdownRendererOlItemEnd
+                                      {
+                                        \tl_put_right:Nn
+                                          \l_istqb_business_outcomes_table_tl
+                                          {
+                                            \g_istqb_prefix_tl - ########1 &
+                                            ################1 \\ \hline
+                                          }
+                                      }
+                                    \next
+                                  },
+                                  olEnd = {
+                                    \tl_put_right:Nn
+                                      \l_istqb_business_outcomes_table_tl
+                                      {
+                                        \end { istqbtable }
+                                      }
+                                    \tl_use:N
+                                      \l_istqb_business_outcomes_table_tl
+                                    \group_end:
+                                  },
+                                }
+                              }
+                          },
+                          sectionEnd = {
+                            \group_end:
+                          },
+                        }
+                      }
                   }
               },
               attributeIdentifier = {
