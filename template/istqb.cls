@@ -193,7 +193,7 @@
     ]
       \fontsize{9}{10.8}\selectfont
       \begin{minipage}{0.4\linewidth}
-      \mbox{\g_istqb_version_tl}
+      \mbox{\g_istqb_version_tl{}~\g_istqb_release_tl}
       \end{minipage}
       \begin{minipage}{0.2\linewidth}
       \centering
@@ -230,19 +230,7 @@
       \hfill
       \mbox{\g_istqb_date_tl}
       \end{minipage}
-      \\
-      \mbox{\g_istqb_release_tl}
-    \end{mdframed}
-    \begin{mdframed}[
-      linewidth=0.75pt,
-      linecolor=black!25!white,
-      innerleftmargin=0.08in,
-      innerrightmargin=8pt,
-      innertopmargin=3pt,
-      innerbottommargin=3pt,
-      skipabove=\baselineskip,
-      rightmargin=-8pt,
-    ]
+      \\[5pt]
       \fontsize{6}{6}\selectfont
       \textcopyright{}~\istqborgname
     \end{mdframed}
