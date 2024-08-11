@@ -87,4 +87,4 @@ For more information about the LaTeX+Markdown template, consult the following ma
 2. [A whitepaper][whitepaper] that documents how the template can be extended to further document types by programmers.
 
  [example-document]: https://github.com/istqborg/istqb_product_base/releases/download/latest/example-document.pdf
- [whitepaper]: https://github.com/witiko/markdown-themes-in-practice/releases/download/latest/tb140starynovotny-markdown.pdf
+ [whitepaper]: https://github.com/witiko/markdown-themes-in-practice/releases/download/latest/tb140starynovotny-markdown-themes.pdf
