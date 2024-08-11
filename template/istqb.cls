@@ -234,7 +234,6 @@
       \fontsize{6}{6}\selectfont
       \textcopyright{}~\istqborgname
     \end{mdframed}
-    \vspace{24.25pt}
   }
 \box_new:N \l_istqb_footer_box
 \AtBeginDocument
