@@ -490,8 +490,11 @@ def _changed_paths(base_branch='origin/main') -> List[Path]:
 def _should_do_full_compile() -> bool:
     if CURRENT_REPOSITORY is None:
         return False
-    branch_name = CURRENT_REPOSITORY.active_branch.name
-    return branch_name == 'main'
+    try:
+        branch_name = CURRENT_REPOSITORY.active_branch.name
+        return branch_name == 'main'
+    except TypeError:  # if HEAD is detached
+        return False
 
 
 @contextmanager
