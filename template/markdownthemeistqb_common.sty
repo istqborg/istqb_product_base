@@ -406,6 +406,8 @@
 % Headings
 \seq_new:N \l_istqb_header_identifiers_seq
 \tl_new:N \l_istqb_business_outcomes_table_tl
+\seq_new:N \g_istqb_business_outcomes_numbers_seq
+\prop_new:N \g_istqb_business_outcomes_names_prop
 \markdownSetup
   {
     headerAttributes,
@@ -623,6 +625,13 @@
                                   olItemWithNumber = {
                                     \def\next################1\markdownRendererOlItemEnd
                                       {
+                                        \seq_gput_right:Nn
+                                          \g_istqb_business_outcomes_numbers_seq
+                                          { ########1 }
+                                        \prop_gput:Nnn
+                                          \g_istqb_business_outcomes_names_prop
+                                          { ########1 }
+                                          { ################1 }
                                         \tl_put_right:Nn
                                           \l_istqb_business_outcomes_table_tl
                                           {
