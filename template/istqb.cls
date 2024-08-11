@@ -167,6 +167,7 @@
 %%% Footer
 \renewcommand{\footrulewidth}{0pt}
 \RequirePackage{xcolor}
+\PassOptionsToPackage{framemethod=tikz}{mdframed}
 \RequirePackage{mdframed}
 \@ifundefined
   {HCode}%
