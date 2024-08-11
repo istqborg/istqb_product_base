@@ -12,12 +12,15 @@ imakeidx
 lastpage
 latexmk
 lipsum
+luaxml
+make4ht
 makeindex
 mdframed
 needspace
 newunicodechar
 supertabular
 tex-gyre
+tex4ebook
 titlesec
 tocbibind
 zref
