@@ -16,14 +16,14 @@ YAML formatting is strict, and all errors in this job are related to it. Search 
 
 ```
 yaml.scanner.ScannerError: mapping values are not allowed in this context
-  in "/__w/istqb-ctal-ta/istqb-ctal-ta/sample-exam-answers/questions.yml", line 562, column 19
+  in "/__w/istqb-ctal-ta/syllabus/metadata.yml", line 3, column 7
 ```
 To resolve these issues:
-1. Navigate to affected file (`sample-exam-answers/questions.yml` line 562, position 19 in this case)
-2. Resolve the formatting issue which could be cause by several things. The most common are:
+1. Navigate to affected file (`syllabus/metadata.yml` line 3, position 7 in this case)
+2. Resolve the formatting issues which could be cause by several things. The most common are:
   * wrong indents - fix by adding 2 spaces per indent level
   * using colon `:` or hashtag `#` in the text - fix by adding the text in quotes `"` or `'`
-  * missing pipe `|` in right after the key name to allow multiline inputs - fix by adding pipe `|` before multiline markdown input
+3. Use online YAML linters like [yamllint.com](https://www.yamllint.com/) to test your YAML file
 
 ## Produce PDF documents
 
@@ -32,14 +32,20 @@ To resolve these issues:
 The most common failure is one related to references. Search for `Undefined refs and citations` to see what went wrong. Example of the log:
 
 ```
-Latexmk: ====Undefined refs and citations with line #s in .tex file:
-  Reference `section:analyze-sut-to-determine-the-appropriate-tas' on page 21 undefined on input line 37
-  Reference `section:apply-layering-of-taf' on page 22 undefined on input line 38
-  Reference `section:apply-design-principles-and-design-patterns-in-ta' on page 24 undefined on input line 38
-  Reference `section:apply-different-approaches-for-automating-tcs' on page 47 undefined on input line 43
-  Reference `section:apply-layering-of-taf' on page 48 undefined on input line 43
-  Reference `section:explain-which-factors-support-and-affect-tas-maintainability' on page 50 undefined on input line 43
-```
+	Latexmk: ====Undefined refs and citations with line #s in .tex file:
+	  Reference `section:analyze-sut-to-determine-the-appropriate-tas'
+	    on page 21 undefined on input line 37
+	  Reference `section:apply-layering-of-taf'
+	    on page 22 undefined on input line 38
+	  Reference `section:apply-design-principles-and-design-patterns-in-ta'
+	    on page 24 undefined on input line 38
+	  Reference `section:apply-different-approaches-for-automating-tcs'
+	    on page 47 undefined on input line 43
+	  Reference `section:apply-layering-of-taf'
+	    on page 48 undefined on input line 43
+	  Reference `section:explain-which-factors-support-and-affect-tas-maintainability'
+	    on page 50 undefined on input line 43
+	```
 
 Example of the log:
 
@@ -53,17 +59,18 @@ Example of the log:
 Every MD files you want to include in your document have to be added to TEX file. If the file referenced in the TEX file is not existent (wrong path, wrong name of the file, missing extension, etc.) the pipeline job will fail. Example of the log:
 
 ```
-! Package markdown Error: Markdown file
-(markdown)               
-syllabus/01-tasks-in-**test**-process.md
-(markdown)                does not exist
+	! Package markdown Error: Markdown file
+	(markdown)                syllabus/01-tasks-in-**test**-process.md
+	(markdown)                does not exist
 ```
 
 These errors can also seem in *Produce DOCX documents* pipeline job. But the output here will show only the name of the first file missing. Example of the log:
 
 ```
-FileNotFoundError: [Errno 2] No such file or directory: '/__w/istqb-ctal-ta/istqb-ctal-ta/syllabus/01-tasks-in-**test**-process.md'
+	FileNotFoundError: [Errno 2] No such file or directory:
+	  '/__w/istqb-ctal-ta/istqb-ctal-ta/syllabus/01-tasks-in-**test**-process.md'
 ```
+
 To resolve these issues:
 
 1. Open TEX file of your document (e.g. `syllabus.tex`) and check that all paths are valid
