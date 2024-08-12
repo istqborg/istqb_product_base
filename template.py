@@ -29,11 +29,15 @@ import yaml
 
 LOGGER = logging.getLogger(__name__)
 
-METADATA_FILETYPES = ['all', 'all-yaml', 'user-yaml'] + sorted(['metadata', 'questions-yaml', 'questions-markdown', 'languages', 'traceability-matrix'])
+METADATA_FILETYPES = ['all', 'all-yaml', 'user-yaml'] + sorted([
+  'metadata', 'questions-yaml', 'questions-markdown', 'languages', 'traceability-matrix',
+])
 DOCUMENT_FILETYPES = sorted(['xlsx', 'markdown', 'eps', 'tex', 'bib'])
 FILETYPES = METADATA_FILETYPES + DOCUMENT_FILETYPES
 
-VALIDATABLE_FILETYPES = ['all', 'all-yaml'] + sorted(['metadata', 'questions-yaml', 'languages', 'traceability-matrix'])
+VALIDATABLE_FILETYPES = ['all', 'all-yaml'] + sorted([
+  'metadata', 'questions-yaml', 'languages', 'traceability-matrix',
+])
 CONVERT_TO_DOCX_FILETYPES = ['all', 'user-yaml'] + sorted(['markdown', 'bib'])
 
 CURRENT_DIRECTORY = Path('.').resolve()
