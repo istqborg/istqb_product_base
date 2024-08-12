@@ -129,6 +129,12 @@
     1 .tl_gset:N = \istqbprovidedbysingularname,
     2 .tl_gset:N = \istqbprovidedbypluralname,
   }
+\keys_define:nn
+  { istqb / language / business-outcomes }
+  {
+    1 .tl_gset:N = \istqbbusinessoutcomecode,
+    2 .tl_gset:N = \istqbbusinessoutcomedescription,
+  }
 \cs_new:Nn
   \__istqb_gset_with_spaces:Nn
   {
@@ -621,7 +627,8 @@
                               \l_istqb_business_outcomes_table_tl
                               {
                                 \begin { istqbtable } { |l|X| }
-                                Code & Name \\ \hline
+                                \istqbbusinessoutcomecode &
+                                \istqbbusinessoutcomedescription \\ \hline
                               }
                             \markdownSetup
                               {

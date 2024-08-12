@@ -14,4 +14,5 @@ page: [Page, of]
 provided-by: [Provided by, Provided by]
 istqb: International Software Testing Qualifications Board
 list-delimiters: [and, ',', ', and']
+business-outcomes: [Code, Description]
 contents: Contents
