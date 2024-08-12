@@ -200,7 +200,7 @@
       \centering
       \int_set:Nn
         \l_tmpa_int
-        { \thepage - 1 }
+        { \thepage }
       \str_if_eq:VnTF
         \lastpage@lastpage
         { ?? }
@@ -212,7 +212,7 @@
         {
           \int_set:Nn
             \l_tmpb_int
-            { \lastpage@lastpage - 1 }
+            { \lastpage@lastpage }
         }
       \mbox
         {
