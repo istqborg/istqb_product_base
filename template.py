@@ -661,10 +661,13 @@ def _should_compile_tex_file_to_docx(input_path: Path) -> bool:
     return False
 
 
-def _compile_tex_file_to_pdf(input_path: Path) -> Optional[Path]:
+def _compile_tex_file_to_pdf(input_path: Path, previous_continuous: bool) -> Optional[Path]:
     if not _should_compile_tex_file_to_pdf(input_path):
         return
-    _run_command('latexmk', '-gg', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=600)
+    if previous_continuous:
+        _run_command('latexmk', '-gg', '-pvc', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=None)
+    else:
+        _run_command('latexmk', '-gg', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=600)
     if input_path != EXAMPLE_DOCUMENT:
         with input_path.with_suffix('.istqb_project_name').open('rt') as f:
             project_name = f.read().strip()
@@ -810,8 +813,8 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
             pass
 
 
-def _compile_tex_files_to_pdf() -> None:
-    _compile_tex_files(_compile_tex_file_to_pdf)
+def _compile_tex_files_to_pdf(previous_continuous: bool) -> None:
+    _compile_tex_files(_compile_tex_file_to_pdf, previous_continuous)
 
 
 def _compile_tex_files_to_html(output_directory: Path) -> None:
@@ -866,7 +869,7 @@ def convert_yaml_questions_to_md(args: Namespace) -> None:
 
 
 def compile_tex_files_to_pdf(args: Namespace) -> None:
-    _compile_tex_files_to_pdf()
+    _compile_tex_files_to_pdf(args.previous_continuous)
 
 
 def compile_tex_files_to_html(args: Namespace) -> None:
@@ -943,6 +946,11 @@ def main():
     parser_compile_tex_to_pdf = subparsers.add_parser(
         'compile-tex-to-pdf',
         help='Compile all TeX files in this repository to PDF',
+    )
+    parser_compile_tex_to_pdf.add_argument(
+        '-pvc', '--previous-continuous',
+        action='store_true',
+        help='Keep recompiling the TeX files as they change',
     )
     parser_compile_tex_to_pdf.set_defaults(func=compile_tex_files_to_pdf)
 
