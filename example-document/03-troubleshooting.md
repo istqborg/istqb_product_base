@@ -1,14 +1,14 @@
 # Troubleshooting {#troubleshooting}
 
-Many pipeline failures are caused by justa few issues. This section describes the debugging process of a failed pipeline.
+Many pipeline failures are caused by just a few issues. This section describes the debugging process of a failed pipeline.
 
-First of all, to see the pipeline statu:
+First of all, to see the pipeline status:
 1. Go to your repository
 2. Open Actions tab
 3. Open detail of your pipeline run
 4. Find out what job is failing
 5. See detailed logs of failed job
-6. Seach for commonly known error messages using native GitHub log search on top right corner
+6. Search for commonly known error messages using native GitHub log search on top right corner
 
 ## Validate YAML documents
 
@@ -56,7 +56,7 @@ Example of the log:
 
 ## Invalid references to files in `syllabus.tex` file
 
-Every MD files you want to include in your document have to be added to `\TeX`{=tex} file. If the file referenced in the `\TeX`{=tex} file does not exist (wrong path, wrong name of the file, missing extension, etc.) the pipeline job will fail. Example of the log:
+Every MD file that you want to include in your document has to be added to a `\TeX`{=tex} file. If the file referenced in the `\TeX`{=tex} file does not exist (wrong path, wrong name of the file, missing extension, etc.) the pipeline job will fail. Example of the log:
 
 ```
 ! Package markdown Error: Markdown file
@@ -73,7 +73,7 @@ FileNotFoundError: [Errno 2] No such file or directory:
 
 To resolve these issues:
 
-1. Open `\TeX`{=tex} file of your document (e.g. `syllabus.tex`) and check that all paths are valid
+1. Open `\TeX`{=tex} file of your document (e.g. `syllabus.tex`) and check that all paths are valid:
    ```tex
    % Document Text
    \markdownInput{syllabus-en/acknowledgments.md}
@@ -84,8 +84,8 @@ To resolve these issues:
    \markdownInput{syllabus-en/04-testing-software-quality-characteristics.md}
    \markdownInput{syllabus-en/05-software-defect-prevention.md}
    ```
-   Here, only the file `01-tasks-in-test-process.md` is missing. Instead, a differently named file `01-tasks-in-the-test-process.md` exists.
+   Here, only the MD file `01-tasks-in-test-process.md` is missing. Instead, a differently named MD file `01-tasks-in-the-test-process.md` exists.
 1. Update paths to all MD files listed in error log. Here, we would change `\markdownInput{syllabus-en/01-tasks-in-test-process.md}` to `\markdownInput{syllabus-en/01-tasks-in-the-test-process.md}`.
 1. Commit changes to `\TeX`{=tex} file.
 
-Alternatively, we might rename the file `01-tasks-in-the-test-process.md` to `01-tasks-in-test-process.md`.
+Alternatively, we might rename the file `01-tasks-in-the-test-process.md` to `01-tasks-in-test-process.md` instead of changing the `\TeX`{=tex} file.
