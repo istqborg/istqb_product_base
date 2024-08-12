@@ -33,18 +33,18 @@ The most common failure is one related to references. Search for `Undefined refs
 
 ```
 Latexmk: ====Undefined refs and citations with line #s in .tex file:
-	Reference `section:analyze-sut-to-determine-the-appropriate-tas'
-	on page 21 undefined on input line 37
-	Reference `section:apply-layering-of-taf'
-	on page 22 undefined on input line 38
-	Reference `section:apply-design-principles-and-design-patterns-in-ta'
-	on page 24 undefined on input line 38
-	Reference `section:apply-different-approaches-for-automating-tcs'
-	on page 47 undefined on input line 43
-	Reference `section:apply-layering-of-taf'
-	on page 48 undefined on input line 43
-	Reference `section:explain-which-factors-support-and-affect-tas-maintainability'
-	on page 50 undefined on input line 43
+Reference `section:analyze-sut-to-determine-the-appropriate-tas'
+  on page 21 undefined on input line 37
+Reference `section:apply-layering-of-taf'
+  on page 22 undefined on input line 38
+Reference `section:apply-design-principles-and-design-patterns-in-ta'
+  on page 24 undefined on input line 38
+Reference `section:apply-different-approaches-for-automating-tcs'
+  on page 47 undefined on input line 43
+Reference `section:apply-layering-of-taf'
+  on page 48 undefined on input line 43
+Reference `section:explain-which-factors-support-and-affect-tas-maintainability'
+  on page 50 undefined on input line 43
 ```
 
 Example of the log:
@@ -67,8 +67,8 @@ Every MD files you want to include in your document have to be added to `\TeX`{=
 These errors can also seem in *Produce DOCX documents* pipeline job. But the output here will show only the name of the first file missing. Example of the log:
 
 ```
-	FileNotFoundError: [Errno 2] No such file or directory:
-	  '/__w/istqb-ctal-ta/istqb-ctal-ta/syllabus/01-tasks-in-**test**-process.md'
+FileNotFoundError: [Errno 2] No such file or directory:
+  '/__w/istqb-ctal-ta/istqb-ctal-ta/syllabus/01-tasks-in-**test**-process.md'
 ```
 
 To resolve these issues:
