@@ -1,7 +1,7 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_common}%
-  {2024-06-15}%
+  {2024-08-09}%
   {1.0.0}%
   {LaTeX theme for the Markdown Package that contains common code for different types of ISTQB documents}
 
@@ -62,6 +62,7 @@
   {
     jekyllData,
     expectJekyllData,
+    ensureJekyllData,
     renderers = {
       jekyllData(Sequence|Mapping)Begin = {
         \group_begin:
@@ -77,7 +78,8 @@
       jekyllData(Sequence|Mapping)End = {
         \group_end:
       },
-      jekyllDataString = {
+      jekyllDataTypographicString = ,
+      jekyllDataProgrammaticString = {
         \tl_set:Nx
           \l_tmpa_tl
           { { \l_istqb_language_position #1 } }
@@ -216,14 +218,15 @@
     epub-output .code:n = { },
     html-output .code:n = { },
   }
-\iow_new:N \g_istqb_project_name_iow
 \markdownSetupSnippet
   { metadata }
   {
     jekyllData,
     expectJekyllData,
+    ensureJekyllData,
     renderers = {
-      jekyllData(String|Number|Boolean) = {
+      jekyllDataTypographicString = ,
+      jekyllData(ProgrammaticString|Number|Boolean) = {
         \keys_set:nn
           { istqb/metadata }
           { { #1 } = { #2 } }
@@ -252,27 +255,6 @@
       jekyllDataEnd = {
         \istqb_load_language:V
           \g_istqb_language_tl
-        \iow_open:Ne
-          \g_istqb_project_name_iow
-          { \c_sys_jobname_str .istqb_project_name }
-        \str_set:NV
-          \l_tmpa_str
-          \g_istqb_organization_tl
-        \str_remove_all:Nn
-          \l_tmpa_str
-          { ® }
-        \iow_now:Ne
-          \g_istqb_project_name_iow
-          {
-            \l_tmpa_str -
-            \g_istqb_code_tl -
-            \g_istqb_type_tl -
-            \g_istqb_version_tl -
-            \str_uppercase:V
-              \g_istqb_language_tl
-          }
-        \iow_close:N
-          \g_istqb_project_name_iow
       },
     },
   }
@@ -292,7 +274,7 @@
   { metadata / provided-by }
   {
     renderers = {
-      jekyllData(String|Number) = {
+      jekyllData(ProgrammaticString|Number) = {
         % Short-hand definition
         \seq_gput_right:Nn
           \g_istqb_third_parties_seq
@@ -330,7 +312,7 @@
   { metadata / provided-by / verbose }
   {
     renderers = {
-      jekyllData(String|Number) = {
+      jekyllData(ProgrammaticString|Number) = {
         \keys_set:nn
           { istqb / metadata / provided-by }
           { { #1 } = { #2 } }

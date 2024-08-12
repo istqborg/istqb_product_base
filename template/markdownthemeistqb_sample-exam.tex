@@ -1,6 +1,6 @@
 \ProvidesExplFile
   {markdownthemeistqb_sample-exam.tex}%
-  {2024-06-15}
+  {2024-08-09}
   {1.0.0}
   {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Questions and Answers documents}
 
@@ -37,12 +37,14 @@
   {
     jekyllData,
     expectJekyllData,
+    ensureJekyllData,
     renderers = {
       jekyllDataBegin = {
         \seq_gclear:N
           \g_istqb_questions_seq
       },
-      jekyllData(String|Number) = {
+      jekyllDataProgrammaticString = ,
+      jekyllData(TypographicString|Number) = {
         \keys_set:nn
           { istqb / questions }
           { { #1 } = { #2 } }
@@ -57,7 +59,7 @@
                 {
                   code = \group_begin:,
                   renderers = {
-                    jekyllData(String
+                    jekyllData(TypographicString
                               |Number) = {
                       \keys_set:nn
                         { istqb / questions /
@@ -204,7 +206,7 @@
   { questions / * }
   {
     renderers = {
-      jekyllData(String|Number) = {
+      jekyllData(TypographicString|Number) = {
         \keys_set:nn
           { istqb / questions / * }
           { { #1 } = { #2 } }
@@ -264,7 +266,7 @@
   { questions / * / answers }
   {
     renderers = {
-      jekyllData(String|Number) = {
+      jekyllData(TypographicString|Number) = {
         \seq_put_right:Nn
           \l_istqb_current_answer_keys_seq
           { #1 }
@@ -294,7 +296,7 @@
   { questions / * / correct }
   {
     renderers = {
-      jekyllData(String|Number) = {
+      jekyllData(TypographicString|Number) = {
         \seq_put_right:cn
           { l_istqb_current_answer_correct
             _keys_seq }

@@ -167,6 +167,7 @@
 %%% Footer
 \renewcommand{\footrulewidth}{0pt}
 \RequirePackage{xcolor}
+\PassOptionsToPackage{framemethod=tikz}{mdframed}
 \RequirePackage{mdframed}
 \@ifundefined
   {HCode}%
@@ -193,7 +194,7 @@
     ]
       \fontsize{9}{10.8}\selectfont
       \begin{minipage}{0.4\linewidth}
-      \mbox{\g_istqb_version_tl}
+      \mbox{\g_istqb_version_tl{}~\g_istqb_release_tl}
       \end{minipage}
       \begin{minipage}{0.2\linewidth}
       \centering
@@ -230,19 +231,7 @@
       \hfill
       \mbox{\g_istqb_date_tl}
       \end{minipage}
-      \\
-      \mbox{\g_istqb_release_tl}
-    \end{mdframed}
-    \begin{mdframed}[
-      linewidth=0.75pt,
-      linecolor=black!25!white,
-      innerleftmargin=0.08in,
-      innerrightmargin=8pt,
-      innertopmargin=3pt,
-      innerbottommargin=3pt,
-      skipabove=\baselineskip,
-      rightmargin=-8pt,
-    ]
+      \\[5pt]
       \fontsize{6}{6}\selectfont
       \textcopyright{}~\istqborgname
     \end{mdframed}
@@ -660,7 +649,7 @@
 \RequirePackage{hyperref}
 
 % Tables
-\RequirePackage{tabularx, array}
+\RequirePackage{nicematrix, tabularx}
 \RequirePackage{xcolor, colortbl}
 \definecolor{istqbtableheader}{HTML}{D9D9D9}
 \ExplSyntaxOn
@@ -668,39 +657,37 @@
   { istqbtable }
   [ 1 ]
   {
-    \renewcommand { \arraystretch }{ 1.5 }  % Increase line spread
-    \rowcolors { 2 } { white } { white }  % Ensure white rows below table head
+    \renewcommand { \arraystretch }{ 1.25 }  % Set vertical cell margins
+    \setlength \tabcolsep { 3pt }  % Set horizontal cell margins
     \str_if_in:nnTF
       { #1 }
       { X }
       {
         \cs_set:Npn
           \endistqbtable
-          { \endtabularx }
-        \tabularx \linewidth { #1 } \hline
+	  { \end { NiceTabularX } }
+        \begin { NiceTabularX } \linewidth { #1 } \hline
       }
       {
         \cs_set:Npn
           \endistqbtable
           {
-            \end { tabular }
+            \end { NiceTabular }
             \par
           }
         \centering
-        \begin { tabular } { #1 } \hline
+        \begin { NiceTabular } { #1 } \hline
       }
-    \rowcolor { istqbtableheader }  % Color table head
+    \RowStyle [ nb-rows=1, rowcolor=istqbtableheader ] { }  % Color table head
   }
   { }
 \ExplSyntaxOff
 
 %% Revision History
 \newenvironment{istqbrevisionhistory}{%
-  \renewcommand{\arraystretch}{1.5}% Increase line spread
-  \tabularx{\linewidth}{|l|l|X|}\hline
-  \rowcolor{istqbtableheader}%
+  \begin{istqbtable}{|l|l|X|}%
 }{%
-  \endtabularx
+  \end{istqbtable}%
 }
 
 % Table of Contents
