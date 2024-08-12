@@ -56,7 +56,7 @@ Example of the log:
 
 ## Invalid references to files in `syllabus.tex` file
 
-Every MD files you want to include in your document have to be added to TEX file. If the file referenced in the TEX file is not existent (wrong path, wrong name of the file, missing extension, etc.) the pipeline job will fail. Example of the log:
+Every MD files you want to include in your document have to be added to `\TeX`{=tex} file. If the file referenced in the `\TeX`{=tex} file is not existent (wrong path, wrong name of the file, missing extension, etc.) the pipeline job will fail. Example of the log:
 
 ```
 ! Package markdown Error: Markdown file
@@ -73,7 +73,7 @@ These errors can also seem in *Produce DOCX documents* pipeline job. But the out
 
 To resolve these issues:
 
-1. Open TEX file of your document (e.g. `syllabus.tex`) and check that all paths are valid
+1. Open `\TeX`{=tex} file of your document (e.g. `syllabus.tex`) and check that all paths are valid
    ```tex
    % Document Text
    \markdownInput{syllabus-en/acknowledgments.md}
@@ -85,6 +85,6 @@ To resolve these issues:
    \markdownInput{syllabus-en/05-software-defect-prevention.md}
    ```
 1. Update paths to all MD files listed in error log.
-1. Commit changes to TEX file
+1. Commit changes to `\TeX`{=tex} file
 
 
