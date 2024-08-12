@@ -56,11 +56,11 @@ Example of the log:
 
 ## Invalid references to files in `syllabus.tex` file
 
-Every MD files you want to include in your document have to be added to `\TeX`{=tex} file. If the file referenced in the `\TeX`{=tex} file is not existent (wrong path, wrong name of the file, missing extension, etc.) the pipeline job will fail. Example of the log:
+Every MD files you want to include in your document have to be added to `\TeX`{=tex} file. If the file referenced in the `\TeX`{=tex} file does not exist (wrong path, wrong name of the file, missing extension, etc.) the pipeline job will fail. Example of the log:
 
 ```
 ! Package markdown Error: Markdown file
-(markdown)                syllabus/01-tasks-in-**test**-process.md
+(markdown)                syllabus/01-tasks-in-test-process.md
 (markdown)                does not exist
 ```
 
@@ -68,7 +68,7 @@ These errors can also seem in *Produce DOCX documents* pipeline job. But the out
 
 ```
 FileNotFoundError: [Errno 2] No such file or directory:
-  '/__w/istqb-ctal-ta/istqb-ctal-ta/syllabus/01-tasks-in-**test**-process.md'
+  '/__w/istqb-ctal-ta/istqb-ctal-ta/syllabus/01-tasks-in-test-process.md'
 ```
 
 To resolve these issues:
@@ -78,13 +78,14 @@ To resolve these issues:
    % Document Text
    \markdownInput{syllabus-en/acknowledgments.md}
    \markdownInput{syllabus-en/00-introduction.md}
-   \markdownInput{syllabus-en/01-tasks-in-**the-test**-process.md}
+   \markdownInput{syllabus-en/01-tasks-in-test-process.md}
    \markdownInput{syllabus-en/02-tasks-in-the-risk-based-testing.md}
    \markdownInput{syllabus-en/03-test-analysis-and-design.md}
    \markdownInput{syllabus-en/04-testing-software-quality-characteristics.md}
    \markdownInput{syllabus-en/05-software-defect-prevention.md}
    ```
-1. Update paths to all MD files listed in error log.
-1. Commit changes to `\TeX`{=tex} file
+   Here, only the file `01-tasks-in-test-process.md` is missing. Instead, a differently named file `01-tasks-in-the-test-process.md` exists.
+1. Update paths to all MD files listed in error log. Here, we would change `\markdownInput{syllabus-en/01-tasks-in-test-process.md}` to `\markdownInput{syllabus-en/01-tasks-in-the-test-process.md}`.
+1. Commit changes to `\TeX`{=tex} file.
 
-
+Alternatively, we might rename the file `01-tasks-in-the-test-process.md` to `01-tasks-in-test-process.md`.
