@@ -339,6 +339,130 @@
     }
   }
 
+% Traceability matrix
+\prop_new:N \g_istqb_traceability_matrix_prop
+\prop_new:N \g_istqb_business_outcomes_diagonal_prop
+\tl_new:N \l_istqb_current_learning_objective_tl
+\seq_new:N \l_istqb_current_learning_objective_seq
+\markdownSetupSnippet
+  { traceability-matrix }
+  {
+    jekyllData,
+    expectJekyllData,
+    ensureJekyllData,
+    renderers = {
+      jekyllDataMappingBegin = {
+        \str_if_eq:nnF
+          { #1 }
+          { traceability-matrix }
+          {
+            \markdownSetup {
+              code = \group_begin:,
+              renderers = {
+                jekyllDataMappingEnd =
+              },
+              snippet = istqb / common
+                / traceability-matrix
+                / content,
+              renderers = {
+                jekyllDataMappingEnd +=
+                  \group_end:
+              },
+            }
+          }
+      },
+      jekyllDataEnd = { },
+    },
+  }
+\markdownSetupSnippet
+  { traceability-matrix / content }
+  {
+    renderers = {
+      jekyllDataNumber = {
+        \prop_gput:Nnn
+          \g_istqb_traceability_matrix_prop
+          { #1 }
+          { #2 }
+        \prop_get:NnNTF
+          \g_istqb_business_outcomes_diagonal_prop
+          { #2 }
+          \l_tmpa_tl
+          {
+            \int_set:Nn
+              \l_tmpa_int
+              { \l_tmpa_tl + 1 }
+            \prop_gput:NnV
+              \g_istqb_business_outcomes_diagonal_prop
+              { #2 }
+              \l_tmpa_int
+          }
+          {
+            \prop_gput:Nnn
+              \g_istqb_business_outcomes_diagonal_prop
+              { #2 }
+              { 1 }
+          }
+      },
+      jekyllDataSequenceBegin = {
+        \group_begin:
+        \tl_set:Nn
+          \l_istqb_current_learning_objective_tl
+          { #1 }
+        \markdownSetup {
+          renderers = {
+            jekyllDataSequenceEnd =
+          },
+          snippet = istqb / common
+            / traceability-matrix
+            / content / sequence,
+          renderers = {
+            jekyllDataSequenceEnd +=
+              \group_end:
+          },
+        }
+      },
+    },
+  }
+\markdownSetupSnippet
+  { traceability-matrix / content / sequence }
+  {
+    renderers = {
+      jekyllDataNumber = {
+        \seq_put_right:Nn
+          \l_istqb_current_learning_objective_seq
+          { #2 }
+        \prop_get:NnNTF
+          \g_istqb_business_outcomes_diagonal_prop
+          { #2 }
+          \l_tmpa_tl
+          {
+            \int_set:Nn
+              \l_tmpa_int
+              { \l_tmpa_tl + 1 }
+            \prop_gput:NnV
+              \g_istqb_business_outcomes_diagonal_prop
+              { #2 }
+              \l_tmpa_int
+          }
+          {
+            \prop_gput:Nnn
+              \g_istqb_business_outcomes_diagonal_prop
+              { #2 }
+              { 1 }
+          }
+      },
+      jekyllDataSequenceEnd = {
+        \clist_set_from_seq:NN
+          \l_tmpa_clist
+          \l_istqb_current_learning_objective_seq
+        \prop_gput:NVV
+          \g_istqb_traceability_matrix_prop
+          \l_istqb_current_learning_objective_tl
+          \l_tmpa_clist
+      },
+    },
+  }
+
 % Images
 \markdownSetup
   {
