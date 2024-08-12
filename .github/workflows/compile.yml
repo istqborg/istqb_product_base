@@ -12,6 +12,10 @@ on:
         default: false
         type: boolean
   push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
 permissions:
   contents: write
 env:

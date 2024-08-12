@@ -224,7 +224,6 @@
     epub-output .code:n = { },
     html-output .code:n = { },
   }
-\iow_new:N \g_istqb_project_name_iow
 \markdownSetupSnippet
   { metadata }
   {
@@ -262,27 +261,6 @@
       jekyllDataEnd = {
         \istqb_load_language:V
           \g_istqb_language_tl
-        \iow_open:Ne
-          \g_istqb_project_name_iow
-          { \c_sys_jobname_str .istqb_project_name }
-        \str_set:NV
-          \l_tmpa_str
-          \g_istqb_organization_tl
-        \str_remove_all:Nn
-          \l_tmpa_str
-          { ® }
-        \iow_now:Ne
-          \g_istqb_project_name_iow
-          {
-            \l_tmpa_str -
-            \g_istqb_code_tl -
-            \g_istqb_type_tl -
-            \g_istqb_version_tl -
-            \str_uppercase:V
-              \g_istqb_language_tl
-          }
-        \iow_close:N
-          \g_istqb_project_name_iow
       },
     },
   }
