@@ -674,9 +674,9 @@ def _compile_tex_file_to_pdf(input_path: Path, previous_continuous: bool) -> Opt
     if not _should_compile_tex_file_to_pdf(input_path):
         return
     if previous_continuous:
-        _run_command('latexmk', '-gg', '-pvc', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=None)
+        _run_command('latexmk', '-pvc', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=None)
     else:
-        _run_command('latexmk', '-gg', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=600)
+        _run_command('latexmk', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=600)
     project_name = _get_project_name(input_path)
     output_path = Path(f'{project_name}.pdf')
     input_path.with_suffix('.pdf').rename(output_path)
