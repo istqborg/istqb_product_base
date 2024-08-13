@@ -344,6 +344,9 @@
 \prop_new:N \g_istqb_business_outcomes_diagonal_prop
 \tl_new:N \l_istqb_current_learning_objective_tl
 \seq_new:N \l_istqb_current_learning_objective_seq
+\tl_new:N \l_istqb_traceability_matrix_tl
+\RequirePackage
+  { varwidth }
 \markdownSetupSnippet
   { traceability-matrix }
   {
@@ -371,7 +374,52 @@
             }
           }
       },
-      jekyllDataEnd = { },
+      jekyllDataEnd = {
+        \istqblandscapebegin
+        \istqbsection
+          { Business~Outcomes~traceability~matrix~with~Learning~Objectives }
+        This~section~lists~the~number~of~
+        \tl_if_empty:NF
+          \g_istqb_level_tl
+          {
+            \tl_use:N
+              \g_istqb_level_tl
+            {}~
+          }
+        Learning~Objectives~related~to~the~
+        \tl_if_empty:NF
+          \g_istqb_level_tl
+          {
+            \tl_use:N
+              \g_istqb_level_tl
+            {}~
+          }
+        Business~Outcomes~and~the~traceability~between~
+        \tl_if_empty:NF
+          \g_istqb_level_tl
+          {
+            \tl_use:N
+              \g_istqb_level_tl
+            {}~
+          }
+        Business~Outcomes~and~
+        \tl_if_empty:NF
+          \g_istqb_level_tl
+          {
+            \tl_use:N
+              \g_istqb_level_tl
+            {}~
+          }
+        Learning~Objectives.
+      },
+    },
+    snippet = istqb / common
+      / traceability-matrix
+      / number-of-related-learning-objectives,
+    renderers = {
+      jekyllDataEnd += {
+        \istqblandscapeend
+      },
     },
   }
 \markdownSetupSnippet
@@ -459,6 +507,190 @@
           \g_istqb_traceability_matrix_prop
           \l_istqb_current_learning_objective_tl
           \l_tmpa_clist
+      },
+    },
+  }
+\markdownSetupSnippet
+  { traceability-matrix / number-of-related-learning-objectives }
+  {
+    renderers = {
+      jekyllDataEnd += {
+        \tl_set:Nn
+          \l_istqb_traceability_matrix_tl
+          {
+            \par
+            \vfill
+            \group_begin:
+            \renewcommand { \arraystretch }{ 1.5 }  % Set vertical cell margins
+            \setlength \tabcolsep { 6pt }  % Set horizontal cell margins
+            \begin
+              { NiceTabularX }
+              \linewidth
+          }
+        \tl_set:Nn
+          \l_tmpa_tl
+          { | V [ m ] { 3cm } | X [ m ] | }
+        \int_step_inline:nn
+          {
+            \seq_count:N
+              \g_istqb_business_outcomes_numbers_seq
+          }
+          {
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { c| }
+          }
+        \tl_put_right:Nx
+          \l_istqb_traceability_matrix_tl
+          {
+            {
+              \tl_use:N
+                \l_tmpa_tl
+            }
+          }
+        \tl_put_right:Nn
+          \l_istqb_traceability_matrix_tl
+          {
+            \CodeBefore
+              \rectanglecolor
+                { istqbbluetableheader }
+                { 1-1 }
+                { 1-2 }
+            \Body
+              \hline
+              \Block
+                [ l ]
+                { 1-2 }
+                <\Large>
+          }
+        \tl_set:Nn
+          \l_tmpa_tl
+          { Business~Outcomes }
+        \tl_if_empty:NF
+          \g_istqb_level_tl
+          {
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { :~ }
+            \tl_put_right:NV
+              \l_tmpa_tl
+              \g_istqb_level_tl
+          }
+        \tl_put_right:Nx
+          \l_istqb_traceability_matrix_tl
+          {
+            {
+              \tl_use:N
+                \l_tmpa_tl
+            }
+          }
+        \tl_put_right:Nn
+          \l_istqb_traceability_matrix_tl
+          { & }
+        \seq_map_inline:Nn
+          \g_istqb_business_outcomes_numbers_seq
+          {
+            \tl_put_right:Nn
+              \l_istqb_traceability_matrix_tl
+              {
+                &
+                \rotatebox
+                  [ origin=c ]
+                  { 270 }
+              }
+            \tl_set:Nn
+              \l_tmpa_tl
+              { ~ }
+            \tl_put_right:NV
+              \l_tmpa_tl
+              \g_istqb_prefix_tl
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { -BO ##1 ~ }
+            \tl_put_right:Nx
+              \l_istqb_traceability_matrix_tl
+              {
+                {
+                  \tl_use:N
+                    \l_tmpa_tl
+                }
+              }
+          }
+        \tl_put_right:Nn
+          \l_istqb_traceability_matrix_tl
+          { \\ \hline }
+        \seq_map_inline:Nn
+          \g_istqb_business_outcomes_numbers_seq
+          {
+            \tl_put_right:NV
+              \l_istqb_traceability_matrix_tl
+              \g_istqb_prefix_tl
+            \tl_put_right:Nn
+              \l_istqb_traceability_matrix_tl
+              { -BO ##1 & }
+            \prop_get:NnN
+              \g_istqb_business_outcomes_names_prop
+              { ##1 }
+              \l_tmpa_tl
+            \tl_put_right:NV
+              \l_istqb_traceability_matrix_tl
+              \l_tmpa_tl
+            \seq_map_inline:Nn
+              \g_istqb_business_outcomes_numbers_seq
+              {
+                \tl_put_right:Nn
+                  \l_istqb_traceability_matrix_tl
+                  { & }
+                \int_compare:nNnT
+                  { ##1 } = { ####1 }
+                  {
+                    \tl_put_right:Nn
+                      \l_istqb_traceability_matrix_tl
+                      {
+                        \Block
+                          [ m ]
+                          { 1-1 }
+                      }
+                    \prop_get:NnNTF
+                      \g_istqb_business_outcomes_diagonal_prop
+                      { ##1 }
+                      \l_tmpb_tl
+                      {
+                        \tl_set:Nx
+                          \l_tmpa_tl
+                          {
+                            {
+                              \tl_use:N
+                                \l_tmpb_tl
+                            }
+                          }
+                      }
+                      {
+                        \tl_set:Nn
+                          \l_tmpa_tl
+                          { { 0 } }
+                      }
+                    \tl_put_right:NV
+                      \l_istqb_traceability_matrix_tl
+                      \l_tmpa_tl
+                  }
+              }
+            \tl_put_right:Nn
+              \l_istqb_traceability_matrix_tl
+              { \\ \hline }
+          }
+        \tl_put_right:Nn
+          \l_istqb_traceability_matrix_tl
+          {
+            \end
+              { NiceTabularX }
+            \par
+            \vfill \vfill
+            \vfill \vfill \vfill
+            \group_end:
+          }
+        \tl_use:N
+          \l_istqb_traceability_matrix_tl
       },
     },
   }

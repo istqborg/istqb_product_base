@@ -24,4 +24,5 @@ tex-gyre
 tex4ebook
 titlesec
 tocbibind
+varwidth
 zref

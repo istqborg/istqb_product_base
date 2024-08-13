@@ -736,7 +736,8 @@
 % Tables
 \RequirePackage{nicematrix, tabularx}
 \RequirePackage{xcolor, colortbl}
-\definecolor{istqbtableheader}{HTML}{D9D9D9}
+\definecolor{istqbgraytableheader}{HTML}{D9D9D9}
+\definecolor{istqbbluetableheader}{HTML}{B5C5E5}
 \ExplSyntaxOn
 \newenvironment
   { istqbtable }
