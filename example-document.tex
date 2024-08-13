@@ -2,8 +2,11 @@
 \usepackage{markdown}
 \markdownSetup{
   import = {
-    istqb/syllabus = metadata
-  }
+    istqb/syllabus = {
+      metadata,
+      traceability-matrix as matrix,
+    },
+  },
 }
 
 % Metadata
@@ -43,5 +46,10 @@
 
 % Index
 \printindex
+
+% Traceability Matrix
+\begin{istqbappendices}
+\markdownInput[snippet=matrix]{example-document/traceability-matrix.yml}
+\end{istqbappendices}
 
 \end{document}
