@@ -660,12 +660,12 @@
       \c_istqb_learning_objective_regex
       {
         \c{prop_gput:Nxn}
-	  \c{g_istqb_learning_objective_k_levels_prop}
-	  \cB\{ \c{thesection} . \c{theistqbobjective} . \c{theistqbsubobjective} \cE\}
+          \c{g_istqb_learning_objective_k_levels_prop}
+          \cB\{ \c{thesection} . \c{theistqbobjective} . \c{theistqbsubobjective} \cE\}
           \cB\{ \1 \cE\}
         \c{prop_gput:Nxn}
-	  \c{g_istqb_learning_objective_names_prop}
-	  \cB\{ \c{thesection} . \c{theistqbobjective} . \c{theistqbsubobjective} \cE\}
+          \c{g_istqb_learning_objective_names_prop}
+          \cB\{ \c{thesection} . \c{theistqbobjective} . \c{theistqbsubobjective} \cE\}
           \cB\{ \2 \cE\}
       }
       \l_istqb_current_learning_objective_text_tl
@@ -675,8 +675,8 @@
       }
       {
         \msg_error:nnV
-	  { istqb }
-	  { malformed-learning-objective }
+          { istqb }
+          { malformed-learning-objective }
           \l_istqb_current_learning_objective_text_tl
       }
     \seq_gput_right:Nx
@@ -751,7 +751,7 @@
       {
         \cs_set:Npn
           \endistqbtable
-	  { \end { NiceTabularX } }
+          { \end { NiceTabularX } }
         \begin { NiceTabularX } \linewidth { #1 } \hline
       }
       {
@@ -764,7 +764,7 @@
         \centering
         \begin { NiceTabular } { #1 } \hline
       }
-    \RowStyle [ nb-rows=1, rowcolor=istqbtableheader ] { }  % Color table head
+    \RowStyle [ nb-rows=1, rowcolor=istqbgraytableheader ] { }  % Color table head
   }
   { }
 \ExplSyntaxOff
