@@ -54,7 +54,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: witiko/markdown
-          ref: 3.7.0-dev.0
+          ref: 3.7.0-dev.1
           fetch-depth: 0
       - name: Build intermediate image witiko/markdown:latest-minimal
         run: DOCKER_BUILDKIT=1 docker build --build-arg TEXLIVE_TAG=latest-minimal --build-arg DEV_IMAGE=true -t witiko/markdown:latest-minimal .
