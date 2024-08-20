@@ -166,6 +166,7 @@
 
 %%% Footer
 \renewcommand{\footrulewidth}{0pt}
+\PassOptionsToPackage{table}{xcolor}
 \RequirePackage{xcolor}
 \PassOptionsToPackage{framemethod=tikz}{mdframed}
 \RequirePackage{mdframed}
