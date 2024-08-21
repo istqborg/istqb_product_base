@@ -739,6 +739,7 @@
 \RequirePackage{xcolor, colortbl}
 \definecolor{istqbgraytableheader}{HTML}{D9D9D9}
 \definecolor{istqbbluetableheader}{HTML}{B5C5E5}
+\definecolor{istqbgreentableheader}{HTML}{C5E0B3}
 \ExplSyntaxOn
 \newenvironment
   { istqbtable }
