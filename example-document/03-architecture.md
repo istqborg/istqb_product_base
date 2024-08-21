@@ -19,7 +19,8 @@ Here is the structure of file `example.tex`:
      \usepackage{markdown}
      \markdownSetup{
        import = {
-         istqb/syllabus = metadata
+         istqb/syllabus = metadata,
+         traceability-matrix as matrix,
        }
      }
      ```
@@ -90,6 +91,15 @@ Here is the structure of file `example.tex`:
 
      % Index
      \printindex
+     ```
+
+     The back matter also contains an appendix with a traceability matrix between learning objectives and business outcomes. The traceability matrix is based on the file `example-document/traceability-matrix.yml`.
+
+     ``` tex
+     % Traceability Matrix
+     \begin{istqbappendices}
+     \markdownInput[snippet=matrix]{example-document/traceability-matrix.yml}
+     \end{istqbappendices}
      ```
 
 The example document also contains the directory `img/` with figures, as discussed in <#section:figures>.
