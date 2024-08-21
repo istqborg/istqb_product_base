@@ -15,4 +15,5 @@ page: [str(), str()]
 provided-by: [str(), str()]
 istqb: str()
 list-delimiters: [str(), str(), str()]
+business-outcomes: [str(), str()]
 contents: str()

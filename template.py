@@ -29,11 +29,15 @@ import yaml
 
 LOGGER = logging.getLogger(__name__)
 
-METADATA_FILETYPES = ['all', 'all-yaml', 'user-yaml'] + sorted(['metadata', 'questions-yaml', 'questions-markdown', 'languages'])
+METADATA_FILETYPES = ['all', 'all-yaml', 'user-yaml'] + sorted([
+  'metadata', 'questions-yaml', 'questions-markdown', 'languages', 'traceability-matrix',
+])
 DOCUMENT_FILETYPES = sorted(['xlsx', 'markdown', 'eps', 'tex', 'bib'])
 FILETYPES = METADATA_FILETYPES + DOCUMENT_FILETYPES
 
-VALIDATABLE_FILETYPES = ['all', 'all-yaml'] + sorted(['metadata', 'questions-yaml', 'languages'])
+VALIDATABLE_FILETYPES = ['all', 'all-yaml'] + sorted([
+  'metadata', 'questions-yaml', 'languages', 'traceability-matrix',
+])
 CONVERT_TO_DOCX_FILETYPES = ['all', 'user-yaml'] + sorted(['markdown', 'bib'])
 
 CURRENT_DIRECTORY = Path('.').resolve()
@@ -70,6 +74,7 @@ METADATA_REGEXP = re.compile(r'metadata.*\.ya?ml', flags=re.IGNORECASE)
 QUESTIONS_YAML_REGEXP = re.compile(r'questions.*\.ya?ml', flags=re.IGNORECASE)
 QUESTIONS_MARKDOWN_REGEXP = re.compile(r'questions.*\.(md|mdown|markdown)', flags=re.IGNORECASE)
 LANGUAGES_REGEXP = re.compile(r'..\.ya?ml', flags=re.IGNORECASE)
+TRACEABILITY_MATRIX_REGEXP = re.compile(r'traceability-matrix\.ya?ml', flags=re.IGNORECASE)
 
 QUESTIONS_METADATA_REGEXP = re.compile(r'\s{0,3}#\s*metadata\s*', flags=re.IGNORECASE)
 QUESTIONS_QUESTION_REGEXP = re.compile(r'\s{0,3}##\s*question\s*', flags=re.IGNORECASE)
@@ -119,7 +124,7 @@ def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Pa
 
             if file_type == 'all':
                 return True
-            if file_type in ('all-yaml', 'user-yaml', 'metadata', 'questions-yaml', 'languages'):
+            if file_type in ('all-yaml', 'user-yaml', 'metadata', 'questions-yaml', 'languages', 'traceability-matrix'):
                 all_yaml_match = YAML_REGEXP.search(path.name)
 
                 if not all_yaml_match:
@@ -130,6 +135,7 @@ def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Pa
                 metadata_match = METADATA_REGEXP.fullmatch(path.name)
                 questions_match = QUESTIONS_YAML_REGEXP.fullmatch(path.name)
                 languages_match = path.parent.name == 'languages' and LANGUAGES_REGEXP.fullmatch(path.name)
+                traceability_matrix_match = TRACEABILITY_MATRIX_REGEXP.fullmatch(path.name)
 
                 if file_type == 'metadata':
                     return bool(metadata_match)
@@ -137,6 +143,8 @@ def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Pa
                     return bool(questions_match)
                 elif file_type == 'languages':
                     return bool(languages_match)
+                elif file_type == 'traceability-matrix':
+                    return bool(traceability_matrix_match)
                 elif file_type == 'user-yaml':
                     return bool(not languages_match)
                 else:
@@ -299,6 +307,11 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
             _fixup_languages()
             schema = yamale.make_schema(SCHEMA_DIRECTORY / 'language.yml')
             for path in _find_files(file_types=['languages']):
+                validate_file(schema, path)
+        if file_type in ('traceability-matrix', 'all', 'all-yaml'):
+            _fixup_languages()
+            schema = yamale.make_schema(SCHEMA_DIRECTORY / 'traceability-matrix.yml')
+            for path in _find_files(file_types=['traceability-matrix']):
                 validate_file(schema, path)
 
 
@@ -657,10 +670,13 @@ def _get_project_name(input_path: Path) -> str:
     return project_name
 
 
-def _compile_tex_file_to_pdf(input_path: Path) -> Optional[Path]:
+def _compile_tex_file_to_pdf(input_path: Path, previous_continuous: bool) -> Optional[Path]:
     if not _should_compile_tex_file_to_pdf(input_path):
         return
-    _run_command('latexmk', '-gg', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=600)
+    if previous_continuous:
+        _run_command('latexmk', '-pvc', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=None)
+    else:
+        _run_command('latexmk', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=600)
     project_name = _get_project_name(input_path)
     output_path = Path(f'{project_name}.pdf')
     input_path.with_suffix('.pdf').rename(output_path)
@@ -806,8 +822,8 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
             pass
 
 
-def _compile_tex_files_to_pdf() -> None:
-    _compile_tex_files(_compile_tex_file_to_pdf)
+def _compile_tex_files_to_pdf(previous_continuous: bool) -> None:
+    _compile_tex_files(_compile_tex_file_to_pdf, previous_continuous)
 
 
 def _compile_tex_files_to_html(output_directory: Path) -> None:
@@ -862,7 +878,7 @@ def convert_yaml_questions_to_md(args: Namespace) -> None:
 
 
 def compile_tex_files_to_pdf(args: Namespace) -> None:
-    _compile_tex_files_to_pdf()
+    _compile_tex_files_to_pdf(args.previous_continuous)
 
 
 def compile_tex_files_to_html(args: Namespace) -> None:
@@ -939,6 +955,11 @@ def main():
     parser_compile_tex_to_pdf = subparsers.add_parser(
         'compile-tex-to-pdf',
         help='Compile all TeX files in this repository to PDF',
+    )
+    parser_compile_tex_to_pdf.add_argument(
+        '-pvc', '--previous-continuous',
+        action='store_true',
+        help='Keep recompiling the TeX files as they change',
     )
     parser_compile_tex_to_pdf.set_defaults(func=compile_tex_files_to_pdf)
 

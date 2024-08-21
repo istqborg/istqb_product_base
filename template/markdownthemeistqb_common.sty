@@ -129,6 +129,12 @@
     1 .tl_gset:N = \istqbprovidedbysingularname,
     2 .tl_gset:N = \istqbprovidedbypluralname,
   }
+\keys_define:nn
+  { istqb / language / business-outcomes }
+  {
+    1 .tl_gset:N = \istqbbusinessoutcomecode,
+    2 .tl_gset:N = \istqbbusinessoutcomedescription,
+  }
 \cs_new:Nn
   \__istqb_gset_with_spaces:Nn
   {
@@ -333,6 +339,446 @@
     }
   }
 
+% Traceability matrix
+\markdownSetupSnippet
+  { traceability-matrix }
+  {
+    jekyllData,
+    expectJekyllData,
+    ensureJekyllData,
+    renderers = {
+      jekyllDataMappingBegin = {
+        \str_if_eq:nnF
+          { #1 }
+          { traceability-matrix }
+          {
+            \markdownSetup {
+              code = \group_begin:,
+              renderers = {
+                jekyllDataMappingEnd =
+              },
+              snippet = istqb / common
+                / traceability-matrix
+                / content,
+              renderers = {
+                jekyllDataMappingEnd +=
+                  \group_end:
+              },
+            }
+          }
+      },
+      jekyllDataEnd = {
+        \istqblandscapebegin
+        \istqbsection
+          { Business~Outcomes~traceability~matrix~with~Learning~Objectives }
+        This~section~lists~the~number~of~
+        \tl_if_empty:NF
+          \g_istqb_level_tl
+          {
+            \tl_use:N
+              \g_istqb_level_tl
+            {}~
+          }
+        Learning~Objectives~related~to~the~
+        \tl_if_empty:NF
+          \g_istqb_level_tl
+          {
+            \tl_use:N
+              \g_istqb_level_tl
+            {}~
+          }
+        Business~Outcomes~and~the~traceability~between~
+        \tl_if_empty:NF
+          \g_istqb_level_tl
+          {
+            \tl_use:N
+              \g_istqb_level_tl
+            {}~
+          }
+        Business~Outcomes~and~
+        \tl_if_empty:NF
+          \g_istqb_level_tl
+          {
+            \tl_use:N
+              \g_istqb_level_tl
+            {}~
+          }
+        Learning~Objectives.
+      },
+    },
+    snippet = istqb / common
+      / traceability-matrix
+      / number-of-related-learning-objectives,
+    renderers = {
+      jekyllDataEnd += {
+        \istqblandscapeend
+      },
+    },
+  }
+\prop_new:N \g_istqb_traceability_matrix_prop
+\prop_new:N \g_istqb_business_outcomes_diagonal_prop
+\tl_new:N \l_istqb_current_learning_objective_tl
+\seq_new:N \l_istqb_current_learning_objective_seq
+\markdownSetupSnippet
+  { traceability-matrix / content }
+  {
+    renderers = {
+      jekyllDataNumber = {
+        \prop_gput:Nnn
+          \g_istqb_traceability_matrix_prop
+          { #1 }
+          { #2 }
+        \prop_get:NnNTF
+          \g_istqb_business_outcomes_diagonal_prop
+          { #2 }
+          \l_tmpa_tl
+          {
+            \int_set:Nn
+              \l_tmpa_int
+              { \l_tmpa_tl + 1 }
+            \prop_gput:NnV
+              \g_istqb_business_outcomes_diagonal_prop
+              { #2 }
+              \l_tmpa_int
+          }
+          {
+            \prop_gput:Nnn
+              \g_istqb_business_outcomes_diagonal_prop
+              { #2 }
+              { 1 }
+          }
+      },
+      jekyllDataSequenceBegin = {
+        \group_begin:
+        \tl_set:Nn
+          \l_istqb_current_learning_objective_tl
+          { #1 }
+        \markdownSetup {
+          renderers = {
+            jekyllDataSequenceEnd =
+          },
+          snippet = istqb / common
+            / traceability-matrix
+            / content / sequence,
+          renderers = {
+            jekyllDataSequenceEnd +=
+              \group_end:
+          },
+        }
+      },
+    },
+  }
+\markdownSetupSnippet
+  { traceability-matrix / content / sequence }
+  {
+    renderers = {
+      jekyllDataNumber = {
+        \seq_put_right:Nn
+          \l_istqb_current_learning_objective_seq
+          { #2 }
+        \prop_get:NnNTF
+          \g_istqb_business_outcomes_diagonal_prop
+          { #2 }
+          \l_tmpa_tl
+          {
+            \int_set:Nn
+              \l_tmpa_int
+              { \l_tmpa_tl + 1 }
+            \prop_gput:NnV
+              \g_istqb_business_outcomes_diagonal_prop
+              { #2 }
+              \l_tmpa_int
+          }
+          {
+            \prop_gput:Nnn
+              \g_istqb_business_outcomes_diagonal_prop
+              { #2 }
+              { 1 }
+          }
+      },
+      jekyllDataSequenceEnd = {
+        \clist_set_from_seq:NN
+          \l_tmpa_clist
+          \l_istqb_current_learning_objective_seq
+        \prop_gput:NVV
+          \g_istqb_traceability_matrix_prop
+          \l_istqb_current_learning_objective_tl
+          \l_tmpa_clist
+      },
+    },
+  }
+\RequirePackage
+  { tabularray }
+\RequirePackage
+  { pifont }
+\tl_new:N \l_istqb_traceability_matrix_parameters_tl
+\tl_new:N \l_istqb_traceability_matrix_colspec_tl
+\tl_new:N \l_istqb_traceability_matrix_body_tl
+\tl_new:N \l_istqb_traceability_matrix_tl
+\clist_new:N \l_istqb_traceability_matrix_subchapter_numbers_clist
+\clist_new:N \l_istqb_traceability_matrix_learning_objective_numbers_clist
+\clist_new:N \l_istqb_traceability_matrix_related_business_outcome_numbers_clist
+\markdownSetupSnippet
+  { traceability-matrix / number-of-related-learning-objectives }
+  {
+    renderers = {
+      jekyllDataEnd += {
+        \group_begin:
+        % Set how the table looks.
+        \DefTblrTemplate { contfoot-text } { default } { }
+        \DefTblrTemplate { conthead-text } { default } { }
+        \DefTblrTemplate { caption } { default } { }
+        \DefTblrTemplate { conthead } { default } { }
+        \DefTblrTemplate { capcont } { default } { }
+        % Construct the table parameters.
+        \tl_put_right:Nn
+          \l_istqb_traceability_matrix_parameters_tl
+          {
+            cell { 1 } { 1 } = { bg = istqbbluetableheader },
+            cell { 1 } { 3-Z } = { cmd = { \rotatebox [ origin = c ] { 270 } } },
+            row { 1-Z } = { rowsep+ = 1pt },
+            rowhead = 1,
+            hlines,
+            vlines,
+          }
+        \tl_set:Nn
+          \l_istqb_traceability_matrix_colspec_tl
+          { l X [ m ] }
+        \int_step_inline:nn
+          {
+            \seq_count:N
+              \g_istqb_business_outcomes_numbers_seq
+          }
+          {
+            \tl_put_right:Nn
+              \l_istqb_traceability_matrix_colspec_tl
+              { c }
+          }
+        \tl_put_right:Nx
+          \l_istqb_traceability_matrix_parameters_tl
+          { colspec = { \tl_use:N \l_istqb_traceability_matrix_colspec_tl }, }
+        % Construct the table body for the number of related learning objectives.
+        \tl_put_right:Nn
+          \l_istqb_traceability_matrix_body_tl
+          { \SetCell [ c = 2 ] { l, bg = istqbbluetableheader } \Large }
+        \tl_set:Nn
+          \l_tmpa_tl
+          { Business~Outcomes }
+        \tl_if_empty:NF
+          \g_istqb_level_tl
+          {
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { :~ }
+            \tl_put_right:NV
+              \l_tmpa_tl
+              \g_istqb_level_tl
+          }
+        \tl_put_right:Nx
+          \l_istqb_traceability_matrix_body_tl
+          { { \tl_use:N \l_tmpa_tl } }
+        \tl_put_right:Nn
+          \l_istqb_traceability_matrix_body_tl
+          { & }
+        \seq_map_inline:Nn
+          \g_istqb_business_outcomes_numbers_seq
+          {
+            \tl_put_right:Nn
+              \l_istqb_traceability_matrix_body_tl
+              { & }
+            \tl_put_right:NV
+              \l_istqb_traceability_matrix_body_tl
+              \g_istqb_prefix_tl
+            \tl_put_right:Nn
+              \l_istqb_traceability_matrix_body_tl
+              { -BO ##1 }
+          }
+        \tl_put_right:Nn
+          \l_istqb_traceability_matrix_body_tl
+          { \\ }
+        \seq_map_inline:Nn
+          \g_istqb_business_outcomes_numbers_seq
+          {
+            \tl_put_right:NV
+              \l_istqb_traceability_matrix_body_tl
+              \g_istqb_prefix_tl
+            \tl_put_right:Nn
+              \l_istqb_traceability_matrix_body_tl
+              { -BO ##1 & }
+            \prop_get:NnN
+              \g_istqb_business_outcomes_names_prop
+              { ##1 }
+              \l_tmpa_tl
+            \tl_put_right:NV
+              \l_istqb_traceability_matrix_body_tl
+              \l_tmpa_tl
+            \seq_map_inline:Nn
+              \g_istqb_business_outcomes_numbers_seq
+              {
+                \tl_put_right:Nn
+                  \l_istqb_traceability_matrix_body_tl
+                  { & }
+                \int_compare:nNnT
+                  { ##1 } = { ####1 }
+                  {
+                    \prop_get:NnNTF
+                      \g_istqb_business_outcomes_diagonal_prop
+                      { ##1 }
+                      \l_tmpa_tl
+                      {
+                        \tl_put_right:NV
+                          \l_istqb_traceability_matrix_body_tl
+                          \l_tmpa_tl
+                      }
+                      {
+                        \tl_put_right:Nn
+                          \l_istqb_traceability_matrix_body_tl
+                          { 0 }
+                      }
+                  }
+              }
+            \tl_put_right:Nn
+              \l_istqb_traceability_matrix_body_tl
+              { \\ }
+          }
+        \tl_put_right:Nn
+          \l_istqb_traceability_matrix_body_tl
+          { \pagebreak }
+        % Construct the table parameters and body for the traceability matrix.
+        \tl_put_right:Nn
+          \l_istqb_traceability_matrix_body_tl
+          {
+            \SetCell { bg = istqbbluetableheader }
+            Unique~LO
+            &
+            \SetCell { bg = istqbbluetableheader }
+            Learning~Objective~(K-Level)
+            \\
+          }
+        % Print out chapters.
+        \seq_map_inline:Nn
+          \g_istqb_learning_objective_chapter_numbers_seq
+          {
+            \tl_put_right:Nn
+              \l_istqb_traceability_matrix_body_tl
+              { \SetCell { bg = istqbgreentableheader } ##1 & }
+            \prop_get:NnN
+              \g_istqb_learning_objective_chapter_names_prop
+              { ##1 }
+              \l_tmpa_tl
+            \tl_put_right:Nn
+              \l_istqb_traceability_matrix_body_tl
+              { \SetCell { bg = istqbgreentableheader } }
+            \tl_put_right:NV
+              \l_istqb_traceability_matrix_body_tl
+              \l_tmpa_tl
+            \tl_put_right:Nn
+              \l_istqb_traceability_matrix_body_tl
+              { \\ }
+            % Print out subchapters.
+            \prop_get:NnN
+              \g_istqb_learning_objective_subchapter_numbers_prop
+              { ##1 }
+              \l_istqb_traceability_matrix_subchapter_numbers_clist
+            \clist_map_inline:Nn
+              \l_istqb_traceability_matrix_subchapter_numbers_clist
+              {
+                \tl_put_right:Nn
+                  \l_istqb_traceability_matrix_body_tl
+                  { \SetCell { bg = istqbbluetableheader } ##1.####1 & }
+                \prop_get:NnN
+                  \g_istqb_learning_objective_subchapter_names_prop
+                  { ##1.####1 }
+                  \l_tmpa_tl
+                \tl_put_right:Nn
+                  \l_istqb_traceability_matrix_body_tl
+                  { \SetCell { bg = istqbbluetableheader } }
+                \tl_put_right:NV
+                  \l_istqb_traceability_matrix_body_tl
+                  \l_tmpa_tl
+                \tl_put_right:Nn
+                  \l_istqb_traceability_matrix_body_tl
+                  { \\ }
+                % Print out learning objectives.
+                \prop_get:NnN
+                  \g_istqb_learning_objective_numbers_prop
+                  { ##1.####1 }
+                  \l_istqb_traceability_matrix_learning_objective_numbers_clist
+                \clist_map_inline:Nn
+                  \l_istqb_traceability_matrix_learning_objective_numbers_clist
+                  {
+                    \tl_put_right:Nn
+                      \l_istqb_traceability_matrix_body_tl
+                      { ##1.####1.########1 & }
+                    \prop_get:NnN
+                      \g_istqb_learning_objective_names_prop
+                      { ##1.####1.########1 }
+                      \l_tmpa_tl
+                    \tl_put_right:NV
+                      \l_istqb_traceability_matrix_body_tl
+                      \l_tmpa_tl
+                    \prop_get:NnN
+                      \g_istqb_learning_objective_k_levels_prop
+                      { ##1.####1.########1 }
+                      \l_tmpa_tl
+                    \tl_put_right:Nn
+                      \l_istqb_traceability_matrix_body_tl
+                      { ~( }
+                    \tl_put_right:NV
+                      \l_istqb_traceability_matrix_body_tl
+                      \l_tmpa_tl
+                    \tl_put_right:Nn
+                      \l_istqb_traceability_matrix_body_tl
+                      { ) }
+                    % Print out the related business outcomes.
+                    \prop_get:NnNT
+                      \g_istqb_traceability_matrix_prop
+                      { ##1.####1.########1 }
+                      \l_istqb_traceability_matrix_related_business_outcome_numbers_clist
+                      {
+                        \seq_map_inline:Nn
+                          \g_istqb_business_outcomes_numbers_seq
+                          {
+                            \tl_put_right:Nn
+                              \l_istqb_traceability_matrix_body_tl
+                              { & }
+                            \clist_if_in:NnT
+                              \l_istqb_traceability_matrix_related_business_outcome_numbers_clist
+                              { ################1 }
+                              {
+                                \tl_put_right:Nn
+                                  \l_istqb_traceability_matrix_body_tl
+                                  { \ding { 53 } }
+                              }
+                          }
+                      }
+                    \tl_put_right:Nn
+                      \l_istqb_traceability_matrix_body_tl
+                      { \\ }
+                  }
+              }
+          }
+        % Construct the final table.
+        \tl_put_right:Nn
+          \l_istqb_traceability_matrix_tl
+          { \begin { longtblr } }
+        \tl_put_right:Nx
+          \l_istqb_traceability_matrix_tl
+          { { \tl_use:N \l_istqb_traceability_matrix_parameters_tl } }
+        \tl_put_right:NV
+          \l_istqb_traceability_matrix_tl
+          \l_istqb_traceability_matrix_body_tl
+        \tl_put_right:Nn
+          \l_istqb_traceability_matrix_tl
+          { \end { longtblr } }
+        % Typeset the final table.
+        \tl_use:N
+          \l_istqb_traceability_matrix_tl
+        \group_end:
+      },
+    },
+  }
+
 % Images
 \markdownSetup
   {
@@ -387,6 +833,9 @@
 
 % Headings
 \seq_new:N \l_istqb_header_identifiers_seq
+\tl_new:N \l_istqb_business_outcomes_table_tl
+\seq_new:N \g_istqb_business_outcomes_numbers_seq
+\prop_new:N \g_istqb_business_outcomes_names_prop
 \markdownSetup
   {
     headerAttributes,
@@ -578,6 +1027,67 @@
                         }
                       }
                     \begin { istqb objectives }
+                  }
+              },
+              attributeClassName += {
+                %% Business outcomes
+                \tl_if_eq:nnT
+                  { ##1 }
+                  { business-outcomes }
+                  {
+                    \group_begin:
+                    \markdownSetup
+                      {
+                        rendererPrototypes = {
+                          olBegin = {
+                            \group_begin:
+                            \tl_set:Nn
+                              \l_istqb_business_outcomes_table_tl
+                              {
+                                \begin { istqbtable } { |l|X| }
+                                \istqbbusinessoutcomecode &
+                                \istqbbusinessoutcomedescription \\ \hline
+                              }
+                            \markdownSetup
+                              {
+                                rendererPrototypes = {
+                                  olItemWithNumber = {
+                                    \def\next################1\markdownRendererOlItemEnd
+                                      {
+                                        \seq_gput_right:Nn
+                                          \g_istqb_business_outcomes_numbers_seq
+                                          { ########1 }
+                                        \prop_gput:Nnn
+                                          \g_istqb_business_outcomes_names_prop
+                                          { ########1 }
+                                          { ################1 }
+                                        \tl_put_right:Nn
+                                          \l_istqb_business_outcomes_table_tl
+                                          {
+                                            \g_istqb_prefix_tl - BO########1 &
+                                            ################1 \\ \hline
+                                          }
+                                      }
+                                    \next
+                                  },
+                                  olEnd = {
+                                    \tl_put_right:Nn
+                                      \l_istqb_business_outcomes_table_tl
+                                      {
+                                        \end { istqbtable }
+                                      }
+                                    \tl_use:N
+                                      \l_istqb_business_outcomes_table_tl
+                                    \group_end:
+                                  },
+                                }
+                              }
+                          },
+                          sectionEnd = {
+                            \group_end:
+                          },
+                        }
+                      }
                   }
               },
               attributeIdentifier = {
