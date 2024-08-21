@@ -74,7 +74,7 @@ METADATA_REGEXP = re.compile(r'metadata.*\.ya?ml', flags=re.IGNORECASE)
 QUESTIONS_YAML_REGEXP = re.compile(r'questions.*\.ya?ml', flags=re.IGNORECASE)
 QUESTIONS_MARKDOWN_REGEXP = re.compile(r'questions.*\.(md|mdown|markdown)', flags=re.IGNORECASE)
 LANGUAGES_REGEXP = re.compile(r'..\.ya?ml', flags=re.IGNORECASE)
-TRACEABILITY_MATRIX_REGEXP = re.compile(r'traceability-matrix\.ya?ml', flags=re.IGNORECASE)
+TRACEABILITY_MATRIX_REGEXP = re.compile(r'traceability-matrix\.ya?ml$', flags=re.IGNORECASE)
 
 QUESTIONS_METADATA_REGEXP = re.compile(r'\s{0,3}#\s*metadata\s*', flags=re.IGNORECASE)
 QUESTIONS_QUESTION_REGEXP = re.compile(r'\s{0,3}##\s*question\s*', flags=re.IGNORECASE)
@@ -135,7 +135,7 @@ def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Pa
                 metadata_match = METADATA_REGEXP.fullmatch(path.name)
                 questions_match = QUESTIONS_YAML_REGEXP.fullmatch(path.name)
                 languages_match = path.parent.name == 'languages' and LANGUAGES_REGEXP.fullmatch(path.name)
-                traceability_matrix_match = TRACEABILITY_MATRIX_REGEXP.fullmatch(path.name)
+                traceability_matrix_match = TRACEABILITY_MATRIX_REGEXP.search(path.name)
 
                 if file_type == 'metadata':
                     return bool(metadata_match)
