@@ -96,9 +96,12 @@ Here is the structure of file `example.tex`:
      The back matter also contains an appendix with a traceability matrix between learning objectives and business outcomes. The traceability matrix is based on the file `example-document/traceability-matrix.yml`.
 
      ``` tex
-     % Traceability Matrix
+     % Appendices
      \begin{istqbappendices}
+
+     %% Traceability Matrix
      \markdownInput[snippet=matrix]{example-document/traceability-matrix.yml}
+
      \end{istqbappendices}
      ```
 
