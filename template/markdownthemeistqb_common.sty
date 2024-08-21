@@ -707,9 +707,12 @@
                 \clist_map_inline:Nn
                   \l_istqb_traceability_matrix_learning_objective_numbers_clist
                   {
+                    \tl_put_right:NV
+                      \l_istqb_traceability_matrix_body_tl
+                      \g_istqb_prefix_tl
                     \tl_put_right:Nn
                       \l_istqb_traceability_matrix_body_tl
-                      { ##1.####1.########1 & }
+                      { - ##1.####1.########1 & }
                     \prop_get:NnN
                       \g_istqb_learning_objective_names_prop
                       { ##1.####1.########1 }
