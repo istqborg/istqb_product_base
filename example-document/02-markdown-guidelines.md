@@ -1,4 +1,4 @@
-# Markdown & `\LaTeX`{=tex} syntax examples
+# Markdown & `\LaTeX`{=tex} guidelines {#markdown-latex-guidelines}
 
 This chapter explains how to use the template for ISTQB® documents, but explaning specific syntax of Markdown and `\LaTeX`{=tex} to be used while creating content or completing a document.
 
@@ -233,7 +233,7 @@ This is applied e.g. in the Revision History section.
 
 ## Section references {#section-references}
 
-To reference a section from the text of the document, first write a section identifier such as `{#section-references}` next to the section heading such as follows:
+To reference a section from the text of the document, first write a section identifier in lowercase letters, without whitespaces such as `{#section-references}` next to the section heading such as follows:
 
 ``` md
 ## Section references {#section-references}
@@ -581,3 +581,5 @@ For further instructions on defining references, see the `Bib\LaTeX`{=tex} manua
 You can index terms by writing `[0-switch coverage]{.index}`, `[functional appropriateness]{.index}`, or `[component integration testing]{.index}`. This will produce the following output: [0-switch coverage]{.index}, [functional appropriateness]{.index}, or [component integration testing]{.index}.
 
 Indexed terms are placed in section *Index* at the end of the document together with the page numbers on which the terms appeared.
+
+Words should only be included in the index when they are directly relevant to the subject matter, scope and audience of the syllabus. Keywords (Glossary terms) and Domain-specific Keywords that are contained in the syllabus should also be listed in the Index.
