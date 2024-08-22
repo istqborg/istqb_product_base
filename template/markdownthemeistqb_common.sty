@@ -371,39 +371,31 @@
         \istqblandscapebegin
         \istqbsection
           { Business~Outcomes~traceability~matrix~with~Learning~Objectives }
-        This~section~lists~the~number~of~
-        \tl_if_empty:NF
+        This~section~lists~the~traceability~between~the~Business~Outcomes~and~the~Learning~Objectives
+        \tl_if_empty:NTF
           \g_istqb_level_tl
           {
-            \tl_use:N
-              \g_istqb_level_tl
-            {}~
+            \tl_if_empty:NF
+              \g_istqb_title_tl
+              {
+                {}~of~
+                \tl_use:N
+                  \g_istqb_title_tl
+              }
           }
-        Learning~Objectives~related~to~the~
-        \tl_if_empty:NF
-          \g_istqb_level_tl
           {
+            {}~of~
             \tl_use:N
               \g_istqb_level_tl
-            {}~
+            \tl_if_empty:NF
+              \g_istqb_title_tl
+              {
+                {}~
+                \tl_use:N
+                  \g_istqb_title_tl
+              }
           }
-        Business~Outcomes~and~the~traceability~between~
-        \tl_if_empty:NF
-          \g_istqb_level_tl
-          {
-            \tl_use:N
-              \g_istqb_level_tl
-            {}~
-          }
-        Business~Outcomes~and~
-        \tl_if_empty:NF
-          \g_istqb_level_tl
-          {
-            \tl_use:N
-              \g_istqb_level_tl
-            {}~
-          }
-        Learning~Objectives.
+        .
       },
     },
     snippet = istqb / common
@@ -564,8 +556,20 @@
         \tl_set:Nn
           \l_tmpa_tl
           { Business~Outcomes }
-        \tl_if_empty:NF
+        \tl_if_empty:NTF
           \g_istqb_level_tl
+          {
+            \tl_if_empty:NF
+              \g_istqb_title_tl
+              {
+                \tl_put_right:Nn
+                  \l_tmpa_tl
+                  { :~ }
+                \tl_put_right:NV
+                  \l_tmpa_tl
+                  \g_istqb_title_tl
+              }
+          }
           {
             \tl_put_right:Nn
               \l_tmpa_tl
@@ -573,6 +577,16 @@
             \tl_put_right:NV
               \l_tmpa_tl
               \g_istqb_level_tl
+            \tl_if_empty:NF
+              \g_istqb_title_tl
+              {
+                \tl_put_right:Nn
+                  \l_tmpa_tl
+                  { ~ }
+                \tl_put_right:NV
+                  \l_tmpa_tl
+                  \g_istqb_title_tl
+              }
           }
         \tl_put_right:Nx
           \l_istqb_traceability_matrix_body_tl
