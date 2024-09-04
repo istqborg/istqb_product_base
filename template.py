@@ -6,6 +6,7 @@ Processes ISTQB documents written with the LaTeX+Markdown template.
 """
 
 from argparse import ArgumentParser, Namespace
+from collections import defaultdict
 from configparser import ConfigParser
 from contextlib import contextmanager
 from itertools import chain, repeat
@@ -36,7 +37,7 @@ DOCUMENT_FILETYPES = sorted(['xlsx', 'markdown', 'eps', 'tex', 'bib'])
 FILETYPES = METADATA_FILETYPES + DOCUMENT_FILETYPES
 
 VALIDATABLE_FILETYPES = ['all', 'all-yaml'] + sorted([
-  'metadata', 'questions-yaml', 'languages', 'traceability-matrix',
+  'metadata', 'questions-yaml', 'languages', 'traceability-matrix', 'tex',
 ])
 CONVERT_TO_DOCX_FILETYPES = ['all', 'user-yaml'] + sorted(['markdown', 'bib'])
 
@@ -86,29 +87,37 @@ QUESTIONS_ANSWER_REGEXP = re.compile(
 QUESTIONS_EXPLANATION_REGEXP = re.compile(r'\s{0,3}##\s*(explanation|justification)\s*', flags=re.IGNORECASE)
 
 
-def _get_references_from_tex_file(tex_input_paths: Iterable[Path]) -> Iterable[Path]:
+def _get_flat_references_from_tex_file(tex_input_paths: Iterable[Path]) -> Iterable[Path]:
+    return chain(*[paths for *_, paths in _get_references_from_tex_file(tex_input_paths)])
+
+
+def _get_references_from_tex_file(tex_input_paths: Iterable[Path]) -> Iterable[Tuple[Tuple[Path, int], Path, Iterable[Path]]]:
     for tex_input_path in tex_input_paths:
         with tex_input_path.open('rt') as f:
-            text = f.read()
-            for pattern in [MARKDOWNINPUT_REGEXP, ADDBIBRESOURCE_REGEXP]:
-                for match in pattern.finditer(text):
-                    # Yield directly referenced paths.
-                    path = Path(match.group('filename'))
-                    if not path.is_absolute():
-                        path = tex_input_path.parent / path
-                    path = path.resolve()
-                    yield path
-                    # For YAML questions, yield also MD question source files.
-                    if QUESTIONS_YAML_REGEXP.fullmatch(path.name):
-                        for md_path in path.parent.glob(f'{path.stem}.*'):
-                            if QUESTIONS_MARKDOWN_REGEXP.fullmatch(md_path.name):
-                                md_path = md_path.resolve()
-                                yield md_path
+            for line_number, line in enumerate(f):
+                line_number += 1
+                line = line.rstrip('\r\n')
+                for pattern in [MARKDOWNINPUT_REGEXP, ADDBIBRESOURCE_REGEXP]:
+                    for match in pattern.finditer(line):
+                        # Yield directly referenced paths.
+                        original_referenced_path = Path(match.group('filename'))
+                        referenced_path = original_referenced_path
+                        if not referenced_path.is_absolute():
+                            referenced_path = tex_input_path.parent / referenced_path
+                        referenced_path = referenced_path.resolve()
+                        referenced_paths = [referenced_path]
+                        # For YAML questions, yield also MD question source files.
+                        if QUESTIONS_YAML_REGEXP.fullmatch(referenced_path.name):
+                            for referenced_md_path in path.parent.glob(f'{path.stem}.*'):
+                                if QUESTIONS_MARKDOWN_REGEXP.fullmatch(referenced_md_path.name):
+                                    referenced_md_path = referenced_md_path.resolve()
+                                    referenced_paths.append(referenced_md_path)
+                        yield (tex_input_path, line_number), original_referenced_path, referenced_paths
 
 
 def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Path]] = None, root: Path = Path('.')) -> Iterable[Path]:
     file_types = list(file_types)
-    referenced_files = set(_get_references_from_tex_file(tex_input_paths)) if tex_input_paths is not None else None
+    referenced_files = set(_get_flat_references_from_tex_file(tex_input_paths)) if tex_input_paths is not None else None
     seen_paths = set()
     for parent_directory, subdirectories, filenames in os.walk(root, topdown=True, onerror=print, followlinks=True):
 
@@ -286,33 +295,43 @@ def _fixup_line_endings() -> None:
 
 def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
 
-    def validate_file(schema, path: Path):
+    def validate_yaml_file(schema, path: Path):
         data = yamale.make_data(path)
         yamale.validate(schema, data)
         _run_command('texlua', f'{ROOT_DIRECTORY / "check-yaml.lua"}')
         if not silent:
             LOGGER.info('Validated file "%s" with schema "%s"', path, schema.name)
 
+    def validate_tex_file(path: Path):
+        references = list(_get_references_from_tex_file([path]))
+        for (tex_input_path, line_number), original_referenced_path, referenced_paths in references:
+            if not any(path.exists() for path in referenced_paths):
+                raise ValueError(f'File "{original_referenced_path}" referenced on line {line_number} of file "{tex_input_path}" not found')
+        if not silent:
+            LOGGER.info('Validated file "%s" that references %d other files', path, len(references))
+
     for file_type in file_types:
         if file_type in ('metadata', 'all', 'all-yaml'):
             schema = yamale.make_schema(SCHEMA_DIRECTORY / 'metadata.yml')
             for path in _find_files(file_types=['metadata']):
-                validate_file(schema, path)
+                validate_yaml_file(schema, path)
         if file_type in ('questions-yaml', 'all', 'all-yaml'):
             _convert_md_questions_to_yaml()
             schema = yamale.make_schema(SCHEMA_DIRECTORY / 'questions.yml')
             for path in _find_files(file_types=['questions-yaml']):
-                validate_file(schema, path)
+                validate_yaml_file(schema, path)
         if file_type in ('languages', 'all', 'all-yaml'):
             _fixup_languages()
             schema = yamale.make_schema(SCHEMA_DIRECTORY / 'language.yml')
             for path in _find_files(file_types=['languages']):
-                validate_file(schema, path)
+                validate_yaml_file(schema, path)
         if file_type in ('traceability-matrix', 'all', 'all-yaml'):
-            _fixup_languages()
             schema = yamale.make_schema(SCHEMA_DIRECTORY / 'traceability-matrix.yml')
             for path in _find_files(file_types=['traceability-matrix']):
-                validate_file(schema, path)
+                validate_yaml_file(schema, path)
+        if file_type in ('tex', 'all'):
+            for path in _find_files(file_types=['tex']):
+                validate_tex_file(path)
 
 
 def _convert_eps_files_to_pdf() -> None:
@@ -520,14 +539,8 @@ def _change_directory(new_path):
         os.chdir(original_path)
 
 
-def _get_metadata_paths(input_path: Path) -> List[Path]:
-    referenced_paths = set(chain([input_path], _get_references_from_tex_file([input_path])))
-    metadata_paths = set(_find_files(file_types=['metadata'])) & referenced_paths
-    return sorted(metadata_paths)
-
-
 def _get_metadata_path(input_path: Path, action: str) -> Optional[Path]:
-    metadata_paths = _get_metadata_paths(input_path)
+    metadata_paths = list(_find_files(file_types=['metadata'], tex_input_paths=[input_path]))
     if len(metadata_paths) == 0:
         if action:
             LOGGER.warning('Found no metadata of file "%s" when trying to %s', input_path, action)
@@ -727,7 +740,7 @@ def _compile_tex_file_to_docx(input_path: Path, output_directory: Path) -> Optio
 
     # Collect files referenced from the TeX file.
     markdown_texts = []
-    for nested_path in _get_references_from_tex_file(tex_input_paths=[input_path]):
+    for nested_path in _get_flat_references_from_tex_file(tex_input_paths=[input_path]):
         if MARKDOWN_REGEXP.search(nested_path.name):
             with nested_path.open('rt') as f:
                 markdown_text = f.read()
@@ -775,7 +788,7 @@ def _should_compile_tex_file(input_path: Path) -> bool:
         return True
 
     changed_paths = set(_changed_paths())
-    referenced_paths = set(chain([input_path], _get_references_from_tex_file([input_path])))
+    referenced_paths = set(chain([input_path], _get_flat_references_from_tex_file([input_path])))
     return bool(referenced_paths & changed_paths)
 
 
