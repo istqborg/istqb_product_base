@@ -22,7 +22,7 @@ env:
   DEBIAN_FRONTEND: noninteractive
 jobs:
   validate:
-    name: Validate YAML documents
+    name: Validate LaTeX, MD, and YAML documents
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/istqborg/istqb_product_base:latest
@@ -43,8 +43,8 @@ jobs:
           git clone https://github.com/istqborg/istqb_product_base.git /opt/istqb_product_base
           cd /opt/istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-      - name: Validate YAML documents
-        run: istqb-template validate-files all-yaml
+      - name: Validate LaTeX, MD, and YAML documents
+        run: istqb-template validate-files all
   produce-pdf:
     name: Produce PDF documents
     needs:
