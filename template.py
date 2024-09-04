@@ -130,7 +130,7 @@ def _get_references_from_tex_files(tex_input_paths: Iterable[Path]) -> Iterable[
                     referenced_paths = [referenced_path]
                     # For YAML questions, yield also MD question source files.
                     if QUESTIONS_YAML_REGEXP.fullmatch(referenced_path.name):
-                        for referenced_md_path in path.parent.glob(f'{path.stem}.*'):
+                        for referenced_md_path in referenced_path.parent.glob(f'{referenced_path.stem}.*'):
                             if QUESTIONS_MARKDOWN_REGEXP.fullmatch(referenced_md_path.name):
                                 referenced_md_path = referenced_md_path.resolve()
                                 referenced_paths.append(referenced_md_path)
