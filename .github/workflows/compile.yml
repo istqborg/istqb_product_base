@@ -43,8 +43,12 @@ jobs:
           git clone https://github.com/istqborg/istqb_product_base.git /opt/istqb_product_base
           cd /opt/istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
-      - name: Validate LaTeX, MD, and YAML documents
-        run: istqb-template validate-files all
+      - name: Validate LaTeX documents
+        run: istqb-template validate-files tex
+      - name: Validate MD documents
+        run: istqb-template validate-files markdown
+      - name: Validate YAML documents
+        run: istqb-template validate-files all-yaml
   produce-pdf:
     name: Produce PDF documents
     needs:
