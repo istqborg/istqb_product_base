@@ -378,7 +378,7 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
             if not silent:
                 LOGGER.warning(
                     (
-                        'Identifier "%s" referenced on line %d of file "%s" is unused in any of the %d markdown files referenced '
+                        'Identifier "%s" defined on line %d of file "%s" is unused in any of the %d markdown files referenced '
                         'from file "%s"'
                     ),
                     unused_identifier, line_number, md_input_path, len(md_input_paths), tex_input_path,
