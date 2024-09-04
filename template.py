@@ -341,10 +341,6 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
         if not silent:
             LOGGER.info('Validated file "%s" that references %d other files', path, len(references))
 
-        if file_type in ('markdown', 'all'):
-            for md_input_path in _find_files(file_types=['markdown'], tex_input_paths=[path]):
-                validate_markdown_file(md_input_path, path)
-
     def validate_markdown_file(path: Path, tex_input_path: Path):
         # Check cross-references.
         identifiers: Dict[str, List[Tuple[Path, int]]] = defaultdict(lambda: list())
