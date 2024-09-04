@@ -89,42 +89,55 @@ QUESTIONS_ANSWER_REGEXP = re.compile(
 QUESTIONS_EXPLANATION_REGEXP = re.compile(r'\s{0,3}##\s*(explanation|justification)\s*', flags=re.IGNORECASE)
 
 
-LineLocation = Tuple[Path, int]
+FileLocation = Tuple[Path, int]
 
 
-def _get_identifiers_from_markdown_files(md_input_paths: Iterable[Path]) -> Iterable[Tuple[LineLocation, str]]:
+def _get_identifiers_from_markdown_files(md_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, str]]:
     return []  # TODO: Implement the extraction of identifiers from markdown files
 
 
-def _get_cross_references_from_markdown_files(md_input_paths: Iterable[Path]) -> Iterable[Tuple[LineLocation, str]]:
+def _get_cross_references_from_markdown_files(md_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, str]]:
     return []  # TODO: Implement the extraction of cross-references from markdown files
 
 
-def _get_references_from_tex_files(tex_input_paths: Iterable[Path]) -> Iterable[Tuple[LineLocation, Path, Iterable[Path]]]:
+def _get_line_number_from_file_location(location: FileLocation) -> int:
+    path, character_number = location
+    current_character_number = 0
+    with path.open('rt') as f:
+        for line_number, line in enumerate(f):
+            if current_character_number + len(line) >= character_number:
+                return line_number + 1
+            current_character_number += len(line)
+    raise ValueError(
+        f'Tried to determine the line number of character {character_number} in file "{path}" '
+        f'but found only {current_character_number} characters'
+    )
+
+
+def _get_references_from_tex_files(tex_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, Path, Iterable[Path]]]:
     for tex_input_path in tex_input_paths:
         with tex_input_path.open('rt') as f:
-            for line_number, line in enumerate(f):
-                line_number += 1
-                line = line.rstrip('\r\n')
-                for pattern in [MARKDOWNINPUT_REGEXP, ADDBIBRESOURCE_REGEXP]:
-                    for match in pattern.finditer(line):
-                        # Yield directly referenced paths.
-                        original_referenced_path = Path(match.group('filename'))
-                        referenced_path = original_referenced_path
-                        if not referenced_path.is_absolute():
-                            referenced_path = tex_input_path.parent / referenced_path
-                        referenced_path = referenced_path.resolve()
-                        referenced_paths = [referenced_path]
-                        # For YAML questions, yield also MD question source files.
-                        if QUESTIONS_YAML_REGEXP.fullmatch(referenced_path.name):
-                            for referenced_md_path in path.parent.glob(f'{path.stem}.*'):
-                                if QUESTIONS_MARKDOWN_REGEXP.fullmatch(referenced_md_path.name):
-                                    referenced_md_path = referenced_md_path.resolve()
-                                    referenced_paths.append(referenced_md_path)
-                        yield (tex_input_path, line_number), original_referenced_path, referenced_paths
+            text = f.read()
+            for pattern in [MARKDOWNINPUT_REGEXP, ADDBIBRESOURCE_REGEXP]:
+                for match in pattern.finditer(text):
+                    # Yield directly referenced paths.
+                    original_referenced_path = Path(match.group('filename'))
+                    character_number = match.start('filename')
+                    referenced_path = original_referenced_path
+                    if not referenced_path.is_absolute():
+                        referenced_path = tex_input_path.parent / referenced_path
+                    referenced_path = referenced_path.resolve()
+                    referenced_paths = [referenced_path]
+                    # For YAML questions, yield also MD question source files.
+                    if QUESTIONS_YAML_REGEXP.fullmatch(referenced_path.name):
+                        for referenced_md_path in path.parent.glob(f'{path.stem}.*'):
+                            if QUESTIONS_MARKDOWN_REGEXP.fullmatch(referenced_md_path.name):
+                                referenced_md_path = referenced_md_path.resolve()
+                                referenced_paths.append(referenced_md_path)
+                    yield (tex_input_path, character_number), original_referenced_path, referenced_paths
 
 
-def _flatten_references(references: Iterable[Tuple[LineLocation, Path, Iterable[Path]]]) -> Iterable[Path]:
+def _flatten_references(references: Iterable[Tuple[FileLocation, Path, Iterable[Path]]]) -> Iterable[Path]:
     return chain(*[paths for *_, paths in references])
 
 
@@ -321,7 +334,8 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
 
     def validate_tex_file(path: Path):
         references = list(_get_references_from_tex_files([path]))
-        for (tex_input_path, line_number), original_referenced_path, referenced_paths in references:
+        for (tex_input_path, character_number), original_referenced_path, referenced_paths in references:
+            line_number = _get_line_number_from_file_location((tex_input_path, character_number))
             if not any(path.exists() for path in referenced_paths):
                 raise ValueError(f'File "{original_referenced_path}" referenced on line {line_number} of file "{tex_input_path}" not found')
         if not silent:
@@ -341,7 +355,9 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
         for location, identifier in _get_identifiers_from_markdown_files(md_input_paths):
             identifiers[identifier].append(location)
             if len(identifiers[identifier]) > 1:
-                (first_md_input_path, first_line_number), (second_md_input_path, second_line_number) = identifiers[identifier]
+                (first_md_input_path, first_character_number), (second_md_input_path, second_character_number) = identifiers[identifier]
+                first_line_number = _get_line_number_from_file_location((first_md_input_path, first_character_number))
+                second_line_number = _get_line_number_from_file_location((second_md_input_path, second_character_number))
                 raise ValueError(
                     f'Identifier "{identifier}" is defined twice, once on line {first_line_number} of file "{first_md_input_path}" '
                     f'and once on line {second_line_number} of file "{second_md_input_path}"'
@@ -352,7 +368,8 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
 
         missing_identifiers = cross_references.keys() - identifiers.keys() - BUILTIN_IDENTIFIERS
         for missing_identifier in missing_identifiers:
-            (md_input_path, line_number), *_ = cross_references[missing_identifier]
+            (md_input_path, character_number), *_ = cross_references[missing_identifier]
+            line_number = _get_line_number_from_file_location((md_input_path, character_number))
             raise ValueError(
                 f'Identifier "{missing_identifier}" referenced on line {line_number} of file "{md_input_path}" not found '
                 f'in any of the {len(md_input_paths)} markdown files referenced from file "{tex_input_path}"'
@@ -360,7 +377,8 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
 
         unused_identifiers = identifiers.keys() - cross_references.keys()
         for unused_identifier in unused_identifiers:
-            (md_input_path, line_number), *_ = identifiers[unused_identifier]
+            (md_input_path, character_number), *_ = identifiers[unused_identifier]
+            line_number = _get_line_number_from_file_location((md_input_path, character_number))
             if not silent:
                 LOGGER.warning(
                     (
