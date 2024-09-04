@@ -384,10 +384,11 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
                     unused_identifier, line_number, md_input_path, len(md_input_paths), tex_input_path,
                 )
 
-        LOGGER.info(
-            'Validated file "%s" that contains %d identifiers and %d cross-references',
-            path, len(identifiers), num_cross_references,
-        )
+        if not silent:
+            LOGGER.info(
+                'Validated file "%s" that contains %d identifiers and %d cross-references',
+                path, len(identifiers), num_cross_references,
+            )
 
     for file_type in file_types:
         if file_type in ('metadata', 'all', 'all-yaml'):
