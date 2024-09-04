@@ -37,7 +37,7 @@ DOCUMENT_FILETYPES = sorted(['xlsx', 'markdown', 'eps', 'tex', 'bib'])
 FILETYPES = METADATA_FILETYPES + DOCUMENT_FILETYPES
 
 VALIDATABLE_FILETYPES = ['all', 'all-yaml'] + sorted([
-  'metadata', 'questions-yaml', 'languages', 'traceability-matrix', 'tex',
+  'metadata', 'questions-yaml', 'languages', 'traceability-matrix', 'tex', 'markdown',
 ])
 CONVERT_TO_DOCX_FILETYPES = ['all', 'user-yaml'] + sorted(['markdown', 'bib'])
 
@@ -59,6 +59,8 @@ ISTQB_MK4 = ROOT_DIRECTORY / 'istqb.mk4'
 
 PANDOC_INPUT_FORMAT = 'commonmark'
 PANDOC_EXTENSIONS = ['bracketed_spans', 'fancy_lists', 'pipe_tables', 'raw_attribute']
+
+BUILTIN_IDENTIFIERS = {'section:references', 'section:further-reading'}
 
 MARKDOWNINPUT_REGEXP = re.compile(r'\\markdownInput(\[.*?\])?{(?P<filename>.*?)}', re.DOTALL)
 ADDBIBRESOURCE_REGEXP = re.compile(r'\\addbibresource{(?P<filename>.*?)}', re.DOTALL)
@@ -87,11 +89,18 @@ QUESTIONS_ANSWER_REGEXP = re.compile(
 QUESTIONS_EXPLANATION_REGEXP = re.compile(r'\s{0,3}##\s*(explanation|justification)\s*', flags=re.IGNORECASE)
 
 
-def _get_flat_references_from_tex_file(tex_input_paths: Iterable[Path]) -> Iterable[Path]:
-    return chain(*[paths for *_, paths in _get_references_from_tex_file(tex_input_paths)])
+LineLocation = Tuple[Path, int]
 
 
-def _get_references_from_tex_file(tex_input_paths: Iterable[Path]) -> Iterable[Tuple[Tuple[Path, int], Path, Iterable[Path]]]:
+def _get_identifiers_from_markdown_files(md_input_paths: Iterable[Path]) -> Iterable[Tuple[LineLocation, str]]:
+    return []  # TODO: Implement the extraction of identifiers from markdown files
+
+
+def _get_cross_references_from_markdown_files(md_input_paths: Iterable[Path]) -> Iterable[Tuple[LineLocation, str]]:
+    return []  # TODO: Implement the extraction of cross-references from markdown files
+
+
+def _get_references_from_tex_files(tex_input_paths: Iterable[Path]) -> Iterable[Tuple[LineLocation, Path, Iterable[Path]]]:
     for tex_input_path in tex_input_paths:
         with tex_input_path.open('rt') as f:
             for line_number, line in enumerate(f):
@@ -115,9 +124,17 @@ def _get_references_from_tex_file(tex_input_paths: Iterable[Path]) -> Iterable[T
                         yield (tex_input_path, line_number), original_referenced_path, referenced_paths
 
 
+def _flatten_references(references: Iterable[Tuple[LineLocation, Path, Iterable[Path]]]) -> Iterable[Path]:
+    return chain(*[paths for *_, paths in references])
+
+
+def _get_flat_references_from_tex_files(tex_input_paths: Iterable[Path]) -> Iterable[Path]:
+    return _flatten_references(_get_references_from_tex_files(tex_input_paths))
+
+
 def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Path]] = None, root: Path = Path('.')) -> Iterable[Path]:
     file_types = list(file_types)
-    referenced_files = set(_get_flat_references_from_tex_file(tex_input_paths)) if tex_input_paths is not None else None
+    referenced_files = set(_get_flat_references_from_tex_files(tex_input_paths)) if tex_input_paths is not None else None
     seen_paths = set()
     for parent_directory, subdirectories, filenames in os.walk(root, topdown=True, onerror=print, followlinks=True):
 
@@ -303,12 +320,60 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
             LOGGER.info('Validated file "%s" with schema "%s"', path, schema.name)
 
     def validate_tex_file(path: Path):
-        references = list(_get_references_from_tex_file([path]))
+        references = list(_get_references_from_tex_files([path]))
         for (tex_input_path, line_number), original_referenced_path, referenced_paths in references:
             if not any(path.exists() for path in referenced_paths):
                 raise ValueError(f'File "{original_referenced_path}" referenced on line {line_number} of file "{tex_input_path}" not found')
         if not silent:
             LOGGER.info('Validated file "%s" that references %d other files', path, len(references))
+
+        if file_type in ('markdown', 'all'):
+            for md_input_path in _find_files(file_types=['markdown'], tex_input_paths=[path]):
+                validate_markdown_file(md_input_path, path)
+
+    def validate_markdown_file(path: Path, tex_input_path: Path):
+        # Check cross-references.
+        identifiers: Dict[str, List[Tuple[Path, int]]] = defaultdict(lambda: list())
+        cross_references: Dict[str, List[Tuple[Path, int]]] = defaultdict(lambda: list())
+        num_cross_references = 0
+
+        md_input_paths = list(_find_files(file_types=['markdown'], tex_input_paths=[tex_input_path]))
+        for location, identifier in _get_identifiers_from_markdown_files(md_input_paths):
+            identifiers[identifier].append(location)
+            if len(identifiers[identifier]) > 1:
+                (first_md_input_path, first_line_number), (second_md_input_path, second_line_number) = identifiers[identifier]
+                raise ValueError(
+                    f'Identifier "{identifier}" is defined twice, once on line {first_line_number} of file "{first_md_input_path}" '
+                    f'and once on line {second_line_number} of file "{second_md_input_path}"'
+                )
+        for location, identifier in _get_cross_references_from_markdown_files([path]):
+            cross_references[identifier].append(location)
+            num_cross_references += 1
+
+        missing_identifiers = cross_references.keys() - identifiers.keys() - BUILTIN_IDENTIFIERS
+        for missing_identifier in missing_identifiers:
+            (md_input_path, line_number), *_ = cross_references[missing_identifier]
+            raise ValueError(
+                f'Identifier "{missing_identifier}" referenced on line {line_number} of file "{md_input_path}" not found '
+                f'in any of the {len(md_input_paths)} markdown files referenced from file "{tex_input_path}"'
+            )
+
+        unused_identifiers = identifiers.keys() - cross_references.keys()
+        for unused_identifier in unused_identifiers:
+            (md_input_path, line_number), *_ = identifiers[unused_identifier]
+            if not silent:
+                LOGGER.warning(
+                    (
+                        'Identifier "%s" referenced on line %d of file "%s" is unused in any of the %d markdown files referenced '
+                        'from file "%s"'
+                    ),
+                    unused_identifier, line_number, md_input_path, len(md_input_paths), tex_input_path,
+                )
+
+        LOGGER.info(
+            'Validated file "%s" that contains %d identifiers and %d cross-references',
+            path, len(identifiers), num_cross_references,
+        )
 
     for file_type in file_types:
         if file_type in ('metadata', 'all', 'all-yaml'):
@@ -332,6 +397,10 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
         if file_type in ('tex', 'all'):
             for path in _find_files(file_types=['tex']):
                 validate_tex_file(path)
+        if file_type in ('markdown', 'all'):
+            for tex_input_path in _find_files(file_types=['tex']):
+                for md_input_path in _find_files(file_types=['markdown'], tex_input_paths=[tex_input_path]):
+                    validate_markdown_file(md_input_path, tex_input_path)
 
 
 def _convert_eps_files_to_pdf() -> None:
@@ -740,7 +809,7 @@ def _compile_tex_file_to_docx(input_path: Path, output_directory: Path) -> Optio
 
     # Collect files referenced from the TeX file.
     markdown_texts = []
-    for nested_path in _get_flat_references_from_tex_file(tex_input_paths=[input_path]):
+    for nested_path in _get_flat_references_from_tex_files(tex_input_paths=[input_path]):
         if MARKDOWN_REGEXP.search(nested_path.name):
             with nested_path.open('rt') as f:
                 markdown_text = f.read()
@@ -788,7 +857,7 @@ def _should_compile_tex_file(input_path: Path) -> bool:
         return True
 
     changed_paths = set(_changed_paths())
-    referenced_paths = set(chain([input_path], _get_flat_references_from_tex_file([input_path])))
+    referenced_paths = set(chain([input_path], _get_flat_references_from_tex_files([input_path])))
     return bool(referenced_paths & changed_paths)
 
 
