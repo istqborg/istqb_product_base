@@ -424,7 +424,8 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
                 all_filenames = [str(path) for path in _find_files(['all'])]
                 if all_filenames:
                     nearest_filename = _get_nearest_text(str(original_referenced_path), all_filenames)
-                    message = f'{message}; did you mean "{nearest_filename}"?'
+                    nearest_path = Path(nearest_filename).relative_to(tex_input_path.parent, walk_up=True)
+                    message = f'{message}; did you mean "{nearest_path}"?'
                 raise ValueError(message)
 
         if not silent:
