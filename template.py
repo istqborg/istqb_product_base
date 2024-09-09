@@ -420,7 +420,13 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
         for (tex_input_path, character_number), original_referenced_path, referenced_paths in references:
             line_number = _get_line_number_from_file_location((tex_input_path, character_number))
             if not any(path.exists() for path in referenced_paths):
-                raise ValueError(f'File "{original_referenced_path}" referenced on line {line_number} of file "{tex_input_path}" not found')
+                message = f'File "{original_referenced_path}" referenced on line {line_number} of file "{tex_input_path}" not found'
+                all_filenames = [str(path) for path in _find_files(['all'])]
+                if all_filenames:
+                    nearest_filename = _get_nearest_text(str(original_referenced_path), all_filenames)
+                    message = f'{message}; did you mean "{nearest_filename}"?'
+                raise ValueError(message)
+
         if not silent:
             LOGGER.info('Validated file "%s" that references %d other files', path, len(references))
 
