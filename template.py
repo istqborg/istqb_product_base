@@ -65,6 +65,25 @@ BUILTIN_IDENTIFIERS = {'section:references', 'section:further-reading'}
 MARKDOWNINPUT_REGEXP = re.compile(r'\\markdownInput(\[.*?\])?{(?P<filename>.*?)}', re.DOTALL)
 ADDBIBRESOURCE_REGEXP = re.compile(r'\\addbibresource{(?P<filename>.*?)}', re.DOTALL)
 
+ATTRIBUTES_REGEXPS = {
+    'section': re.compile(
+        '|'.join([
+            r'^\s*#.*\{([^}]*)\}\s*$',  # ATX headers
+            r'^\s*(?!\s|#).*\{([^}]*)\}\s*\n\s*[=-]',  # Setext headers
+        ]),
+        re.MULTILINE
+    ),
+    'figure': re.compile(r'!\[([^]]+)'),  # Figures
+    'table': re.compile(r'^\s{1,3}:.*\{([^}]*)\}\s*$', re.MULTILINE),  # Pipe tables
+}
+CROSS_REFERENCE_REGEXP = re.compile(
+    '|'.join([
+        r'<#(.+?)>',  # Relative autolink
+        r']\(#(.+?)\)',  # Relative direct link
+    ])
+)
+IDENTIFIER_REGEXP = re.compile(r'#(?P<identifier>\S+)')
+
 XLSX_REGEXP = re.compile(r'\.xlsx$', flags=re.IGNORECASE)
 EPS_REGEXP = re.compile(r'\.eps$', flags=re.IGNORECASE)
 TEX_REGEXP = re.compile(r'(?<!\.md)\.tex$', flags=re.IGNORECASE)
@@ -92,12 +111,46 @@ QUESTIONS_EXPLANATION_REGEXP = re.compile(r'\s{0,3}##\s*(explanation|justificati
 FileLocation = Tuple[Path, int]
 
 
+@lru_cache(maxsize=None)  # only show every warning once
+def _warning(*args, **kwargs) -> None:
+    LOGGER.warning(*args, **kwargs)
+
+
 def _get_identifiers_from_markdown_files(md_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, str]]:
-    return []  # TODO: Implement the extraction of identifiers from markdown files
+    for md_input_path in md_input_paths:
+        with md_input_path.open('rt') as f:
+            text = f.read()
+            for prefix, pattern in ATTRIBUTES_REGEXPS.items():
+                for attributes_match in pattern.finditer(text):
+                    group_number, = [group_number + 1 for group_number, group in enumerate(attributes_match.groups()) if group is not None]
+                    attributes = attributes_match.group(group_number)
+                    attributes_character_number = attributes_match.start(group_number)
+
+                    raw_identifiers = []
+                    if prefix == 'figure':
+                        raw_identifiers.append((attributes, 0))
+                    else:
+                        for identifier_match in IDENTIFIER_REGEXP.finditer(attributes):
+                            raw_identifier = identifier_match.group('identifier')
+                            assert raw_identifier is not None
+                            identifier_character_number = identifier_match.start('identifier')
+                            raw_identifiers.append((raw_identifier, identifier_character_number))
+
+                    for (raw_identifier, identifier_character_number) in raw_identifiers:
+                        identifier = f'{prefix}:{raw_identifier}'
+                        character_number = attributes_character_number + identifier_character_number
+                        yield (md_input_path, character_number), identifier
 
 
 def _get_cross_references_from_markdown_files(md_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, str]]:
-    return []  # TODO: Implement the extraction of cross-references from markdown files
+    for md_input_path in md_input_paths:
+        with md_input_path.open('rt') as f:
+            text = f.read()
+            for identifier_match in CROSS_REFERENCE_REGEXP.finditer(text):
+                group_number, = [group_number + 1 for group_number, group in enumerate(identifier_match.groups()) if group is not None]
+                identifier = identifier_match.group(group_number)
+                character_number = identifier_match.start(group_number)
+                yield (md_input_path, character_number), identifier
 
 
 def _get_line_number_from_file_location(location: FileLocation) -> int:
@@ -376,7 +429,7 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
             (md_input_path, character_number), *_ = identifiers[unused_identifier]
             line_number = _get_line_number_from_file_location((md_input_path, character_number))
             if not silent:
-                LOGGER.warning(
+                _warning(
                     (
                         'Identifier "%s" defined on line %d of file "%s" is unused in any of the %d markdown files referenced '
                         'from file "%s"'
@@ -386,7 +439,7 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
 
         if not silent:
             LOGGER.info(
-                'Validated file "%s" that contains %d identifiers and %d cross-references',
+                'Validated file "%s" that can reach %d identifiers and contains %d cross-references',
                 path, len(identifiers), num_cross_references,
             )
 
@@ -534,13 +587,13 @@ def _convert_md_questions_to_yaml() -> None:
     for input_path in _find_files(['questions-markdown']):
         output_path = input_path.with_suffix('.yml')
         if output_path.exists():
-            LOGGER.warning('Skipping creation of existing file "%s"', output_path)
+            _warning('Skipping creation of existing file "%s"', output_path)
             continue
 
         output_yaml = {'questions': dict(_read_md_questions(input_path))}
 
         if not output_yaml:
-            LOGGER.warning('Found no questions in file "%s", skipping creation of empty file "%s"', input_path, output_path)
+            _warning('Found no questions in file "%s", skipping creation of empty file "%s"', input_path, output_path)
         else:
             with output_path.open('wt') as f:
                 print('questions:', file=f)
@@ -560,7 +613,7 @@ def _convert_yaml_questions_to_md() -> None:
     for input_path in _find_files(['questions-yaml']):
         output_path = input_path.with_suffix('.md')
         if output_path.exists():
-            LOGGER.warning('Skipping creation of existing file "%s"', output_path)
+            _warning('Skipping creation of existing file "%s"', output_path)
             continue
 
         with input_path.open('rt') as f:
@@ -627,12 +680,12 @@ def _get_metadata_path(input_path: Path, action: str) -> Optional[Path]:
     metadata_paths = list(_find_files(file_types=['metadata'], tex_input_paths=[input_path]))
     if len(metadata_paths) == 0:
         if action:
-            LOGGER.warning('Found no metadata of file "%s" when trying to %s', input_path, action)
+            _warning('Found no metadata of file "%s" when trying to %s', input_path, action)
         return None
     if len(metadata_paths) > 1:
         if action:
             formatted_paths = ', '.join(f'"{path}"' for path in sorted(metadata_paths))
-            LOGGER.warning('Found multiple metadata (%s) of file "%s" when trying to %s', formatted_paths, input_path, action)
+            _warning('Found multiple metadata (%s) of file "%s" when trying to %s', formatted_paths, input_path, action)
         return None
     metadata_path, = metadata_paths
     return metadata_path
