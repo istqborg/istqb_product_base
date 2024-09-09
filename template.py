@@ -557,9 +557,14 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
                 validate_tex_file(path)
         if file_type in ('markdown', 'all'):
             for tex_input_path in _find_files(file_types=['tex']):
+                md_input_paths = list(_find_files(file_types=['markdown'], tex_input_paths=[tex_input_path]))
                 if tex_input_path == EXAMPLE_DOCUMENT:
+                    LOGGER.info(
+                        'Skipping the validation of %d markdown documents referenced from example document "%s"',
+                        len(md_input_paths), tex_input_path,
+                    )
                     continue
-                for md_input_path in _find_files(file_types=['markdown'], tex_input_paths=[tex_input_path]):
+                for md_input_path in md_input_paths:
                     validate_markdown_file(md_input_path, tex_input_path)
 
 
