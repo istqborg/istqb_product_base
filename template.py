@@ -83,6 +83,8 @@ CROSS_REFERENCE_REGEXP = re.compile(
         r']\(#(.+?)\)',  # Relative direct link
     ])
 )
+BIBLIOGRAPHIC_REFERENCE_REGEXP = re.compile(r'@([-a-zA-Z0-9#$%&+<>~/_]+)')  # Bracketed and text citations
+BIBENTRY_REGEXP = re.compile(r'^\s*@[^{]+\{(.+?)\s*,\s*$', re.MULTILINE)
 IDENTIFIER_REGEXP = re.compile(r'#(?P<identifier>\S+)')
 
 XLSX_REGEXP = re.compile(r'\.xlsx$', flags=re.IGNORECASE)
@@ -148,11 +150,33 @@ def _get_identifiers_from_markdown_files(md_input_paths: Iterable[Path]) -> Iter
                         yield (md_input_path, character_number), identifier
 
 
+def _get_identifiers_from_bib_files(bib_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, str]]:
+    for bib_input_path in bib_input_paths:
+        with bib_input_path.open('rt') as f:
+            text = f.read()
+            for identifier_match in BIBENTRY_REGEXP.finditer(text):
+                group_number, = [group_number + 1 for group_number, group in enumerate(identifier_match.groups()) if group is not None]
+                identifier = identifier_match.group(group_number)
+                character_number = identifier_match.start(group_number)
+                yield (bib_input_path, character_number), identifier
+
+
 def _get_cross_references_from_markdown_files(md_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, str]]:
     for md_input_path in md_input_paths:
         with md_input_path.open('rt') as f:
             text = f.read()
             for identifier_match in CROSS_REFERENCE_REGEXP.finditer(text):
+                group_number, = [group_number + 1 for group_number, group in enumerate(identifier_match.groups()) if group is not None]
+                identifier = identifier_match.group(group_number)
+                character_number = identifier_match.start(group_number)
+                yield (md_input_path, character_number), identifier
+
+
+def _get_bibliographic_references_from_markdown_files(md_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, str]]:
+    for md_input_path in md_input_paths:
+        with md_input_path.open('rt') as f:
+            text = f.read()
+            for identifier_match in BIBLIOGRAPHIC_REFERENCE_REGEXP.finditer(text):
                 group_number, = [group_number + 1 for group_number, group in enumerate(identifier_match.groups()) if group is not None]
                 identifier = identifier_match.group(group_number)
                 character_number = identifier_match.start(group_number)
@@ -402,57 +426,104 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
 
     def validate_markdown_file(path: Path, tex_input_path: Path):
         # Check cross-references.
-        identifiers: Dict[str, List[Tuple[Path, int]]] = defaultdict(lambda: list())
+        md_identifiers: Dict[str, List[Tuple[Path, int]]] = defaultdict(lambda: list())
+        bib_identifiers: Dict[str, List[Tuple[Path, int]]] = defaultdict(lambda: list())
         cross_references: Dict[str, List[Tuple[Path, int]]] = defaultdict(lambda: list())
-        num_cross_references = 0
+        bibliographic_references: Dict[str, List[Tuple[Path, int]]] = defaultdict(lambda: list())
+        num_cross_references, num_bibliographic_references = 0, 0
 
         md_input_paths = list(_find_files(file_types=['markdown'], tex_input_paths=[tex_input_path]))
-        for location, identifier in _get_identifiers_from_markdown_files(md_input_paths):
-            identifiers[identifier].append(location)
-            if len(identifiers[identifier]) > 1:
-                (first_md_input_path, first_character_number), (second_md_input_path, second_character_number) = identifiers[identifier]
+        for location, md_identifier in _get_identifiers_from_markdown_files(md_input_paths):
+            md_identifiers[md_identifier].append(location)
+            if len(md_identifiers[md_identifier]) > 1:
+                (first_md_input_path, first_character_number), \
+                    (second_md_input_path, second_character_number) = md_identifiers[md_identifier]
                 first_line_number = _get_line_number_from_file_location((first_md_input_path, first_character_number))
                 second_line_number = _get_line_number_from_file_location((second_md_input_path, second_character_number))
                 raise ValueError(
-                    f'Identifier "{identifier}" is defined twice, once on line {first_line_number} of file "{first_md_input_path}" '
-                    f'and once on line {second_line_number} of file "{second_md_input_path}"'
+                    f'Markdown identifier "{md_identifier}" is defined twice, once on line {first_line_number} of file '
+                    f'"{first_md_input_path}" and once on line {second_line_number} of file "{second_md_input_path}"'
                 )
-        for location, identifier in _get_cross_references_from_markdown_files([path]):
-            cross_references[identifier].append(location)
-            num_cross_references += 1
+        bib_input_paths = list(_find_files(file_types=['bib'], tex_input_paths=[tex_input_path]))
+        for location, bib_identifier in _get_identifiers_from_bib_files(bib_input_paths):
+            bib_identifiers[bib_identifier].append(location)
+            if len(bib_identifiers[bib_identifier]) > 1:
+                (first_bib_input_path, first_character_number), \
+                    (second_bib_input_path, second_character_number) = bib_identifiers[bib_identifier]
+                first_line_number = _get_line_number_from_file_location((first_bib_input_path, first_character_number))
+                second_line_number = _get_line_number_from_file_location((second_bib_input_path, second_character_number))
+                raise ValueError(
+                    f'BIB identifier "{bib_identifier}" is defined twice, once on line {first_line_number} of file '
+                    f'"{first_bib_input_path}" and once on line {second_line_number} of file "{second_bib_input_path}"'
+                )
 
-        missing_identifiers = cross_references.keys() - identifiers.keys() - BUILTIN_IDENTIFIERS
-        for missing_identifier in missing_identifiers:
-            (md_input_path, character_number), *_ = cross_references[missing_identifier]
+        for location, md_identifier in _get_cross_references_from_markdown_files([path]):
+            cross_references[md_identifier].append(location)
+            num_cross_references += 1
+        for location, bib_identifier in _get_bibliographic_references_from_markdown_files([path]):
+            bibliographic_references[bib_identifier].append(location)
+            num_bibliographic_references += 1
+
+        missing_md_identifiers = cross_references.keys() - md_identifiers.keys() - BUILTIN_IDENTIFIERS
+        for missing_md_identifier in missing_md_identifiers:
+            (md_input_path, character_number), *_ = cross_references[missing_md_identifier]
             line_number = _get_line_number_from_file_location((md_input_path, character_number))
             message = (
-                f'Identifier "{missing_identifier}" referenced on line {line_number} of file "{md_input_path}" not found '
+                f'Markdown identifier "{missing_md_identifier}" referenced on line {line_number} of file "{md_input_path}" not found '
                 f'in any of the {len(md_input_paths)} markdown files referenced from file "{tex_input_path}"'
             )
-            if identifiers:
-                nearest_identifier = _get_nearest_text(missing_identifier, identifiers.keys())
-                (md_input_path, character_number), *_ = identifiers[nearest_identifier]
+            if md_identifiers:
+                nearest_md_identifier = _get_nearest_text(missing_md_identifier, md_identifiers.keys())
+                (md_input_path, character_number), *_ = md_identifiers[nearest_md_identifier]
                 line_number = _get_line_number_from_file_location((md_input_path, character_number))
-                message = f'{message}; did you mean "{nearest_identifier}" defined on line {line_number} of file "{md_input_path}"?'
+                message = f'{message}; did you mean "{nearest_md_identifier}" defined on line {line_number} of file "{md_input_path}"?'
             raise ValueError(message)
 
-        unused_identifiers = identifiers.keys() - cross_references.keys()
-        for unused_identifier in unused_identifiers:
-            (md_input_path, character_number), *_ = identifiers[unused_identifier]
+        missing_bib_identifiers = bibliographic_references.keys() - bib_identifiers.keys() - BUILTIN_IDENTIFIERS
+        for missing_bib_identifier in missing_bib_identifiers:
+            (md_input_path, character_number), *_ = bibliographic_references[missing_bib_identifier]
+            line_number = _get_line_number_from_file_location((md_input_path, character_number))
+            message = (
+                f'BIB identifier "{missing_bib_identifier}" referenced on line {line_number} of file "{md_input_path}" not found '
+                f'in any of the {len(bib_input_paths)} BIB files referenced from file "{tex_input_path}"'
+            )
+            if bib_identifiers:
+                nearest_bib_identifier = _get_nearest_text(missing_bib_identifier, bib_identifiers.keys())
+                (bib_input_path, character_number), *_ = bib_identifiers[nearest_bib_identifier]
+                line_number = _get_line_number_from_file_location((bib_input_path, character_number))
+                message = f'{message}; did you mean "{nearest_bib_identifier}" defined on line {line_number} of file "{bib_input_path}"?'
+            raise ValueError(message)
+
+        unused_md_identifiers = md_identifiers.keys() - cross_references.keys()
+        for unused_md_identifier in unused_md_identifiers:
+            (md_input_path, character_number), *_ = md_identifiers[unused_md_identifier]
             line_number = _get_line_number_from_file_location((md_input_path, character_number))
             if not silent:
                 _warning(
                     (
-                        'Identifier "%s" defined on line %d of file "%s" is unused in any of the %d markdown files referenced '
+                        'Markdown identifier "%s" defined on line %d of file "%s" is unused in any of the %d markdown files referenced '
                         'from file "%s"'
                     ),
-                    unused_identifier, line_number, md_input_path, len(md_input_paths), tex_input_path,
+                    unused_md_identifier, line_number, md_input_path, len(md_input_paths), tex_input_path,
+                )
+
+        unused_bib_identifiers = bib_identifiers.keys() - bibliographic_references.keys()
+        for unused_bib_identifier in unused_bib_identifiers:
+            (bib_input_path, character_number), *_ = bib_identifiers[unused_bib_identifier]
+            line_number = _get_line_number_from_file_location((bib_input_path, character_number))
+            if not silent:
+                _warning(
+                    (
+                        'BIB identifier "%s" defined on line %d of file "%s" is unused in any of the %d markdown files referenced '
+                        'from file "%s"'
+                    ),
+                    unused_bib_identifier, line_number, bib_input_path, len(md_input_paths), tex_input_path,
                 )
 
         if not silent:
             LOGGER.info(
-                'Validated file "%s" that can reach %d identifiers and contains %d cross-references',
-                path, len(identifiers), num_cross_references,
+                'Validated file "%s" that contains %d cross-references and %d bibliographic references',
+                path, num_cross_references, num_bibliographic_references,
             )
 
     for file_type in file_types:
