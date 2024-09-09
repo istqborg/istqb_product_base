@@ -24,6 +24,7 @@ import os
 import shutil
 
 from git import Repo, InvalidGitRepositoryError
+from thefuzz import process
 import yamale
 import yaml
 
@@ -109,6 +110,11 @@ QUESTIONS_EXPLANATION_REGEXP = re.compile(r'\s{0,3}##\s*(explanation|justificati
 
 
 FileLocation = Tuple[Path, int]
+
+
+def _get_nearest_text(text: str, texts: Iterable[str]) -> str:
+    nearest_text, _ = process.extractOne(text, texts)
+    return nearest_text
 
 
 @lru_cache(maxsize=None)  # only show every warning once
@@ -419,10 +425,17 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
         for missing_identifier in missing_identifiers:
             (md_input_path, character_number), *_ = cross_references[missing_identifier]
             line_number = _get_line_number_from_file_location((md_input_path, character_number))
-            raise ValueError(
+            message = (
                 f'Identifier "{missing_identifier}" referenced on line {line_number} of file "{md_input_path}" not found '
                 f'in any of the {len(md_input_paths)} markdown files referenced from file "{tex_input_path}"'
             )
+            if identifiers:
+                nearest_identifier = _get_nearest_text(missing_identifier, identifiers.keys())
+                (md_input_path, character_number), *_ = identifiers[nearest_identifier]
+                line_number = _get_line_number_from_file_location((md_input_path, character_number))
+                message = f'{message}; did you mean "{nearest_identifier}" defined on line {line_number} of file "{md_input_path}"?'
+            raise ValueError(message)
+
 
         unused_identifiers = identifiers.keys() - cross_references.keys()
         for unused_identifier in unused_identifiers:
