@@ -50,7 +50,7 @@ Reference `section:explain-which-factors-support-and-affect-tas-maintainability'
 Example of the log:
 
 1. Make sure your section identifier `{#apply-layering-of-taf}` is existent within your MD files. See <#section:section-references> for more details.
-2. Make sure you are using the reference in text like `<#section:#apply-layering-of-taf>` correctly. Typos are common here. See <#section:section-references> for more details.
+2. Make sure you are using the reference in text like `<#section:apply-layering-of-taf>` correctly. Typos are common here. See <#section:section-references> for more details.
 3. Make sure, all Markdown files you are referencing to are part of the `.tex` file, so they are included in a final rendered file. See <#section:architecture-of-the-solution> for mode details.
 
 
