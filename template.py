@@ -436,7 +436,6 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
                 message = f'{message}; did you mean "{nearest_identifier}" defined on line {line_number} of file "{md_input_path}"?'
             raise ValueError(message)
 
-
         unused_identifiers = identifiers.keys() - cross_references.keys()
         for unused_identifier in unused_identifiers:
             (md_input_path, character_number), *_ = identifiers[unused_identifier]
