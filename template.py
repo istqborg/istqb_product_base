@@ -24,7 +24,6 @@ import os
 import shutil
 
 from git import Repo, InvalidGitRepositoryError
-from thefuzz import process
 import yamale
 import yaml
 
@@ -115,7 +114,8 @@ FileLocation = Tuple[Path, int]
 
 
 def _get_nearest_text(text: str, texts: Iterable[str]) -> str:
-    nearest_text, _ = process.extractOne(text, texts)
+    from rapidfuzz import process, fuzz, utils
+    nearest_text, *_ = process.extractOne(text, texts, processor=utils.default_process)
     return nearest_text
 
 
