@@ -16,6 +16,7 @@ luaxml
 make4ht
 makeindex
 mdframed
+mwe
 needspace
 newunicodechar
 nicematrix
