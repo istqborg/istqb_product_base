@@ -491,10 +491,15 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
                     (second_md_input_path, second_character_number) = md_identifiers[md_identifier]
                 first_line_number = _get_line_number_from_file_location((first_md_input_path, first_character_number))
                 second_line_number = _get_line_number_from_file_location((second_md_input_path, second_character_number))
-                raise ValueError(
+                message = (
                     f'Markdown identifier "{md_identifier}" is defined twice, once on line {first_line_number} of file '
-                    f'"{first_md_input_path}" and once on line {second_line_number} of file "{second_md_input_path}"'
+                    f'"{first_md_input_path}" and once on line {second_line_number}'
                 )
+                if first_md_input_path == second_md_input_path:
+                    message = f'{message} of the same file'
+                else:
+                    message = f'{message} of file "{second_md_input_path}"'
+                raise ValueError(message)
         bib_input_paths = list(_find_files(file_types=['bib'], tex_input_paths=[tex_input_path]))
         for location, bib_identifier in _get_identifiers_from_bib_files(bib_input_paths):
             bib_identifiers[bib_identifier].append(location)
@@ -503,10 +508,15 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
                     (second_bib_input_path, second_character_number) = bib_identifiers[bib_identifier]
                 first_line_number = _get_line_number_from_file_location((first_bib_input_path, first_character_number))
                 second_line_number = _get_line_number_from_file_location((second_bib_input_path, second_character_number))
-                raise ValueError(
+                message = (
                     f'BIB identifier "{bib_identifier}" is defined twice, once on line {first_line_number} of file '
-                    f'"{first_bib_input_path}" and once on line {second_line_number} of file "{second_bib_input_path}"'
+                    f'"{first_bib_input_path}" and once on line {second_line_number}'
                 )
+                if first_bib_input_path == second_bib_input_path:
+                    message = f'{message} of the same file'
+                else:
+                    message = f'{message} of file "{second_bib_input_path}"'
+                raise ValueError(message)
 
         for location, md_identifier in _get_cross_references_from_markdown_files([path]):
             cross_references[md_identifier].append(location)
