@@ -519,30 +519,40 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
         for missing_md_identifier in missing_md_identifiers:
             (md_input_path, character_number), *_ = cross_references[missing_md_identifier]
             line_number = _get_line_number_from_file_location((md_input_path, character_number))
-            message = (
-                f'Markdown identifier "{missing_md_identifier}" referenced on line {line_number} of file "{md_input_path}" not found '
-                f'in any of the {len(md_input_paths)} markdown files referenced from file "{tex_input_path}"'
-            )
+            message = f'Markdown identifier "{missing_md_identifier}" referenced on line {line_number} of file "{md_input_path}" not found'
+            if len(md_input_paths) == 1:
+                message = f'{message} in file "{md_input_paths[0]}"'
+            else:
+                message = f'{message} in any of the {len(md_input_paths)} markdown files referenced from file "{tex_input_path}"'
             if md_identifiers:
                 nearest_md_identifier = _get_nearest_text(missing_md_identifier, md_identifiers.keys())
                 (md_input_path, character_number), *_ = md_identifiers[nearest_md_identifier]
                 line_number = _get_line_number_from_file_location((md_input_path, character_number))
-                message = f'{message}; did you mean "{nearest_md_identifier}" defined on line {line_number} of file "{md_input_path}"?'
+                message = f'{message}; did you mean "{nearest_md_identifier}" defined on line {line_number} of'
+                if len(md_input_paths) == 1:
+                    message = f'{message} the same file?'
+                else:
+                    message = f'{message} file "{md_input_path}"?'
             raise ValueError(message)
 
         missing_bib_identifiers = bibliographic_references.keys() - bib_identifiers.keys() - BUILTIN_IDENTIFIERS
         for missing_bib_identifier in missing_bib_identifiers:
             (md_input_path, character_number), *_ = bibliographic_references[missing_bib_identifier]
             line_number = _get_line_number_from_file_location((md_input_path, character_number))
-            message = (
-                f'BIB identifier "{missing_bib_identifier}" referenced on line {line_number} of file "{md_input_path}" not found '
-                f'in any of the {len(bib_input_paths)} BIB files referenced from file "{tex_input_path}"'
-            )
+            message = f'BIB identifier "{missing_bib_identifier}" referenced on line {line_number} of file "{md_input_path}" not found'
+            if len(bib_input_paths) == 1:
+                message = f'{message} in file "{bib_input_paths[0]}"'
+            else:
+                message = f'{message} in any of the {len(bib_input_paths)} BIB files referenced from file "{tex_input_path}"'
             if bib_identifiers:
                 nearest_bib_identifier = _get_nearest_text(missing_bib_identifier, bib_identifiers.keys())
                 (bib_input_path, character_number), *_ = bib_identifiers[nearest_bib_identifier]
                 line_number = _get_line_number_from_file_location((bib_input_path, character_number))
-                message = f'{message}; did you mean "{nearest_bib_identifier}" defined on line {line_number} of file "{bib_input_path}"?'
+                message = f'{message}; did you mean "{nearest_bib_identifier}" defined on line {line_number} of'
+                if len(bib_input_paths) == 1:
+                    message = f'{message} the same file?'
+                else:
+                    message = f'{message} file "{bib_input_path}"?'
             raise ValueError(message)
 
         unused_md_identifiers = md_identifiers.keys() - cross_references.keys()
@@ -550,26 +560,24 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
             (md_input_path, character_number), *_ = md_identifiers[unused_md_identifier]
             line_number = _get_line_number_from_file_location((md_input_path, character_number))
             if not silent:
-                _warning(
-                    (
-                        'Markdown identifier "%s" defined on line %d of file "%s" is unused in any of the %d markdown files referenced '
-                        'from file "%s"'
-                    ),
-                    unused_md_identifier, line_number, md_input_path, len(md_input_paths), tex_input_path,
-                )
+                message = f'Markdown identifier "{unused_md_identifier}" defined on line {line_number} of file "{md_input_path}" is unused'
+                if len(md_input_paths) == 1:
+                    message = f'{message} in file "{md_input_paths[0]}"'
+                else:
+                    message = f'{message} in any of the {len(md_input_paths)} markdown files referenced from file "{tex_input_path}"'
+                _warning(message)
 
         unused_bib_identifiers = bib_identifiers.keys() - bibliographic_references.keys()
         for unused_bib_identifier in unused_bib_identifiers:
             (bib_input_path, character_number), *_ = bib_identifiers[unused_bib_identifier]
             line_number = _get_line_number_from_file_location((bib_input_path, character_number))
             if not silent:
-                _warning(
-                    (
-                        'BIB identifier "%s" defined on line %d of file "%s" is unused in any of the %d markdown files referenced '
-                        'from file "%s"'
-                    ),
-                    unused_bib_identifier, line_number, bib_input_path, len(md_input_paths), tex_input_path,
-                )
+                message = f'BIB identifier "{unused_bib_identifier}" defined on line {line_number} of file "{bib_input_path}" is unused'
+                if len(md_input_paths) == 1:
+                    message = f'{message} in file "{md_input_paths[0]}"'
+                else:
+                    message = f'{message} in any of the {len(md_input_paths)} markdown files referenced from file "{tex_input_path}"'
+                _warning(message)
 
         if not silent:
             LOGGER.info(
