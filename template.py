@@ -83,7 +83,7 @@ CROSS_REFERENCE_REGEXP = re.compile(
         r']\(#(.+?)\)',  # Relative direct link
     ])
 )
-BIBLIOGRAPHIC_REFERENCE_REGEXP = re.compile(r'@([-a-zA-Z0-9#$%&+<>~/_]+)')  # Bracketed and text citations
+BIBLIOGRAPHIC_REFERENCE_REGEXP = re.compile(r'(?<![a-zA-Z0-9])@([-a-zA-Z0-9#$%&+<>~/_:.?]+)')  # Bracketed and text citations
 BIBENTRY_REGEXP = re.compile(r'^\s*@[^{]+\{(.+?)\s*,\s*$', re.MULTILINE)
 IDENTIFIER_REGEXP = re.compile(r'#(?P<identifier>\S+)')
 
@@ -203,7 +203,7 @@ def _get_bibliographic_references_from_markdown_file(md_input_path: Path) -> Lis
         text = f.read()
         for identifier_match in BIBLIOGRAPHIC_REFERENCE_REGEXP.finditer(text):
             group_number, = [group_number + 1 for group_number, group in enumerate(identifier_match.groups()) if group is not None]
-            identifier = identifier_match.group(group_number)
+            identifier = identifier_match.group(group_number).rstrip(':.?')
             character_number = identifier_match.start(group_number)
             result = (md_input_path, character_number), identifier
             results.append(result)
