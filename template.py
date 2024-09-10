@@ -114,7 +114,7 @@ FileLocation = Tuple[Path, int]
 
 
 def _get_nearest_text(text: str, texts: Iterable[str]) -> str:
-    from rapidfuzz import process, fuzz, utils
+    from rapidfuzz import process, utils
     nearest_text, *_ = process.extractOne(text, texts, processor=utils.default_process)
     return nearest_text
 
