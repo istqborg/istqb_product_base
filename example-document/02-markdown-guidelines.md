@@ -310,6 +310,24 @@ The second line of the table allows you to define the formatting of columns:
 If your table overflows a page, make sure that all columns with long texts
 are specified as `----`, not as `---:`, `:---`, or `:--:`.
 
+You may also use parameter `rows` to produce multi-row cells:
+
+``` md
+| Clause | ISO/IEC 25010:2023 | ISO/IEC 25010:2011 | Notes |
+|:-------|:-------------------|:-------------------|:------|
+| 3.4.6  | Inclusivity | [Accessibility]{rows=3} | [Split and renamed]{rows=2} |
+| 3.4.7  | User assistance |
+| 3.4.8  | Self-descriptiveness |  | New subcharacteristic |
+```
+
+This will produce the following output:
+
+| Clause | ISO/IEC 25010:2023 | ISO/IEC 25010:2011 | Notes |
+|:-------|:-------------------|:-------------------|:------|
+| 3.4.6  | Inclusivity | [Accessibility]{rows=3} | [Split and renamed]{rows=2} |
+| 3.4.7  | User assistance |
+| 3.4.8  | Self-descriptiveness |  | New subcharacteristic |
+
 You can add a caption to the table as follows:
 
 ``` md

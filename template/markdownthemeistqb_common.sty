@@ -772,7 +772,7 @@
         % Construct the final table.
         \tl_put_right:Nn
           \l_istqb_traceability_matrix_tl
-          { \begin { longtblr } }
+          { \begin { longtblr } [ entry = none ] }
         \tl_put_right:Nx
           \l_istqb_traceability_matrix_tl
           { { \tl_use:N \l_istqb_traceability_matrix_parameters_tl } }
@@ -868,8 +868,9 @@
         \markdownSetup
           {
             rendererPrototypes = {
-              attributeClassName = {
-                %% Unnumbered sections
+              attributeClassName = ,
+              %% Unnumbered sections
+              attributeClassName += {
                 \tl_if_eq:nnT
                   { ##1 }
                   { unnumbered }
@@ -900,8 +901,8 @@
                       }
                   }
               },
+              %% Landscape sections
               attributeClassName += {
-                %% Landscape sections
                 \tl_if_eq:nnT
                   { ##1 }
                   { landscape }
@@ -928,8 +929,8 @@
                       }
                   }
               },
+              %% Revision history
               attributeClassName += {
-                %% Revision history
                 \tl_if_eq:nnT
                   { ##1 }
                   { revision-history }
@@ -980,8 +981,8 @@
                       }
                   }
               },
+              %% Learning objectives
               attributeClassName += {
-                %% Learning objectives
                 \tl_if_eq:nnT
                   { ##1 }
                   { learning-objectives }
@@ -1040,8 +1041,8 @@
                     \begin { istqb objectives }
                   }
               },
+              %% Business outcomes
               attributeClassName += {
-                %% Business outcomes
                 \tl_if_eq:nnT
                   { ##1 }
                   { business-outcomes }
@@ -1126,6 +1127,7 @@
   }
 
 % Tables
+\prop_new:N \g_istqb_multi_row_prop
 \def \markdownLaTeXRenderTableRow #1
   {
     \markdownLaTeXColumnCounter = 0
@@ -1161,6 +1163,28 @@
 \def \markdownLaTeXRenderTableCell #1
   {
     \advance \markdownLaTeXColumnCounter by 1 \relax
+    \tl_set:Nn
+      \l_tmpa_tl
+      { \markdownLaTeXRowCounter = }
+    \tl_put_right:Nx
+      \l_tmpa_tl
+      { \the \markdownLaTeXRowCounter }
+    \tl_put_right:Nn
+      \l_tmpa_tl
+      { \relax }
+    \tl_put_right:Nn
+      \l_tmpa_tl
+      { \markdownLaTeXColumnCounter = }
+    \tl_put_right:Nx
+      \l_tmpa_tl
+      { \the \markdownLaTeXColumnCounter }
+    \tl_put_right:Nn
+      \l_tmpa_tl
+      { \relax }
+    \exp_args:NNV
+      \addto@hook
+      \markdownLaTeXTable
+      \l_tmpa_tl
     \ifnum \markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal \relax
       \addto@hook
         \markdownLaTeXTable
@@ -1168,7 +1192,32 @@
     \else
       \addto@hook
         \markdownLaTeXTable
-        { #1 \\ \hline }
+        {
+          #1
+          \tl_set:Nn
+            \l_tmpa_tl
+            { \\ }
+          \int_step_inline:nn
+            { \the \markdownLaTeXColumnTotal }
+            {
+              \tl_set:Nx
+                \l_tmpb_tl
+                { \the \markdownLaTeXRowCounter }
+              \tl_put_right:Nn
+                \l_tmpb_tl
+                { ,##1 }
+              \prop_if_in:NVF
+                \g_istqb_multi_row_prop
+                \l_tmpb_tl
+                {
+                  \tl_put_right:Nn
+                    \l_tmpa_tl
+                    { \cline { ##1 - ##1 } }
+                }
+            }
+          \tl_use:N
+            \l_tmpa_tl
+        }
       \expandafter \@gobble
     \fi \markdownLaTeXRenderTableCell
   }
@@ -1197,6 +1246,8 @@
           }
       },
       table = {
+        \prop_clear:N
+          \g_istqb_multi_row_prop
         \bool_gset_true:N
           \g_istqb_intable_bool
         \markdownLaTeXTable = { }
@@ -1428,26 +1479,59 @@
     citations,
   }
 
-% Index
+% Index and multi-row cells
+\RequirePackage{multirow}
 \markdownSetup
   {
     bracketedSpans,
     rendererPrototypes = {
       bracketedSpanAttributeContextBegin = {
-        \group_begin:
         \markdownSetup
           {
             rendererPrototypes = {
-              attributeClassName = {
+              attributeClassName = ,
+              attributeKeyValue = ,
+              %% Index
+              attributeClassName += {
                 \str_if_eq:nnT
                   { ##1 }
                   { index }
                   {
                     \def\next####1\markdownRendererBracketedSpanAttributeContextEnd
                       {
-                        \global\index { ####1 }
+                        \index { ####1 }
                         ####1
-                        \markdownRendererBracketedSpanAttributeContextEnd
+                      }
+                    \next
+                  }
+              },
+              %% Multi-row cells
+              attributeKeyValue += {
+                \str_if_eq:nnT
+                  { ##1 }
+                  { rows }
+                  {
+                    \def\next####1\markdownRendererBracketedSpanAttributeContextEnd
+                      {
+                        \multirow
+                          { ##2 }
+                          { * }
+                          { ####1 }
+                        \int_step_inline:nnn
+                          { \the \markdownLaTeXRowCounter }
+                          { \the \markdownLaTeXRowCounter + ##2 - 2 }
+                          {
+                            \tl_set:Nn
+                              \l_tmpa_tl
+                              { ########1, }
+                            \tl_put_right:Nx
+                              \l_tmpa_tl
+                              { \the \markdownLaTeXColumnCounter }
+                            \prop_gput:NVn
+                              \g_istqb_multi_row_prop
+                              \l_tmpa_tl
+                              { true }
+                          }
                       }
                     \next
                   }
@@ -1455,8 +1539,6 @@
             }
           }
       },
-      bracketedSpanAttributeContextEnd = {
-        \group_end:
-      },
+      bracketedSpanAttributeContextEnd = ,
     }
   }
