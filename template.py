@@ -6,6 +6,7 @@ Processes ISTQB documents written with the LaTeX+Markdown template.
 """
 
 from argparse import ArgumentParser, Namespace
+from collections import defaultdict
 from configparser import ConfigParser
 from contextlib import contextmanager
 from itertools import chain, repeat
@@ -36,7 +37,7 @@ DOCUMENT_FILETYPES = sorted(['xlsx', 'markdown', 'eps', 'tex', 'bib'])
 FILETYPES = METADATA_FILETYPES + DOCUMENT_FILETYPES
 
 VALIDATABLE_FILETYPES = ['all', 'all-yaml'] + sorted([
-  'metadata', 'questions-yaml', 'languages', 'traceability-matrix',
+  'metadata', 'questions-yaml', 'languages', 'traceability-matrix', 'tex', 'markdown',
 ])
 CONVERT_TO_DOCX_FILETYPES = ['all', 'user-yaml'] + sorted(['markdown', 'bib'])
 
@@ -59,8 +60,31 @@ ISTQB_MK4 = ROOT_DIRECTORY / 'istqb.mk4'
 PANDOC_INPUT_FORMAT = 'commonmark'
 PANDOC_EXTENSIONS = ['bracketed_spans', 'fancy_lists', 'pipe_tables', 'raw_attribute']
 
+BUILTIN_IDENTIFIERS = {'section:references', 'section:further-reading'}
+
 MARKDOWNINPUT_REGEXP = re.compile(r'\\markdownInput(\[.*?\])?{(?P<filename>.*?)}', re.DOTALL)
 ADDBIBRESOURCE_REGEXP = re.compile(r'\\addbibresource{(?P<filename>.*?)}', re.DOTALL)
+
+ATTRIBUTES_REGEXPS = {
+    'section': re.compile(
+        '|'.join([
+            r'^\s*#.*\{([^}]*)\}\s*$',  # ATX headers
+            r'^\s*(?!\s|#).*\{([^}]*)\}\s*\n\s*[=-]',  # Setext headers
+        ]),
+        re.MULTILINE
+    ),
+    'figure': re.compile(r'!\[([^]]+)'),  # Figures
+    'table': re.compile(r'^\s{1,3}:.*\{([^}]*)\}\s*$', re.MULTILINE),  # Pipe tables
+}
+CROSS_REFERENCE_REGEXP = re.compile(
+    '|'.join([
+        r'<#(.+?)>',  # Relative autolink
+        r']\(#(.+?)\)',  # Relative direct link
+    ])
+)
+BIBLIOGRAPHIC_REFERENCE_REGEXP = re.compile(r'(?<![a-zA-Z0-9])@([-a-zA-Z0-9#$%&+<>~/_:.?]+)')  # Bracketed and text citations
+BIBENTRY_REGEXP = re.compile(r'^\s*@[^{]+\{(.+?)\s*,\s*$', re.MULTILINE)
+IDENTIFIER_REGEXP = re.compile(r'#(?P<identifier>\S+)')
 
 XLSX_REGEXP = re.compile(r'\.xlsx$', flags=re.IGNORECASE)
 EPS_REGEXP = re.compile(r'\.eps$', flags=re.IGNORECASE)
@@ -86,29 +110,167 @@ QUESTIONS_ANSWER_REGEXP = re.compile(
 QUESTIONS_EXPLANATION_REGEXP = re.compile(r'\s{0,3}##\s*(explanation|justification)\s*', flags=re.IGNORECASE)
 
 
-def _get_references_from_tex_file(tex_input_paths: Iterable[Path]) -> Iterable[Path]:
+FileLocation = Tuple[Path, int]
+
+
+def _get_nearest_text(text: str, texts: Iterable[str]) -> str:
+    from rapidfuzz import process, utils
+    nearest_text, *_ = process.extractOne(text, texts, processor=utils.default_process)
+    return nearest_text
+
+
+@lru_cache(maxsize=None)  # only show every warning once
+def _warning(*args, **kwargs) -> None:
+    LOGGER.warning(*args, **kwargs)
+
+
+@lru_cache(maxsize=None)
+def _get_identifiers_from_markdown_file(md_input_path: Path) -> List[Tuple[FileLocation, str]]:
+    results = []
+    with md_input_path.open('rt') as f:
+        text = f.read()
+        for prefix, pattern in ATTRIBUTES_REGEXPS.items():
+            for attributes_match in pattern.finditer(text):
+                group_number, = [group_number + 1 for group_number, group in enumerate(attributes_match.groups()) if group is not None]
+                attributes = attributes_match.group(group_number)
+                attributes_character_number = attributes_match.start(group_number)
+
+                raw_identifiers = []
+                if prefix == 'figure':
+                    raw_identifiers.append((attributes, 0))
+                else:
+                    for identifier_match in IDENTIFIER_REGEXP.finditer(attributes):
+                        raw_identifier = identifier_match.group('identifier')
+                        assert raw_identifier is not None
+                        identifier_character_number = identifier_match.start('identifier')
+                        raw_identifiers.append((raw_identifier, identifier_character_number))
+
+                for (raw_identifier, identifier_character_number) in raw_identifiers:
+                    identifier = f'{prefix}:{raw_identifier}'
+                    character_number = attributes_character_number + identifier_character_number
+                    result = (md_input_path, character_number), identifier
+                    results.append(result)
+    return results
+
+
+def _get_identifiers_from_markdown_files(md_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, str]]:
+    for md_input_path in md_input_paths:
+        yield from _get_identifiers_from_markdown_file(md_input_path)
+
+
+@lru_cache(maxsize=None)
+def _get_identifiers_from_bib_file(bib_input_path: Path) -> List[Tuple[FileLocation, str]]:
+    results = []
+    with bib_input_path.open('rt') as f:
+        text = f.read()
+        for identifier_match in BIBENTRY_REGEXP.finditer(text):
+            group_number, = [group_number + 1 for group_number, group in enumerate(identifier_match.groups()) if group is not None]
+            identifier = identifier_match.group(group_number)
+            character_number = identifier_match.start(group_number)
+            result = (bib_input_path, character_number), identifier
+            results.append(result)
+    return results
+
+
+def _get_identifiers_from_bib_files(bib_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, str]]:
+    for bib_input_path in bib_input_paths:
+        yield from _get_identifiers_from_bib_file(bib_input_path)
+
+
+@lru_cache(maxsize=None)
+def _get_cross_references_from_markdown_file(md_input_path: Path) -> List[Tuple[FileLocation, str]]:
+    results = []
+    with md_input_path.open('rt') as f:
+        text = f.read()
+        for identifier_match in CROSS_REFERENCE_REGEXP.finditer(text):
+            group_number, = [group_number + 1 for group_number, group in enumerate(identifier_match.groups()) if group is not None]
+            identifier = identifier_match.group(group_number)
+            character_number = identifier_match.start(group_number)
+            result = (md_input_path, character_number), identifier
+            results.append(result)
+    return results
+
+
+def _get_cross_references_from_markdown_files(md_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, str]]:
+    for md_input_path in md_input_paths:
+        yield from _get_cross_references_from_markdown_file(md_input_path)
+
+
+@lru_cache(maxsize=None)
+def _get_bibliographic_references_from_markdown_file(md_input_path: Path) -> List[Tuple[FileLocation, str]]:
+    results = []
+    with md_input_path.open('rt') as f:
+        text = f.read()
+        for identifier_match in BIBLIOGRAPHIC_REFERENCE_REGEXP.finditer(text):
+            group_number, = [group_number + 1 for group_number, group in enumerate(identifier_match.groups()) if group is not None]
+            identifier = identifier_match.group(group_number).rstrip(':.?')
+            character_number = identifier_match.start(group_number)
+            result = (md_input_path, character_number), identifier
+            results.append(result)
+    return results
+
+
+def _get_bibliographic_references_from_markdown_files(md_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, str]]:
+    for md_input_path in md_input_paths:
+        yield from _get_bibliographic_references_from_markdown_file(md_input_path)
+
+
+def _get_line_number_from_file_location(location: FileLocation) -> int:
+    path, character_number = location
+    current_character_number = 0
+    with path.open('rt') as f:
+        for line_number, line in enumerate(f):
+            if current_character_number + len(line) >= character_number:
+                return line_number + 1
+            current_character_number += len(line)
+    raise ValueError(
+        f'Tried to determine the line number of character {character_number} in file "{path}" '
+        f'but found only {current_character_number} characters'
+    )
+
+
+@lru_cache(maxsize=None)
+def _get_references_from_tex_file(tex_input_path: Path) -> List[Tuple[FileLocation, Path, Iterable[Path]]]:
+    results = []
+    with tex_input_path.open('rt') as f:
+        text = f.read()
+        for pattern in [MARKDOWNINPUT_REGEXP, ADDBIBRESOURCE_REGEXP]:
+            for match in pattern.finditer(text):
+                # Yield directly referenced paths.
+                original_referenced_path = Path(match.group('filename'))
+                character_number = match.start('filename')
+                referenced_path = original_referenced_path
+                if not referenced_path.is_absolute():
+                    referenced_path = tex_input_path.parent / referenced_path
+                referenced_path = referenced_path.resolve()
+                referenced_paths = [referenced_path]
+                # For YAML questions, yield also MD question source files.
+                if QUESTIONS_YAML_REGEXP.fullmatch(referenced_path.name):
+                    for referenced_md_path in referenced_path.parent.glob(f'{referenced_path.stem}.*'):
+                        if QUESTIONS_MARKDOWN_REGEXP.fullmatch(referenced_md_path.name):
+                            referenced_md_path = referenced_md_path.resolve()
+                            referenced_paths.append(referenced_md_path)
+                result = (tex_input_path, character_number), original_referenced_path, referenced_paths
+                results.append(result)
+    return results
+
+
+def _get_references_from_tex_files(tex_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, Path, Iterable[Path]]]:
     for tex_input_path in tex_input_paths:
-        with tex_input_path.open('rt') as f:
-            text = f.read()
-            for pattern in [MARKDOWNINPUT_REGEXP, ADDBIBRESOURCE_REGEXP]:
-                for match in pattern.finditer(text):
-                    # Yield directly referenced paths.
-                    path = Path(match.group('filename'))
-                    if not path.is_absolute():
-                        path = tex_input_path.parent / path
-                    path = path.resolve()
-                    yield path
-                    # For YAML questions, yield also MD question source files.
-                    if QUESTIONS_YAML_REGEXP.fullmatch(path.name):
-                        for md_path in path.parent.glob(f'{path.stem}.*'):
-                            if QUESTIONS_MARKDOWN_REGEXP.fullmatch(md_path.name):
-                                md_path = md_path.resolve()
-                                yield md_path
+        yield from _get_references_from_tex_file(tex_input_path)
+
+
+def _flatten_references(references: Iterable[Tuple[FileLocation, Path, Iterable[Path]]]) -> Iterable[Path]:
+    return chain(*[paths for *_, paths in references])
+
+
+def _get_flat_references_from_tex_files(tex_input_paths: Iterable[Path]) -> Iterable[Path]:
+    return _flatten_references(_get_references_from_tex_files(tex_input_paths))
 
 
 def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Path]] = None, root: Path = Path('.')) -> Iterable[Path]:
     file_types = list(file_types)
-    referenced_files = set(_get_references_from_tex_file(tex_input_paths)) if tex_input_paths is not None else None
+    referenced_files = set(_get_flat_references_from_tex_files(tex_input_paths)) if tex_input_paths is not None else None
     seen_paths = set()
     for parent_directory, subdirectories, filenames in os.walk(root, topdown=True, onerror=print, followlinks=True):
 
@@ -286,33 +448,186 @@ def _fixup_line_endings() -> None:
 
 def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
 
-    def validate_file(schema, path: Path):
+    def validate_yaml_file(schema, path: Path):
         data = yamale.make_data(path)
         yamale.validate(schema, data)
         _run_command('texlua', f'{ROOT_DIRECTORY / "check-yaml.lua"}')
         if not silent:
             LOGGER.info('Validated file "%s" with schema "%s"', path, schema.name)
 
+    def validate_tex_file(path: Path):
+        references = list(_get_references_from_tex_files([path]))
+        for (tex_input_path, character_number), original_referenced_path, referenced_paths in references:
+            line_number = _get_line_number_from_file_location((tex_input_path, character_number))
+            if not any(path.exists() for path in referenced_paths):
+                message = f'File "{original_referenced_path}" referenced on line {line_number} of file "{tex_input_path}" not found'
+                all_filenames = [str(path) for path in _find_files(['all'])]
+                if all_filenames:
+                    nearest_filename = _get_nearest_text(str(original_referenced_path), all_filenames)
+                    nearest_path = Path(nearest_filename)
+                    try:
+                        nearest_path = nearest_path.relative_to(tex_input_path.parent)
+                    except ValueError:
+                        pass
+                    message = f'{message}; did you mean "{nearest_path}"?'
+                raise ValueError(message)
+
+        if not silent:
+            LOGGER.info('Validated file "%s" that references %d other files', path, len(references))
+
+    def validate_markdown_file(path: Path, tex_input_path: Path):
+        # Check cross-references.
+        md_identifiers: Dict[str, List[Tuple[Path, int]]] = defaultdict(lambda: list())
+        bib_identifiers: Dict[str, List[Tuple[Path, int]]] = defaultdict(lambda: list())
+        cross_references: Dict[str, List[Tuple[Path, int]]] = defaultdict(lambda: list())
+        bibliographic_references: Dict[str, List[Tuple[Path, int]]] = defaultdict(lambda: list())
+        num_cross_references, num_bibliographic_references = 0, 0
+
+        md_input_paths = list(_find_files(file_types=['markdown'], tex_input_paths=[tex_input_path]))
+        for location, md_identifier in _get_identifiers_from_markdown_files(md_input_paths):
+            md_identifiers[md_identifier].append(location)
+            if len(md_identifiers[md_identifier]) > 1:
+                (first_md_input_path, first_character_number), \
+                    (second_md_input_path, second_character_number) = md_identifiers[md_identifier]
+                first_line_number = _get_line_number_from_file_location((first_md_input_path, first_character_number))
+                second_line_number = _get_line_number_from_file_location((second_md_input_path, second_character_number))
+                message = (
+                    f'Markdown identifier "{md_identifier}" is defined twice, once on line {first_line_number} of file '
+                    f'"{first_md_input_path}" and once on line {second_line_number}'
+                )
+                if first_md_input_path == second_md_input_path:
+                    message = f'{message} of the same file'
+                else:
+                    message = f'{message} of file "{second_md_input_path}"'
+                raise ValueError(message)
+        bib_input_paths = list(_find_files(file_types=['bib'], tex_input_paths=[tex_input_path]))
+        for location, bib_identifier in _get_identifiers_from_bib_files(bib_input_paths):
+            bib_identifiers[bib_identifier].append(location)
+            if len(bib_identifiers[bib_identifier]) > 1:
+                (first_bib_input_path, first_character_number), \
+                    (second_bib_input_path, second_character_number) = bib_identifiers[bib_identifier]
+                first_line_number = _get_line_number_from_file_location((first_bib_input_path, first_character_number))
+                second_line_number = _get_line_number_from_file_location((second_bib_input_path, second_character_number))
+                message = (
+                    f'BIB identifier "{bib_identifier}" is defined twice, once on line {first_line_number} of file '
+                    f'"{first_bib_input_path}" and once on line {second_line_number}'
+                )
+                if first_bib_input_path == second_bib_input_path:
+                    message = f'{message} of the same file'
+                else:
+                    message = f'{message} of file "{second_bib_input_path}"'
+                raise ValueError(message)
+
+        for location, md_identifier in _get_cross_references_from_markdown_files([path]):
+            cross_references[md_identifier].append(location)
+            num_cross_references += 1
+        for location, bib_identifier in _get_bibliographic_references_from_markdown_files([path]):
+            bibliographic_references[bib_identifier].append(location)
+            num_bibliographic_references += 1
+
+        missing_md_identifiers = cross_references.keys() - md_identifiers.keys() - BUILTIN_IDENTIFIERS
+        for missing_md_identifier in missing_md_identifiers:
+            (md_input_path, character_number), *_ = cross_references[missing_md_identifier]
+            line_number = _get_line_number_from_file_location((md_input_path, character_number))
+            message = f'Markdown identifier "{missing_md_identifier}" referenced on line {line_number} of file "{md_input_path}" not found'
+            if len(md_input_paths) == 1:
+                message = f'{message} in file "{md_input_paths[0]}"'
+            else:
+                message = f'{message} in any of the {len(md_input_paths)} markdown files referenced from file "{tex_input_path}"'
+            if md_identifiers:
+                nearest_md_identifier = _get_nearest_text(missing_md_identifier, md_identifiers.keys())
+                (md_input_path, character_number), *_ = md_identifiers[nearest_md_identifier]
+                line_number = _get_line_number_from_file_location((md_input_path, character_number))
+                message = f'{message}; did you mean "{nearest_md_identifier}" defined on line {line_number} of'
+                if len(md_input_paths) == 1:
+                    message = f'{message} the same file?'
+                else:
+                    message = f'{message} file "{md_input_path}"?'
+            raise ValueError(message)
+
+        missing_bib_identifiers = bibliographic_references.keys() - bib_identifiers.keys() - BUILTIN_IDENTIFIERS
+        for missing_bib_identifier in missing_bib_identifiers:
+            (md_input_path, character_number), *_ = bibliographic_references[missing_bib_identifier]
+            line_number = _get_line_number_from_file_location((md_input_path, character_number))
+            message = f'BIB identifier "{missing_bib_identifier}" referenced on line {line_number} of file "{md_input_path}" not found'
+            if len(bib_input_paths) == 1:
+                message = f'{message} in file "{bib_input_paths[0]}"'
+            else:
+                message = f'{message} in any of the {len(bib_input_paths)} BIB files referenced from file "{tex_input_path}"'
+            if bib_identifiers:
+                nearest_bib_identifier = _get_nearest_text(missing_bib_identifier, bib_identifiers.keys())
+                (bib_input_path, character_number), *_ = bib_identifiers[nearest_bib_identifier]
+                line_number = _get_line_number_from_file_location((bib_input_path, character_number))
+                message = f'{message}; did you mean "{nearest_bib_identifier}" defined on line {line_number} of'
+                if len(bib_input_paths) == 1:
+                    message = f'{message} the same file?'
+                else:
+                    message = f'{message} file "{bib_input_path}"?'
+            raise ValueError(message)
+
+        unused_md_identifiers = md_identifiers.keys() - cross_references.keys()
+        for unused_md_identifier in unused_md_identifiers:
+            (md_input_path, character_number), *_ = md_identifiers[unused_md_identifier]
+            line_number = _get_line_number_from_file_location((md_input_path, character_number))
+            if not silent:
+                message = f'Markdown identifier "{unused_md_identifier}" defined on line {line_number} of file "{md_input_path}" is unused'
+                if len(md_input_paths) == 1:
+                    message = f'{message} in file "{md_input_paths[0]}"'
+                else:
+                    message = f'{message} in any of the {len(md_input_paths)} markdown files referenced from file "{tex_input_path}"'
+                _warning(message)
+
+        unused_bib_identifiers = bib_identifiers.keys() - bibliographic_references.keys()
+        for unused_bib_identifier in unused_bib_identifiers:
+            (bib_input_path, character_number), *_ = bib_identifiers[unused_bib_identifier]
+            line_number = _get_line_number_from_file_location((bib_input_path, character_number))
+            if not silent:
+                message = f'BIB identifier "{unused_bib_identifier}" defined on line {line_number} of file "{bib_input_path}" is unused'
+                if len(md_input_paths) == 1:
+                    message = f'{message} in file "{md_input_paths[0]}"'
+                else:
+                    message = f'{message} in any of the {len(md_input_paths)} markdown files referenced from file "{tex_input_path}"'
+                _warning(message)
+
+        if not silent:
+            LOGGER.info(
+                'Validated file "%s" that contains %d cross-references and %d bibliographic references',
+                path, num_cross_references, num_bibliographic_references,
+            )
+
     for file_type in file_types:
         if file_type in ('metadata', 'all', 'all-yaml'):
             schema = yamale.make_schema(SCHEMA_DIRECTORY / 'metadata.yml')
             for path in _find_files(file_types=['metadata']):
-                validate_file(schema, path)
+                validate_yaml_file(schema, path)
         if file_type in ('questions-yaml', 'all', 'all-yaml'):
             _convert_md_questions_to_yaml()
             schema = yamale.make_schema(SCHEMA_DIRECTORY / 'questions.yml')
             for path in _find_files(file_types=['questions-yaml']):
-                validate_file(schema, path)
+                validate_yaml_file(schema, path)
         if file_type in ('languages', 'all', 'all-yaml'):
             _fixup_languages()
             schema = yamale.make_schema(SCHEMA_DIRECTORY / 'language.yml')
             for path in _find_files(file_types=['languages']):
-                validate_file(schema, path)
+                validate_yaml_file(schema, path)
         if file_type in ('traceability-matrix', 'all', 'all-yaml'):
-            _fixup_languages()
             schema = yamale.make_schema(SCHEMA_DIRECTORY / 'traceability-matrix.yml')
             for path in _find_files(file_types=['traceability-matrix']):
-                validate_file(schema, path)
+                validate_yaml_file(schema, path)
+        if file_type in ('tex', 'all'):
+            for path in _find_files(file_types=['tex']):
+                validate_tex_file(path)
+        if file_type in ('markdown', 'all'):
+            for tex_input_path in _find_files(file_types=['tex']):
+                md_input_paths = list(_find_files(file_types=['markdown'], tex_input_paths=[tex_input_path]))
+                if tex_input_path == EXAMPLE_DOCUMENT:
+                    LOGGER.info(
+                        'Skipping the validation of %d markdown documents referenced from example document "%s"',
+                        len(md_input_paths), tex_input_path,
+                    )
+                    continue
+                for md_input_path in md_input_paths:
+                    validate_markdown_file(md_input_path, tex_input_path)
 
 
 def _convert_eps_files_to_pdf() -> None:
@@ -431,13 +746,13 @@ def _convert_md_questions_to_yaml() -> None:
     for input_path in _find_files(['questions-markdown']):
         output_path = input_path.with_suffix('.yml')
         if output_path.exists():
-            LOGGER.warning('Skipping creation of existing file "%s"', output_path)
+            _warning('Skipping creation of existing file "%s"', output_path)
             continue
 
         output_yaml = {'questions': dict(_read_md_questions(input_path))}
 
         if not output_yaml:
-            LOGGER.warning('Found no questions in file "%s", skipping creation of empty file "%s"', input_path, output_path)
+            _warning('Found no questions in file "%s", skipping creation of empty file "%s"', input_path, output_path)
         else:
             with output_path.open('wt') as f:
                 print('questions:', file=f)
@@ -457,7 +772,7 @@ def _convert_yaml_questions_to_md() -> None:
     for input_path in _find_files(['questions-yaml']):
         output_path = input_path.with_suffix('.md')
         if output_path.exists():
-            LOGGER.warning('Skipping creation of existing file "%s"', output_path)
+            _warning('Skipping creation of existing file "%s"', output_path)
             continue
 
         with input_path.open('rt') as f:
@@ -520,22 +835,16 @@ def _change_directory(new_path):
         os.chdir(original_path)
 
 
-def _get_metadata_paths(input_path: Path) -> List[Path]:
-    referenced_paths = set(chain([input_path], _get_references_from_tex_file([input_path])))
-    metadata_paths = set(_find_files(file_types=['metadata'])) & referenced_paths
-    return sorted(metadata_paths)
-
-
 def _get_metadata_path(input_path: Path, action: str) -> Optional[Path]:
-    metadata_paths = _get_metadata_paths(input_path)
+    metadata_paths = list(_find_files(file_types=['metadata'], tex_input_paths=[input_path]))
     if len(metadata_paths) == 0:
         if action:
-            LOGGER.warning('Found no metadata of file "%s" when trying to %s', input_path, action)
+            _warning('Found no metadata of file "%s" when trying to %s', input_path, action)
         return None
     if len(metadata_paths) > 1:
         if action:
             formatted_paths = ', '.join(f'"{path}"' for path in sorted(metadata_paths))
-            LOGGER.warning('Found multiple metadata (%s) of file "%s" when trying to %s', formatted_paths, input_path, action)
+            _warning('Found multiple metadata (%s) of file "%s" when trying to %s', formatted_paths, input_path, action)
         return None
     metadata_path, = metadata_paths
     return metadata_path
@@ -727,7 +1036,7 @@ def _compile_tex_file_to_docx(input_path: Path, output_directory: Path) -> Optio
 
     # Collect files referenced from the TeX file.
     markdown_texts = []
-    for nested_path in _get_references_from_tex_file(tex_input_paths=[input_path]):
+    for nested_path in _get_flat_references_from_tex_files(tex_input_paths=[input_path]):
         if MARKDOWN_REGEXP.search(nested_path.name):
             with nested_path.open('rt') as f:
                 markdown_text = f.read()
@@ -775,7 +1084,7 @@ def _should_compile_tex_file(input_path: Path) -> bool:
         return True
 
     changed_paths = set(_changed_paths())
-    referenced_paths = set(chain([input_path], _get_references_from_tex_file([input_path])))
+    referenced_paths = set(chain([input_path], _get_flat_references_from_tex_files([input_path])))
     return bool(referenced_paths & changed_paths)
 
 
