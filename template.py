@@ -124,63 +124,95 @@ def _warning(*args, **kwargs) -> None:
     LOGGER.warning(*args, **kwargs)
 
 
+@lru_cache(maxsize=None)
+def _get_identifiers_from_markdown_file(md_input_path: Path) -> List[Tuple[FileLocation, str]]:
+    results = []
+    with md_input_path.open('rt') as f:
+        text = f.read()
+        for prefix, pattern in ATTRIBUTES_REGEXPS.items():
+            for attributes_match in pattern.finditer(text):
+                group_number, = [group_number + 1 for group_number, group in enumerate(attributes_match.groups()) if group is not None]
+                attributes = attributes_match.group(group_number)
+                attributes_character_number = attributes_match.start(group_number)
+
+                raw_identifiers = []
+                if prefix == 'figure':
+                    raw_identifiers.append((attributes, 0))
+                else:
+                    for identifier_match in IDENTIFIER_REGEXP.finditer(attributes):
+                        raw_identifier = identifier_match.group('identifier')
+                        assert raw_identifier is not None
+                        identifier_character_number = identifier_match.start('identifier')
+                        raw_identifiers.append((raw_identifier, identifier_character_number))
+
+                for (raw_identifier, identifier_character_number) in raw_identifiers:
+                    identifier = f'{prefix}:{raw_identifier}'
+                    character_number = attributes_character_number + identifier_character_number
+                    result = (md_input_path, character_number), identifier
+                    results.append(result)
+    return results
+
+
 def _get_identifiers_from_markdown_files(md_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, str]]:
     for md_input_path in md_input_paths:
-        with md_input_path.open('rt') as f:
-            text = f.read()
-            for prefix, pattern in ATTRIBUTES_REGEXPS.items():
-                for attributes_match in pattern.finditer(text):
-                    group_number, = [group_number + 1 for group_number, group in enumerate(attributes_match.groups()) if group is not None]
-                    attributes = attributes_match.group(group_number)
-                    attributes_character_number = attributes_match.start(group_number)
+        yield from _get_identifiers_from_markdown_file(md_input_path)
 
-                    raw_identifiers = []
-                    if prefix == 'figure':
-                        raw_identifiers.append((attributes, 0))
-                    else:
-                        for identifier_match in IDENTIFIER_REGEXP.finditer(attributes):
-                            raw_identifier = identifier_match.group('identifier')
-                            assert raw_identifier is not None
-                            identifier_character_number = identifier_match.start('identifier')
-                            raw_identifiers.append((raw_identifier, identifier_character_number))
 
-                    for (raw_identifier, identifier_character_number) in raw_identifiers:
-                        identifier = f'{prefix}:{raw_identifier}'
-                        character_number = attributes_character_number + identifier_character_number
-                        yield (md_input_path, character_number), identifier
+@lru_cache(maxsize=None)
+def _get_identifiers_from_bib_file(bib_input_path: Path) -> List[Tuple[FileLocation, str]]:
+    results = []
+    with bib_input_path.open('rt') as f:
+        text = f.read()
+        for identifier_match in BIBENTRY_REGEXP.finditer(text):
+            group_number, = [group_number + 1 for group_number, group in enumerate(identifier_match.groups()) if group is not None]
+            identifier = identifier_match.group(group_number)
+            character_number = identifier_match.start(group_number)
+            result = (bib_input_path, character_number), identifier
+            results.append(result)
+    return results
 
 
 def _get_identifiers_from_bib_files(bib_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, str]]:
     for bib_input_path in bib_input_paths:
-        with bib_input_path.open('rt') as f:
-            text = f.read()
-            for identifier_match in BIBENTRY_REGEXP.finditer(text):
-                group_number, = [group_number + 1 for group_number, group in enumerate(identifier_match.groups()) if group is not None]
-                identifier = identifier_match.group(group_number)
-                character_number = identifier_match.start(group_number)
-                yield (bib_input_path, character_number), identifier
+        yield from _get_identifiers_from_bib_file(bib_input_path)
+
+
+@lru_cache(maxsize=None)
+def _get_cross_references_from_markdown_file(md_input_path: Path) -> List[Tuple[FileLocation, str]]:
+    results = []
+    with md_input_path.open('rt') as f:
+        text = f.read()
+        for identifier_match in CROSS_REFERENCE_REGEXP.finditer(text):
+            group_number, = [group_number + 1 for group_number, group in enumerate(identifier_match.groups()) if group is not None]
+            identifier = identifier_match.group(group_number)
+            character_number = identifier_match.start(group_number)
+            result = (md_input_path, character_number), identifier
+            results.append(result)
+    return results
 
 
 def _get_cross_references_from_markdown_files(md_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, str]]:
     for md_input_path in md_input_paths:
-        with md_input_path.open('rt') as f:
-            text = f.read()
-            for identifier_match in CROSS_REFERENCE_REGEXP.finditer(text):
-                group_number, = [group_number + 1 for group_number, group in enumerate(identifier_match.groups()) if group is not None]
-                identifier = identifier_match.group(group_number)
-                character_number = identifier_match.start(group_number)
-                yield (md_input_path, character_number), identifier
+        yield from _get_cross_references_from_markdown_file(md_input_path)
+
+
+@lru_cache(maxsize=None)
+def _get_bibliographic_references_from_markdown_file(md_input_path: Path) -> List[Tuple[FileLocation, str]]:
+    results = []
+    with md_input_path.open('rt') as f:
+        text = f.read()
+        for identifier_match in BIBLIOGRAPHIC_REFERENCE_REGEXP.finditer(text):
+            group_number, = [group_number + 1 for group_number, group in enumerate(identifier_match.groups()) if group is not None]
+            identifier = identifier_match.group(group_number)
+            character_number = identifier_match.start(group_number)
+            result = (md_input_path, character_number), identifier
+            results.append(result)
+    return results
 
 
 def _get_bibliographic_references_from_markdown_files(md_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, str]]:
     for md_input_path in md_input_paths:
-        with md_input_path.open('rt') as f:
-            text = f.read()
-            for identifier_match in BIBLIOGRAPHIC_REFERENCE_REGEXP.finditer(text):
-                group_number, = [group_number + 1 for group_number, group in enumerate(identifier_match.groups()) if group is not None]
-                identifier = identifier_match.group(group_number)
-                character_number = identifier_match.start(group_number)
-                yield (md_input_path, character_number), identifier
+        yield from _get_bibliographic_references_from_markdown_file(md_input_path)
 
 
 def _get_line_number_from_file_location(location: FileLocation) -> int:
@@ -197,27 +229,35 @@ def _get_line_number_from_file_location(location: FileLocation) -> int:
     )
 
 
+@lru_cache(maxsize=None)
+def _get_references_from_tex_file(tex_input_path: Path) -> List[Tuple[FileLocation, Path, Iterable[Path]]]:
+    results = []
+    with tex_input_path.open('rt') as f:
+        text = f.read()
+        for pattern in [MARKDOWNINPUT_REGEXP, ADDBIBRESOURCE_REGEXP]:
+            for match in pattern.finditer(text):
+                # Yield directly referenced paths.
+                original_referenced_path = Path(match.group('filename'))
+                character_number = match.start('filename')
+                referenced_path = original_referenced_path
+                if not referenced_path.is_absolute():
+                    referenced_path = tex_input_path.parent / referenced_path
+                referenced_path = referenced_path.resolve()
+                referenced_paths = [referenced_path]
+                # For YAML questions, yield also MD question source files.
+                if QUESTIONS_YAML_REGEXP.fullmatch(referenced_path.name):
+                    for referenced_md_path in referenced_path.parent.glob(f'{referenced_path.stem}.*'):
+                        if QUESTIONS_MARKDOWN_REGEXP.fullmatch(referenced_md_path.name):
+                            referenced_md_path = referenced_md_path.resolve()
+                            referenced_paths.append(referenced_md_path)
+                result = (tex_input_path, character_number), original_referenced_path, referenced_paths
+                results.append(result)
+    return results
+
+
 def _get_references_from_tex_files(tex_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, Path, Iterable[Path]]]:
     for tex_input_path in tex_input_paths:
-        with tex_input_path.open('rt') as f:
-            text = f.read()
-            for pattern in [MARKDOWNINPUT_REGEXP, ADDBIBRESOURCE_REGEXP]:
-                for match in pattern.finditer(text):
-                    # Yield directly referenced paths.
-                    original_referenced_path = Path(match.group('filename'))
-                    character_number = match.start('filename')
-                    referenced_path = original_referenced_path
-                    if not referenced_path.is_absolute():
-                        referenced_path = tex_input_path.parent / referenced_path
-                    referenced_path = referenced_path.resolve()
-                    referenced_paths = [referenced_path]
-                    # For YAML questions, yield also MD question source files.
-                    if QUESTIONS_YAML_REGEXP.fullmatch(referenced_path.name):
-                        for referenced_md_path in referenced_path.parent.glob(f'{referenced_path.stem}.*'):
-                            if QUESTIONS_MARKDOWN_REGEXP.fullmatch(referenced_md_path.name):
-                                referenced_md_path = referenced_md_path.resolve()
-                                referenced_paths.append(referenced_md_path)
-                    yield (tex_input_path, character_number), original_referenced_path, referenced_paths
+        yield from _get_references_from_tex_file(tex_input_path)
 
 
 def _flatten_references(references: Iterable[Tuple[FileLocation, Path, Iterable[Path]]]) -> Iterable[Path]:
