@@ -193,7 +193,7 @@ This will produce the following output:
 * Folowed by a second one
 	* With a first level nested item (using 1x tab)
 	* And another first level  nested item (using 1x tab)
-  	* And second level nested item (using 2x tab)
+		* And second level nested item (using 2x tab)
 * And so on, until you have them all here
 
 You can also write a numbered list as follows using `number + dot + space + text` or `tab + number + dot + space + text`:
