@@ -85,6 +85,7 @@ jobs:
           path: '*.pdf'
   produce-html:
     name: Produce HTML documents
+    if: github.ref == 'refs/heads/main'
     needs:
       - validate
     runs-on: ubuntu-latest
@@ -118,6 +119,7 @@ jobs:
           path: html/
   produce-ebooks:
     name: Produce EPUB documents
+    if: github.ref == 'refs/heads/main'
     needs:
       - validate
     runs-on: ubuntu-latest

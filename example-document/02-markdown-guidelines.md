@@ -176,11 +176,14 @@ Both outputs should be identical.
 
 ## Lists
 
-You can write an unnumbered list as follows:
+You can write an unnumbered list as follows using `asterisk + space + text` or ``tab + asterisk + space + text`:
 
 ``` md
 * This is the first item in the list
 * Folowed by a second one
+	* With a first level nested item (using 1x tab)
+	* And another first level  nested item (using 1x tab)
+		* And second level nested item (using 2x tab)
 * And so on, until you have them all here
 ```
 
@@ -188,21 +191,30 @@ This will produce the following output:
 
 * This is the first item in the list
 * Folowed by a second one
+	* With a first level nested item (using 1x tab)
+	* And another first level  nested item (using 1x tab)
+  	* And second level nested item (using 2x tab)
 * And so on, until you have them all here
 
-You can also write a numbered list as follows:
+You can also write a numbered list as follows using `number + dot + text` or `tab + number + dot + text`:
 
 ``` md
 1. This is the first item in the list
 1. Folowed by a second one
+	1. With a first level nested item (using 1x tab)
+	1. And another first level  nested item (using 1x tab)
+		1. And second level nested item (using 2x tab)
 1. And so on, until you have them all here
 ```
 
-The first number sets the sequence starting number. Every other number is ignored, but teh sequence is used.  
+The first number sets the sequence starting number. Every other number is ignored, but the sequence is used.  
 So it will produce the following output:
 
 1. This is the first item in the list
 1. Folowed by a second one
+	1. With a first level nested item (using 1x tab)
+	1. And another first level  nested item (using 1x tab)
+		1. And second level nested item	(using 2x tab)
 1. And so on, until you have them all here
 
 ## Sections {.landscape}
