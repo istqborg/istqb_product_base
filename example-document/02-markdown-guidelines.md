@@ -176,7 +176,7 @@ Both outputs should be identical.
 
 ## Lists
 
-You can write an unnumbered list as follows using `asterisk + space + text` or ``tab + asterisk + space + text`:
+You can write an unnumbered list as follows using `asterisk + space + text` or `tab + asterisk + space + text`:
 
 ``` md
 * This is the first item in the list
