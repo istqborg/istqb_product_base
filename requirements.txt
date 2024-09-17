@@ -1,5 +1,4 @@
 GitPython==3.1.43
 PyYAML==6.0.1
 rapidfuzz==3.9.7
-regex==2024.9.11
 yamale==4.0.4

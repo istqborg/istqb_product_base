@@ -20,10 +20,10 @@ import subprocess
 from tempfile import NamedTemporaryFile
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, TYPE_CHECKING
 import os
+import re
 import shutil
 
 from git import Repo, InvalidGitRepositoryError
-import regex as re
 import yamale
 import yaml
 
