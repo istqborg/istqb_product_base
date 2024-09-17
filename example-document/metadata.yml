@@ -23,3 +23,7 @@ provided-by:
 # 3rd-party organizations without logos
 - name: International Requirements Engineering Board  # or just:
 - Hungarian Testing Board
+# User-defined variables
+variables:
+  foo: bar
+  bar: baz
