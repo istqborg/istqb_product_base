@@ -236,7 +236,7 @@
           { #1 }
           {
             { provided-by } {
-              % A third-party organization
+              % Third-party organizations
               \markdownSetup {
                 code = \group_begin:,
                 renderers = {
@@ -246,6 +246,27 @@
                   / metadata / provided-by,
                 renderers = {
                   jekyllDataSequenceEnd +=
+                    \group_end:
+                },
+              }
+            }
+          }
+      },
+      jekyllDataMappingBegin = {
+        \str_case:nn
+          { #1 }
+          {
+            { variables } {
+              % User-defined variables
+              \markdownSetup {
+                code = \group_begin:,
+                renderers = {
+                  jekyllDataMappingEnd =
+                },
+                snippet = istqb / common
+                  / metadata / variables,
+                renderers = {
+                  jekyllDataMappingEnd +=
                     \group_end:
                 },
               }
@@ -331,6 +352,14 @@
           }
       },
     }
+  }
+\markdownSetupSnippet
+  { metadata / variables }
+  {
+    renderers = {
+      % Ignore user-defined variables.
+      jekyllData(Typographic|Programmatic)String = ,
+    },
   }
 
 % Traceability matrix

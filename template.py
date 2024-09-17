@@ -8,14 +8,13 @@ Processes ISTQB documents written with the LaTeX+Markdown template.
 from argparse import ArgumentParser, Namespace
 from collections import defaultdict
 from configparser import ConfigParser
-from contextlib import contextmanager
+from contextlib import contextmanager, ExitStack
 from itertools import chain, repeat
 from functools import lru_cache
 import json
 import logging
 from multiprocessing import Pool
 from pathlib import Path
-import re
 import string
 import subprocess
 from tempfile import NamedTemporaryFile
@@ -24,6 +23,7 @@ import os
 import shutil
 
 from git import Repo, InvalidGitRepositoryError
+import regex as re
 import yamale
 import yaml
 
@@ -109,8 +109,102 @@ QUESTIONS_ANSWER_REGEXP = re.compile(
 )
 QUESTIONS_EXPLANATION_REGEXP = re.compile(r'\s{0,3}##\s*(explanation|justification)\s*', flags=re.IGNORECASE)
 
+VARIABLE_PREFIX, VARIABLE_SUFFIX = r'(?<=(?:^|[^\\])(?:\\\\)*)', r'\$\{(?P<variable_name>[^}]+)\}'
+VARIABLE_REGEXP = re.compile(f'{VARIABLE_PREFIX}{VARIABLE_SUFFIX}')
+ESCAPED_VARIABLE_REGEXP = re.compile(f'{VARIABLE_PREFIX}\\\\{VARIABLE_SUFFIX}')
+
 
 FileLocation = Tuple[Path, int]
+
+
+@contextmanager
+def _replace_variables_for_single_tex_file(input_paths: Iterable[Path], tex_input_path: Path, dry_run=False):
+    input_paths = list(input_paths)
+    backups = {}
+    try:
+        for input_path in input_paths:
+            # Extract the original content.
+            with input_path.open('rb') as f:
+                original_content = f.read()
+            if not dry_run:
+                backups[input_path] = original_content
+            text = original_content.decode()
+            # Extract all available variables.
+            variables: Dict[str, Tuple[Path, str]] = dict()
+            metadata_paths = _find_files(file_types=['metadata'], tex_input_paths=[tex_input_path])
+            for metadata_path in metadata_paths:
+                with metadata_path.open('rt') as f:
+                    metadata_text = f.read()
+                metadata = yaml.safe_load(metadata_text)
+                sources = {
+                    'metadata': metadata,
+                    'metadata.variables': metadata.get('variables', dict()),
+                }
+                for source_prefix, source_dict in sources.items():
+                    for key, value in source_dict.items():
+                        if isinstance(key, str) and isinstance(value, str):
+                            key = f'{source_prefix}.{key}'
+                            if key in variables:
+                                previous_metadata_path, _ = variables[key]
+                                raise ValueError(
+                                    f'The variable "{key}" has been defined twice for file "{input_path}": '
+                                    f'Once in file "{previous_metadata_path}" and once in file "{metadata_path}"'
+                                )
+                            else:
+                                variables[key] = (metadata_path, value)
+            # Replace variables in the original content.
+            def replace_variable(match):
+                variable_name = match.group('variable_name')
+                if variable_name not in variables:
+                    character_number = match.start('variable_name')
+                    line_number = _get_line_number_from_file_location((input_path, character_number))
+                    message = f'Variable "{variable_name}" referenced on line {line_number} of file "{input_path}" not found'
+                    if variables:
+                        nearest_variable_name = _get_nearest_text(variable_name, variables.keys())
+                        metadata_path, _ = variables[nearest_variable_name]
+                        message = f'{message}; did you mean "{nearest_variable_name}" defined in file "{metadata_path}"?'
+                    raise ValueError(message)
+                else:
+                    _, variable_value = variables[variable_name]
+                    return variable_value
+
+            replaced_text = VARIABLE_REGEXP.sub(replace_variable, text)  # replace unescaped variables with variable values
+            replaced_text = ESCAPED_VARIABLE_REGEXP.sub(  # unescape escaped variables
+                lambda match: f'${{{match.group("variable_name")}}}', replaced_text)
+            if not dry_run:
+                with input_path.open('wt') as f:
+                    print(replaced_text, file=f)
+        yield
+    finally:
+        # Restore the original content.
+        if not dry_run:
+            for input_path, original_content in backups.items():
+                with input_path.open('wb') as f:
+                    f.write(original_content)
+
+
+@contextmanager
+def _replace_variables_for_many_tex_files(tex_input_paths: Iterable[Path], dry_run=False):
+    with ExitStack() as stack:
+        seen_input_paths: Dict[Path, List[Path]] = defaultdict(lambda: list())
+        for tex_input_path in tex_input_paths:
+            input_paths = list(_find_files(file_types=['markdown'], tex_input_paths=[tex_input_path]))
+            for input_path in input_paths:
+                if len(seen_input_paths[input_path]) == 1:
+                    previous_tex_input_path, = seen_input_paths[input_path]
+                    raise ValueError(
+                        f'File "{input_path}" has been referenced both in file "{previous_tex_input_path}" '
+                        f'and in file "{tex_input_path}", which makes variable replacements ambiguous'
+                    )
+                seen_input_paths[input_path].append(tex_input_path)
+            context_manager = _replace_variables_for_single_tex_file(input_paths, tex_input_path, dry_run=dry_run)
+            stack.enter_context(context_manager)
+        yield
+
+
+def _validate_variables(input_paths: Iterable[Path], tex_input_path: Path) -> None:
+    with _replace_variables_for_single_tex_file(input_paths, tex_input_path, dry_run=True):
+        pass
 
 
 def _get_nearest_text(text: str, texts: Iterable[str]) -> str:
@@ -476,6 +570,9 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
             LOGGER.info('Validated file "%s" that references %d other files', path, len(references))
 
     def validate_markdown_file(path: Path, tex_input_path: Path):
+        # Check variables.
+        _validate_variables([path], tex_input_path)
+
         # Check cross-references.
         md_identifiers: Dict[str, List[Tuple[Path, int]]] = defaultdict(lambda: list())
         bib_identifiers: Dict[str, List[Tuple[Path, int]]] = defaultdict(lambda: list())
@@ -1102,33 +1199,34 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
     if not input_paths:
         return
 
-    os.environ['TEXINPUTS'] = f'.:{ROOT_COPY_DIRECTORY}/template:'
-    try:
+    with _replace_variables_for_many_tex_files(input_paths):
+        os.environ['TEXINPUTS'] = f'.:{ROOT_COPY_DIRECTORY}/template:'
         try:
-            shutil.rmtree(ROOT_COPY_DIRECTORY)
-        except FileNotFoundError:
-            pass
-        shutil.copytree(ROOT_DIRECTORY, ROOT_COPY_DIRECTORY)
+            try:
+                shutil.rmtree(ROOT_COPY_DIRECTORY)
+            except FileNotFoundError:
+                pass
+            shutil.copytree(ROOT_DIRECTORY, ROOT_COPY_DIRECTORY)
 
-        _validate_files(file_types=['all'], silent=True)
-        _fixup_line_endings()
-        _convert_eps_files_to_pdf()
-        _convert_xlsx_files_to_pdf()
+            _validate_files(file_types=['all'], silent=True)
+            _fixup_line_endings()
+            _convert_eps_files_to_pdf()
+            _convert_xlsx_files_to_pdf()
 
-        compile_parameters = zip(repeat(compile_fn), input_paths, repeat(args), repeat(kwargs))
-        with Pool(None) as pool:
-            for input_path, output_path in pool.imap_unordered(_compile_fn, compile_parameters):
-                if output_path is None:
-                    LOGGER.info('Skipped the compilation of file "%s" because it has been disabled', input_path)
-                else:
-                    assert output_path.exists(), f'File "{output_path}" does not exist'
-                    LOGGER.info('Compiled file "%s" to "%s"', input_path, output_path)
-    finally:
-        del os.environ['TEXINPUTS']
-        try:
-            shutil.rmtree(ROOT_COPY_DIRECTORY)
-        except FileNotFoundError:
-            pass
+            compile_parameters = zip(repeat(compile_fn), input_paths, repeat(args), repeat(kwargs))
+            with Pool(None) as pool:
+                for input_path, output_path in pool.imap_unordered(_compile_fn, compile_parameters):
+                    if output_path is None:
+                        LOGGER.info('Skipped the compilation of file "%s" because it has been disabled', input_path)
+                    else:
+                        assert output_path.exists(), f'File "{output_path}" does not exist'
+                        LOGGER.info('Compiled file "%s" to "%s"', input_path, output_path)
+        finally:
+            del os.environ['TEXINPUTS']
+            try:
+                shutil.rmtree(ROOT_COPY_DIRECTORY)
+            except FileNotFoundError:
+                pass
 
 
 def _compile_tex_files_to_pdf(previous_continuous: bool) -> None:
