@@ -154,6 +154,8 @@ def _replace_variables_for_single_tex_file(input_paths: Iterable[Path], tex_inpu
                                 variables[key] = (metadata_path, value)
 
             # Replace variables in the original content.
+            variable_replacements: Dict[str, Tuple[Path, str]] = dict()
+
             def replace_variable(match):
                 variable_name = match.group('variable_name')
                 if variable_name not in variables:
@@ -166,7 +168,8 @@ def _replace_variables_for_single_tex_file(input_paths: Iterable[Path], tex_inpu
                         message = f'{message}; did you mean "{nearest_variable_name}" defined in file "{metadata_path}"?'
                     raise ValueError(message)
                 else:
-                    _, variable_value = variables[variable_name]
+                    metadata_path, variable_value = variables[variable_name]
+                    variable_replacements[variable_name] = (metadata_path, variable_value)
                     backslashes = '\\' * (len(match.group('backslashes')) // 2)  # halve the number of immediately preceding backslashes
                 return f'{backslashes}{variable_value}'
 
@@ -180,7 +183,8 @@ def _replace_variables_for_single_tex_file(input_paths: Iterable[Path], tex_inpu
             if not dry_run:
                 with input_path.open('wt') as f:
                     print(replaced_text, file=f)
-        yield
+
+        yield variable_replacements
     finally:
         # Restore the original content.
         if not dry_run:
@@ -191,34 +195,58 @@ def _replace_variables_for_single_tex_file(input_paths: Iterable[Path], tex_inpu
 
 @contextmanager
 def _replace_variables_for_many_tex_files(tex_input_paths: Iterable[Path], dry_run=False):
-    with ExitStack() as stack:
-        seen_input_paths: Dict[Path, List[Path]] = defaultdict(lambda: list())
-        contains_unescaped_variables: Dict[Path, bool] = dict()
-        for tex_input_path in tex_input_paths:
-            input_paths = list(_find_files(file_types=['markdown'], tex_input_paths=[tex_input_path]))
-            for input_path in input_paths:
-                # Detect ambiguous replacements of unescaped variables.
-                with input_path.open('rt') as f:
-                    text = f.read()
-                if len(seen_input_paths[input_path]) > 0 and contains_unescaped_variables[input_path]:
-                    previous_tex_input_path, = seen_input_paths[input_path]
+    tex_input_paths = list(tex_input_paths)
+    seen_input_paths = defaultdict(lambda: list())
+    for tex_input_path in tex_input_paths:
+        input_paths = list(_find_files(file_types=['markdown'], tex_input_paths=[tex_input_path]))
+        for input_path in input_paths:
+            # Detect ambiguous replacements of unescaped variables.
+            with input_path.open('rt') as f:
+                text = f.read()
+            with _replace_variables_for_single_tex_file([input_path], tex_input_path, dry_run=True) as variable_replacements:
+                variable_replacements_tuple = tuple(sorted(variable_replacements.items()))
+                simple_variable_replacements_tuple = tuple(sorted(
+                    (key, value)
+                    for key, (_, value)
+                    in variable_replacements.items()
+                ))
+                seen_input_paths[input_path].append((tex_input_path, variable_replacements_tuple, simple_variable_replacements_tuple))
+            if len(seen_input_paths[input_path]) > 1:
+                previous_tex_input_path, previous_variable_replacements_tuple, previous_simple_variable_replacements_tuple = \
+                    seen_input_paths[input_path][-2]
+                if previous_simple_variable_replacements_tuple != simple_variable_replacements_tuple:
+                    previous_variable_replacements_dict = dict(previous_variable_replacements_tuple)
+                    previous_simple_variable_replacements_dict = dict(previous_simple_variable_replacements_tuple)
+                    variable_replacements_dict = dict(variable_replacements_tuple)
+                    simple_variable_replacements_dict = dict(simple_variable_replacements_tuple)
+                    for ambiguous_variable in sorted(previous_simple_variable_replacements_dict | simple_variable_replacements_dict):
+                        previous_metadata_path, previous_value = previous_variable_replacements_dict[ambiguous_variable]
+                        metadata_path, value = variable_replacements_dict[ambiguous_variable]
+                        if previous_value != value:
+                            break
                     raise ValueError(
-                        f'File "{input_path}" contains unescaped variables and has been referenced both in '
-                        f'file "{previous_tex_input_path}" and in file "{tex_input_path}", which makes variable replacement ambiguous'
+                        f'File "{input_path}" uses ambiguous variable "${{{ambiguous_variable}}}" and has been referenced in '
+                        f'file "{previous_tex_input_path}", where the variable has value "{previous_value}" defined in file '
+                        f'"{previous_metadata_path}", and in file "{tex_input_path}", where the variable has value "{value}" '
+                        f'defined in file "{metadata_path}"'
                     )
-                contains_unescaped_variables[input_path] = VARIABLE_REGEXP.search(text)
-                skip_replacement = len(seen_input_paths[input_path]) > 0
-                seen_input_paths[input_path].append(tex_input_path)
+    with ExitStack() as stack:
+        if not dry_run:
+            seen_input_paths: Set[Path] = set()
+            for tex_input_path in tex_input_paths:
+                for input_path in input_paths:
+                    if input_path in seen_input_paths:
+                        continue
+                    seen_input_paths.add(input_path)
 
-                # Perform the variable replacement
-                if not skip_replacement:
-                    context_manager = _replace_variables_for_single_tex_file([input_path], tex_input_path, dry_run=dry_run)
+                    # Perform the variable replacement
+                    context_manager = _replace_variables_for_single_tex_file([input_path], tex_input_path, dry_run=False)
                     stack.enter_context(context_manager)
         yield
 
 
 def _validate_variables(input_paths: Iterable[Path], tex_input_path: Path) -> None:
-    with _replace_variables_for_single_tex_file(input_paths, tex_input_path, dry_run=True):
+    with _replace_variables_for_single_tex_file(input_paths, tex_input_path, dry_run=True) as _:
         pass
 
 
