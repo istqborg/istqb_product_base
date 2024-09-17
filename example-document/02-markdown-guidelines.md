@@ -217,6 +217,23 @@ So it will produce the following output:
 		1. And second level nested item	(using 2x tab)
 1. And so on, until you have them all here
 
+## Variables
+
+You can use metadata from file `metadata.yml` by writing `\${metadata.title}`. This will produce the following output: ${metadata.title}.
+
+You can also define your own variables in section `variables` of the file `metadata.yml` as follows:
+
+```yaml
+# User-defined variables
+variables:
+  foo: bar
+  bar: baz
+```
+
+Then, you can use your variables by writing `\${metadata.variables.foo}`. This will produce the following output: ${metadata.variables.foo}.
+
+Sometimes, you may want to write something that looks like a metadata field or like a variable. You can achieve this by writing a backslash (`\`) before the dollar sign (`$`). For example, you can write `\\\${metadata.variables.bar}`. This will produce the following output: \${metadata.variables.bar}.
+
 ## Sections {.landscape}
 
 You can write the heading of a second-level section as follows:
