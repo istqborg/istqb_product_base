@@ -245,8 +245,13 @@ def _replace_variables_for_many_tex_files(tex_input_paths: Iterable[Path], dry_r
         yield
 
 
-def _validate_variables(input_paths: Iterable[Path], tex_input_path: Path) -> None:
+def _validate_variables_for_single_tex_file(input_paths: Iterable[Path], tex_input_path: Path) -> None:
     with _replace_variables_for_single_tex_file(input_paths, tex_input_path, dry_run=True) as _:
+        pass
+
+
+def _validate_variables_for_many_tex_files(tex_input_paths: Iterable[Path]) -> None:
+    with _replace_variables_for_many_tex_files(tex_input_paths, dry_run=True) as _:
         pass
 
 
@@ -613,9 +618,6 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
             LOGGER.info('Validated file "%s" that references %d other files', path, len(references))
 
     def validate_markdown_file(path: Path, tex_input_path: Path):
-        # Check variables.
-        _validate_variables([path], tex_input_path)
-
         # Check cross-references.
         md_identifiers: Dict[str, List[Tuple[Path, int]]] = defaultdict(lambda: list())
         bib_identifiers: Dict[str, List[Tuple[Path, int]]] = defaultdict(lambda: list())
@@ -758,8 +760,11 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
             for path in _find_files(file_types=['tex']):
                 validate_tex_file(path)
         if file_type in ('markdown', 'all'):
-            for tex_input_path in _find_files(file_types=['tex']):
+            tex_input_paths = list(_find_files(file_types=['tex']))
+            for tex_input_path in tex_input_paths:
                 md_input_paths = list(_find_files(file_types=['markdown'], tex_input_paths=[tex_input_path]))
+                for md_input_path in md_input_paths:
+                    _validate_variables_for_single_tex_file([md_input_path], tex_input_path)
                 if tex_input_path == EXAMPLE_DOCUMENT:
                     LOGGER.info(
                         'Skipping the validation of %d markdown documents referenced from example document "%s"',
@@ -768,6 +773,7 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
                     continue
                 for md_input_path in md_input_paths:
                     validate_markdown_file(md_input_path, tex_input_path)
+            _validate_variables_for_many_tex_files(tex_input_paths)
 
 
 def _convert_eps_files_to_pdf() -> None:
