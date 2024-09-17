@@ -109,7 +109,7 @@ QUESTIONS_ANSWER_REGEXP = re.compile(
 )
 QUESTIONS_EXPLANATION_REGEXP = re.compile(r'\s{0,3}##\s*(explanation|justification)\s*', flags=re.IGNORECASE)
 
-VARIABLE_PREFIX, VARIABLE_SUFFIX = r'(?<=(?:^|[^\\])(?:\\\\)*)', r'\$\{(?P<variable_name>[^}]+)\}'
+VARIABLE_PREFIX, VARIABLE_SUFFIX = r'(?:^|(?<=[^\\]))(?P<backslashes>(?:\\\\)*)', r'\$\{(?P<variable_name>[^}]+)\}'
 VARIABLE_REGEXP = re.compile(f'{VARIABLE_PREFIX}{VARIABLE_SUFFIX}')
 ESCAPED_VARIABLE_REGEXP = re.compile(f'{VARIABLE_PREFIX}\\\\{VARIABLE_SUFFIX}')
 
@@ -166,11 +166,16 @@ def _replace_variables_for_single_tex_file(input_paths: Iterable[Path], tex_inpu
                     raise ValueError(message)
                 else:
                     _, variable_value = variables[variable_name]
-                    return variable_value
+                    backslashes = '\\' * (len(match.group('backslashes')) // 2)  # halve the number of immediately preceding backslashes
+                return f'{backslashes}{variable_value}'
+
+            def unescape_nonvariable(match):
+                variable_name = match.group('variable_name')
+                backslashes = '\\' * (len(match.group('backslashes')) // 2)  # halve the number of immediately preceding backslashes
+                return f'{backslashes}${{{variable_name}}}'
 
             replaced_text = VARIABLE_REGEXP.sub(replace_variable, text)  # replace unescaped variables with variable values
-            replaced_text = ESCAPED_VARIABLE_REGEXP.sub(  # unescape escaped variables
-                lambda match: f'${{{match.group("variable_name")}}}', replaced_text)
+            replaced_text = ESCAPED_VARIABLE_REGEXP.sub(unescape_nonvariable, replaced_text)  # unescape escaped variables
             if not dry_run:
                 with input_path.open('wt') as f:
                     print(replaced_text, file=f)
