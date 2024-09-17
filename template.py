@@ -193,18 +193,27 @@ def _replace_variables_for_single_tex_file(input_paths: Iterable[Path], tex_inpu
 def _replace_variables_for_many_tex_files(tex_input_paths: Iterable[Path], dry_run=False):
     with ExitStack() as stack:
         seen_input_paths: Dict[Path, List[Path]] = defaultdict(lambda: list())
+        contains_unescaped_variables: Dict[Path, bool] = dict()
         for tex_input_path in tex_input_paths:
             input_paths = list(_find_files(file_types=['markdown'], tex_input_paths=[tex_input_path]))
             for input_path in input_paths:
-                if len(seen_input_paths[input_path]) == 1:
+                # Detect ambiguous replacements of unescaped variables.
+                with input_path.open('rt') as f:
+                    text = f.read()
+                if len(seen_input_paths[input_path]) > 0 and contains_unescaped_variables[input_path]:
                     previous_tex_input_path, = seen_input_paths[input_path]
                     raise ValueError(
-                        f'File "{input_path}" has been referenced both in file "{previous_tex_input_path}" '
-                        f'and in file "{tex_input_path}", which makes variable replacements ambiguous'
+                        f'File "{input_path}" contains unescaped variables and has been referenced both in '
+                        f'file "{previous_tex_input_path}" and in file "{tex_input_path}", which makes variable replacement ambiguous'
                     )
+                contains_unescaped_variables[input_path] = VARIABLE_REGEXP.search(text)
+                skip_replacement = len(seen_input_paths[input_path]) > 0
                 seen_input_paths[input_path].append(tex_input_path)
-            context_manager = _replace_variables_for_single_tex_file(input_paths, tex_input_path, dry_run=dry_run)
-            stack.enter_context(context_manager)
+
+                # Perform the variable replacement
+                if not skip_replacement:
+                    context_manager = _replace_variables_for_single_tex_file([input_path], tex_input_path, dry_run=dry_run)
+                    stack.enter_context(context_manager)
         yield
 
 
