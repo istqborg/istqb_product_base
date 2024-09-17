@@ -18,7 +18,7 @@ from pathlib import Path
 import string
 import subprocess
 from tempfile import NamedTemporaryFile
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, TYPE_CHECKING
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union, TYPE_CHECKING
 import os
 import re
 import shutil
@@ -201,8 +201,6 @@ def _replace_variables_for_many_tex_files(tex_input_paths: Iterable[Path], dry_r
         input_paths = list(_find_files(file_types=['markdown'], tex_input_paths=[tex_input_path]))
         for input_path in input_paths:
             # Detect ambiguous replacements of unescaped variables.
-            with input_path.open('rt') as f:
-                text = f.read()
             with _replace_variables_for_single_tex_file([input_path], tex_input_path, dry_run=True) as variable_replacements:
                 variable_replacements_tuple = tuple(sorted(variable_replacements.items()))
                 simple_variable_replacements_tuple = tuple(sorted(
