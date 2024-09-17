@@ -152,6 +152,7 @@ def _replace_variables_for_single_tex_file(input_paths: Iterable[Path], tex_inpu
                                 )
                             else:
                                 variables[key] = (metadata_path, value)
+
             # Replace variables in the original content.
             def replace_variable(match):
                 variable_name = match.group('variable_name')
