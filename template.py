@@ -161,11 +161,11 @@ def _replace_variables_for_single_tex_file(input_paths: Iterable[Path], tex_inpu
                 if variable_name not in variables:
                     character_number = match.start('variable_name')
                     line_number = _get_line_number_from_file_location((input_path, character_number))
-                    message = f'Variable "{variable_name}" referenced on line {line_number} of file "{input_path}" not found'
+                    message = f'Variable "${{{variable_name}}}" referenced on line {line_number} of file "{input_path}" not found'
                     if variables:
                         nearest_variable_name = _get_nearest_text(variable_name, variables.keys())
                         metadata_path, _ = variables[nearest_variable_name]
-                        message = f'{message}; did you mean "{nearest_variable_name}" defined in file "{metadata_path}"?'
+                        message = f'{message}; did you mean "${{{nearest_variable_name}}}" defined in file "{metadata_path}"?'
                     raise ValueError(message)
                 else:
                     metadata_path, variable_value = variables[variable_name]
