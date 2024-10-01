@@ -16,3 +16,6 @@ istqb: International Software Testing Qualifications Board
 list-delimiters: [a, ',', a]
 business-outcomes: [Kód, Popis]
 contents: Obsah
+lists:
+  table: Zoznam tabuliek
+  figure: Zoznam obrázkov

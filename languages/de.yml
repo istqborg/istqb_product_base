@@ -16,3 +16,6 @@ istqb: International Software Testing Qualifications Board
 list-delimiters: [und, ',', und]
 business-outcomes: [Kode, Beschreibung]
 contents: Inhalte
+lists:
+  table: Tabellenverzeichnis
+  figure: Abbildungsverzeichnis
