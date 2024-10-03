@@ -792,6 +792,7 @@ def _convert_xlsx_files_to_pdf() -> None:
 def _answer_number_to_letter(number: Union[int, str]) -> str:
     return {'1': 'a', '2': 'b', '3': 'c', '4': 'd', '5': 'e'}.get(str(number), str(number))
 
+
 def _read_md_questions(input_file: Path) -> Iterable[Tuple[int, Dict]]:
     with input_file.open('rt') as f:
         input_md_lines = f.read().splitlines()
