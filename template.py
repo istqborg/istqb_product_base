@@ -825,7 +825,7 @@ def _read_md_questions(input_file: Path) -> Iterable[Tuple[int, Dict]]:
             if 'correct' not in input_yaml:
                 raise ValueError(f'Missing YAML key "correct" in file "{input_file}" on lines {line_range}')
 
-            def normalize_correct_answers(correct: Union[List[Union[str, int]], str, int]) -> List[str]:
+            def normalize_correct_answers(correct: Union[List[Union[str, int]], str, int]) -> Union[str, List[str]]:
                 def normalize_correct_answer(correct: Union[str, int]) -> str:
                     if isinstance(correct, str):
                         if correct not in ('a', 'b', 'c', 'd', 'e', '1', '2', '3', '4', '5'):
