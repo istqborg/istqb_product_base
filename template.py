@@ -855,7 +855,7 @@ def _read_md_questions(input_file: Path) -> Iterable[Tuple[int, Dict]]:
                 if isinstance(correct, (str, int)):
                     return list(normalize_correct_answer(correct))
                 elif isinstance(correct, list):
-                    return chain(*[normalize_correct_answer(correct_answer) for correct_answer in correct])
+                    return list(chain(*[normalize_correct_answer(correct_answer) for correct_answer in correct]))
                 else:
                     raise ValueError(
                         f'Expected a letter, a number, or a list in YAML key "correct" in file "{input_file}" '
