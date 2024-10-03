@@ -889,7 +889,7 @@ def _read_md_questions(input_file: Path) -> Iterable[Tuple[int, Dict]]:
 def _convert_md_questions_to_yaml() -> None:
     for input_path in _find_files(['questions-markdown']):
         output_path = input_path.with_suffix('.yml')
-        if output_path.exists():
+        if output_path.exists() and input_path.stat().st_mtime <= output_path.stat().st_mtime:
             _warning('Skipping creation of existing file "%s"', output_path)
             continue
 
@@ -915,7 +915,7 @@ def _convert_md_questions_to_yaml() -> None:
 def _convert_yaml_questions_to_md() -> None:
     for input_path in _find_files(['questions-yaml']):
         output_path = input_path.with_suffix('.md')
-        if output_path.exists():
+        if output_path.exists() and input_path.stat().st_mtime <= output_path.stat().st_mtime:
             _warning('Skipping creation of existing file "%s"', output_path)
             continue
 
