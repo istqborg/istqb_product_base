@@ -825,7 +825,40 @@ def _read_md_questions(input_file: Path) -> Iterable[Tuple[int, Dict]]:
             question['number-of-points'] = input_yaml['points']
             if 'correct' not in input_yaml:
                 raise ValueError(f'Missing YAML key "correct" in file "{input_file}" on lines {line_range}')
-            question['correct'] = input_yaml['correct']
+
+            def normalize_correct_answers(correct: Union[List[Union[str, int]], str, int]) -> List[str]:
+                def normalize_correct_answer(correct: Union[str, int]) -> str:
+                    if isinstance(correct, str):
+                        if correct not in ('a', 'b', 'c', 'd', 'e', '1', '2', '3', '4', '5'):
+                            raise ValueError(
+                                f'Expected a letter a-e or a number 1-5 in YAML key "correct" in file "{input_file}" '
+                                f'on lines {line_range}, got "{correct}"'
+                            )
+                        if correct in ('1', '2', '3', '4', '5'):
+                            correct = answer_number_to_letter(int(correct))
+                        return correct
+                    elif isinstance(correct, int):
+                        if correct not in (1, 2, 3, 4, 5):
+                            raise ValueError(
+                                f'Expected a number 1-5 in YAML key "correct" in file "{input_file}" '
+                                f'on lines {line_range}, got "{correct}"'
+                            )
+                        correct = answer_number_to_letter(correct)
+                        return correct
+                    else:
+                        assert False
+
+                if isinstance(correct, (str, int)):
+                    return normalize_correct_answer(correct)
+                elif isinstance(correct, list):
+                    return list(map(normalize_correct_answer, correct))
+                else:
+                    raise ValueError(
+                        f'Expected a letter, a number, or a list in YAML key "correct" in file "{input_file}" '
+                        f'on lines {line_range}, got "{correct}" of type "{type(correct)}"'
+                    )
+
+            question['correct'] = normalize_correct_answers(input_yaml['correct'])
         elif section == 'question':
             question['question'] = section_text
         elif section == 'answers':
