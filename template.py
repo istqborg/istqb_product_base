@@ -15,7 +15,6 @@ import json
 import logging
 from multiprocessing import Pool
 from pathlib import Path
-import string
 import subprocess
 from tempfile import NamedTemporaryFile
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union, TYPE_CHECKING
@@ -104,7 +103,7 @@ QUESTIONS_METADATA_REGEXP = re.compile(r'\s{0,3}#\s*metadata\s*', flags=re.IGNOR
 QUESTIONS_QUESTION_REGEXP = re.compile(r'\s{0,3}##\s*question\s*', flags=re.IGNORECASE)
 QUESTIONS_ANSWERS_REGEXP = re.compile(r'\s{0,3}##\s*answers\s*', flags=re.IGNORECASE)
 QUESTIONS_ANSWER_REGEXP = re.compile(
-    r'^\s{0,3}(?P<number>[0-9])[.]\s*(?P<text>(.(?!^\s{0,3}[0-9][.]))*)',
+    r'^\s{0,3}(?P<number_or_letter>[a-e1-5])[.)]\s*(?P<text>(.(?!^\s{0,3}[a-e1-5][.)]))*)',
     flags=re.IGNORECASE | re.MULTILINE | re.DOTALL,
 )
 QUESTIONS_EXPLANATION_REGEXP = re.compile(r'\s{0,3}##\s*(explanation|justification)\s*', flags=re.IGNORECASE)
@@ -790,6 +789,10 @@ def _convert_xlsx_files_to_pdf() -> None:
             LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
 
+def _answer_number_to_letter(number: Union[int, str]) -> str:
+    return {'1': 'a', '2': 'b', '3': 'c', '4': 'd', '5': 'e'}.get(str(number), str(number))
+
+
 def _read_md_questions(input_file: Path) -> Iterable[Tuple[int, Dict]]:
     with input_file.open('rt') as f:
         input_md_lines = f.read().splitlines()
@@ -822,14 +825,47 @@ def _read_md_questions(input_file: Path) -> Iterable[Tuple[int, Dict]]:
             question['number-of-points'] = input_yaml['points']
             if 'correct' not in input_yaml:
                 raise ValueError(f'Missing YAML key "correct" in file "{input_file}" on lines {line_range}')
-            question['correct'] = input_yaml['correct']
+
+            def normalize_correct_answers(correct: Union[List[Union[str, int]], str, int]) -> Union[str, List[str]]:
+                def normalize_correct_answer(correct: Union[str, int]) -> str:
+                    if isinstance(correct, str):
+                        if correct not in ('a', 'b', 'c', 'd', 'e', '1', '2', '3', '4', '5'):
+                            raise ValueError(
+                                f'Expected a letter a-e or a number 1-5 in YAML key "correct" in file "{input_file}" '
+                                f'on lines {line_range}, got "{correct}"'
+                            )
+                        if correct in ('1', '2', '3', '4', '5'):
+                            correct = _answer_number_to_letter(int(correct))
+                        return correct
+                    elif isinstance(correct, int):
+                        if correct not in (1, 2, 3, 4, 5):
+                            raise ValueError(
+                                f'Expected a number 1-5 in YAML key "correct" in file "{input_file}" '
+                                f'on lines {line_range}, got "{correct}"'
+                            )
+                        correct = _answer_number_to_letter(correct)
+                        return correct
+                    else:
+                        assert False
+
+                if isinstance(correct, (str, int)):
+                    return normalize_correct_answer(correct)
+                elif isinstance(correct, list):
+                    return list(map(normalize_correct_answer, correct))
+                else:
+                    raise ValueError(
+                        f'Expected a letter, a number, or a list in YAML key "correct" in file "{input_file}" '
+                        f'on lines {line_range}, got "{correct}" of type "{type(correct)}"'
+                    )
+
+            question['correct'] = normalize_correct_answers(input_yaml['correct'])
         elif section == 'question':
             question['question'] = section_text
         elif section == 'answers':
             answers = {}
             for answer_match in QUESTIONS_ANSWER_REGEXP.finditer(section_text):
-                answer_number = int(answer_match.group('number'))
-                answer_letter = string.ascii_lowercase[answer_number-1]
+                answer_number = answer_match.group('number_or_letter')
+                answer_letter = _answer_number_to_letter(answer_number)
                 answer_text = answer_match.group('text').strip()
                 answers[answer_letter] = answer_text
             question['answers'] = answers
@@ -889,7 +925,7 @@ def _read_md_questions(input_file: Path) -> Iterable[Tuple[int, Dict]]:
 def _convert_md_questions_to_yaml() -> None:
     for input_path in _find_files(['questions-markdown']):
         output_path = input_path.with_suffix('.yml')
-        if output_path.exists():
+        if output_path.exists() and input_path.stat().st_mtime <= output_path.stat().st_mtime:
             _warning('Skipping creation of existing file "%s"', output_path)
             continue
 
@@ -912,10 +948,10 @@ def _convert_md_questions_to_yaml() -> None:
                 LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
 
-def _convert_yaml_questions_to_md() -> None:
+def _convert_yaml_questions_to_md(force_overwrite: bool = False) -> None:
     for input_path in _find_files(['questions-yaml']):
         output_path = input_path.with_suffix('.md')
-        if output_path.exists():
+        if not force_overwrite and output_path.exists() and input_path.stat().st_mtime <= output_path.stat().st_mtime:
             _warning('Skipping creation of existing file "%s"', output_path)
             continue
 
@@ -937,12 +973,21 @@ def _convert_yaml_questions_to_md() -> None:
                 print(question['question'].rstrip('\r\n'), file=f)
                 print(file=f)
                 print('## answers', file=f)
-                for answer_index, (answer_letter, answer) in enumerate(sorted(question['answers'].items())):
+                for answer_letter, answer in sorted(question['answers'].items()):
                     answer = str(answer).rstrip('\r\n')
-                    print(f'{answer_index + 1}. {answer}', file=f)
+                    print(f'{answer_letter}) {answer}', file=f)
                 print(file=f)
+
+                def normalize_justification(justification: str) -> str:
+                    def repl(match: re.Match) -> str:
+                        answer_letter = match.group('number_or_letter')
+                        answer = match.group('text')
+                        return f'{answer_letter}) {answer}\n'
+
+                    return QUESTIONS_ANSWER_REGEXP.sub(repl, justification)
+
                 print('## justification', file=f)
-                print(question['explanation'].rstrip('\r\n'), file=f)
+                print(normalize_justification(question['explanation'].rstrip('\r\n')), file=f)
             LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
 
@@ -1256,6 +1301,8 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
             shutil.copytree(ROOT_DIRECTORY, ROOT_COPY_DIRECTORY)
 
             _validate_files(file_types=['all'], silent=True)
+            if compile_fn == _compile_tex_file_to_docx:
+                _convert_yaml_questions_to_md(force_overwrite=True)
             _fixup_line_endings()
             _convert_eps_files_to_pdf()
             _convert_xlsx_files_to_pdf()
