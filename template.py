@@ -104,7 +104,7 @@ QUESTIONS_METADATA_REGEXP = re.compile(r'\s{0,3}#\s*metadata\s*', flags=re.IGNOR
 QUESTIONS_QUESTION_REGEXP = re.compile(r'\s{0,3}##\s*question\s*', flags=re.IGNORECASE)
 QUESTIONS_ANSWERS_REGEXP = re.compile(r'\s{0,3}##\s*answers\s*', flags=re.IGNORECASE)
 QUESTIONS_ANSWER_REGEXP = re.compile(
-    r'^\s{0,3}(?P<number>[0-9])[.]\s*(?P<text>(.(?!^\s{0,3}[0-9][.]))*)',
+    r'^\s{0,3}(?P<number_or_letter>[a-e1-5])[.)]\s*(?P<text>(.(?!^\s{0,3}[a-e1-5][.)]))*)',
     flags=re.IGNORECASE | re.MULTILINE | re.DOTALL,
 )
 QUESTIONS_EXPLANATION_REGEXP = re.compile(r'\s{0,3}##\s*(explanation|justification)\s*', flags=re.IGNORECASE)
@@ -800,6 +800,9 @@ def _read_md_questions(input_file: Path) -> Iterable[Tuple[int, Dict]]:
     section_line_numbers = []
     heading_line_number: Optional[int] = None
 
+    def answer_number_to_letter(number: Union[int, str]) -> str:
+        return {'1': 'a', '2': 'b', '3': 'c', '4': 'd', '5': 'e'}.get(str(number), str(number))
+
     def finish_section():
         assert question is not None
         assert section is not None
@@ -828,8 +831,8 @@ def _read_md_questions(input_file: Path) -> Iterable[Tuple[int, Dict]]:
         elif section == 'answers':
             answers = {}
             for answer_match in QUESTIONS_ANSWER_REGEXP.finditer(section_text):
-                answer_number = int(answer_match.group('number'))
-                answer_letter = string.ascii_lowercase[answer_number-1]
+                answer_number = answer_match.group('number_or_letter')
+                answer_letter = answer_number_to_letter(answer_number)
                 answer_text = answer_match.group('text').strip()
                 answers[answer_letter] = answer_text
             question['answers'] = answers
