@@ -826,17 +826,21 @@ def _read_md_questions(input_file: Path) -> Iterable[Tuple[int, Dict]]:
             if 'correct' not in input_yaml:
                 raise ValueError(f'Missing YAML key "correct" in file "{input_file}" on lines {line_range}')
 
-            def normalize_correct_answers(correct: Union[List[Union[str, int]], str, int]) -> Union[str, List[str]]:
-                def normalize_correct_answer(correct: Union[str, int]) -> str:
+            def normalize_correct_answers(correct: Union[List[Union[str, int]], str, int]) -> List[str]:
+                def normalize_correct_answer(correct: Union[str, int]) -> Iterable[str]:
                     if isinstance(correct, str):
-                        if correct not in ('a', 'b', 'c', 'd', 'e', '1', '2', '3', '4', '5'):
-                            raise ValueError(
-                                f'Expected a letter a-e or a number 1-5 in YAML key "correct" in file "{input_file}" '
-                                f'on lines {line_range}, got "{correct}"'
-                            )
-                        if correct in ('1', '2', '3', '4', '5'):
-                            correct = _answer_number_to_letter(int(correct))
-                        return correct
+                        for letter in correct:
+                            if letter in (' ', ',', '.', ')'):
+                                continue
+                            if letter not in ('a', 'b', 'c', 'd', 'e', '1', '2', '3', '4', '5'):
+                                raise ValueError(
+                                    f'Expected a letter a-e or a number 1-5 in YAML key "correct" in file "{input_file}" '
+                                    f'on lines {line_range}, got "{correct}"'
+                                )
+                            if letter in ('1', '2', '3', '4', '5'):
+                                yield _answer_number_to_letter(int(letter))
+                            else:
+                                yield letter
                     elif isinstance(correct, int):
                         if correct not in (1, 2, 3, 4, 5):
                             raise ValueError(
@@ -844,14 +848,14 @@ def _read_md_questions(input_file: Path) -> Iterable[Tuple[int, Dict]]:
                                 f'on lines {line_range}, got "{correct}"'
                             )
                         correct = _answer_number_to_letter(correct)
-                        return correct
+                        yield correct
                     else:
                         assert False
 
                 if isinstance(correct, (str, int)):
-                    return normalize_correct_answer(correct)
+                    return list(normalize_correct_answer(correct))
                 elif isinstance(correct, list):
-                    return list(map(normalize_correct_answer, correct))
+                    return list(chain(*[normalize_correct_answer(correct_answer) for correct_answer in correct]))
                 else:
                     raise ValueError(
                         f'Expected a letter, a number, or a list in YAML key "correct" in file "{input_file}" '
