@@ -103,10 +103,23 @@ QUESTIONS_METADATA_REGEXP = re.compile(r'\s{0,3}#\s*metadata\s*', flags=re.IGNOR
 QUESTIONS_QUESTION_REGEXP = re.compile(r'\s{0,3}##\s*question\s*', flags=re.IGNORECASE)
 QUESTIONS_ANSWERS_REGEXP = re.compile(r'\s{0,3}##\s*answers\s*', flags=re.IGNORECASE)
 QUESTIONS_ANSWER_REGEXP = re.compile(
-    r'^\s{0,3}(?P<number_or_letter>[a-e1-5])[.)]\s*(?P<text>(.(?!^\s{0,3}[a-e1-5][.)]))*)',
-    flags=re.IGNORECASE | re.MULTILINE | re.DOTALL,
+    r'^[ ]{0,3}(?P<number_or_letter>[a-e1-5])[.)]((?!\n\n)\s)*(?P<text>((?!(\r?\n|\r){2})(?!^\s{0,3}[a-e1-5][.)]).)*)',
+    flags=re.MULTILINE | re.DOTALL,
 )
 QUESTIONS_EXPLANATION_REGEXP = re.compile(r'\s{0,3}##\s*(explanation|justification)\s*', flags=re.IGNORECASE)
+
+# TODO: Remove this function after <https://github.com/witiko/markdown/issues/508> has been closed.
+ROMAN_NUMERALS = r'M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})'
+FANCY_LIST_ITEM_REGEXP = re.compile(
+    (
+        r'^[ ]{0,3}(?P<number_or_letter>('
+        f'{ROMAN_NUMERALS}'
+        r'|[a-z]|[0-9]+))(?P<separator>[.)])((?!\n\n)\s)*(?P<text>((?!(\r?\n|\r){2})(?!^\s{0,3}('
+        f'{ROMAN_NUMERALS}'
+        r'|[a-z]|[0-9]+)[.)]).)*)'
+    ),
+    flags=re.IGNORECASE | re.MULTILINE | re.DOTALL,
+)
 
 VARIABLE_PREFIX, VARIABLE_SUFFIX = r'(?:^|(?<=[^\\]))(?P<backslashes>(?:\\\\)*)', r'\$\{(?P<variable_name>[^}]+)\}'
 VARIABLE_REGEXP = re.compile(f'{VARIABLE_PREFIX}{VARIABLE_SUFFIX}')
@@ -948,7 +961,18 @@ def _convert_md_questions_to_yaml() -> None:
                     print(f'    question: {json.dumps(question["question"], ensure_ascii=False)}', file=f)
                     print(f'    answers: {json.dumps(question["answers"], ensure_ascii=False)}', file=f)
                     print(f'    correct: {json.dumps(question["correct"], ensure_ascii=False)}', file=f)
-                    print(f'    explanation: {json.dumps(question["explanation"], ensure_ascii=False)}', file=f)
+
+                    def normalize_justification(justification: str) -> str:
+                        # TODO: Remove this function after <https://github.com/witiko/markdown/issues/508> has been closed.
+                        def repl(match: re.Match) -> str:
+                            number_or_letter = match.group('number_or_letter')
+                            separator = match.group('separator')
+                            text = match.group('text')
+                            return f'{number_or_letter}{separator} {text.rstrip()}\n'
+
+                        return FANCY_LIST_ITEM_REGEXP.sub(repl, justification)
+
+                    print(f'    explanation: {json.dumps(normalize_justification(question["explanation"]), ensure_ascii=False)}', file=f)
                 LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
 
@@ -984,9 +1008,9 @@ def _convert_yaml_questions_to_md(force_overwrite: bool = False) -> None:
 
                 def normalize_justification(justification: str) -> str:
                     def repl(match: re.Match) -> str:
-                        answer_letter = match.group('number_or_letter')
-                        answer = match.group('text')
-                        return f'{answer_letter}) {answer}\n'
+                        number_or_letter = match.group('number_or_letter')
+                        text = match.group('text')
+                        return f'{number_or_letter}) {text}\n'
 
                     return QUESTIONS_ANSWER_REGEXP.sub(repl, justification)
 
