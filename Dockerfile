@@ -24,7 +24,7 @@ EOF
 RUN <<EOF
 set -ex
 # Install LibreOffice
-wget -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
+wget --inet4-only -O- http://downloadarchive.documentfoundation.org/libreoffice/old/7.3.7.2/deb/x86_64/LibreOffice_7.3.7.2_Linux_x86-64_deb.tar.gz | tar xzv
 dpkg -iR LibreOffice_7.3.7.2_Linux_x86-64_deb/DEBS/
 rm -rf LibreOffice_7.3.7.2_Linux_x86-64_deb
 EOF
