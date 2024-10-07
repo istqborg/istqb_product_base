@@ -17,11 +17,13 @@ Here is the structure of file `example.tex`:
      ``` tex
      \documentclass{istqb}
      \usepackage{markdown}
-     \markdownSetup{
+     \markdownSetup {
        import = {
-         istqb/syllabus = metadata,
-         traceability-matrix as matrix,
-       }
+         istqb/syllabus = {
+           metadata,
+           traceability-matrix as matrix,
+         },
+       },
      }
      ```
 
