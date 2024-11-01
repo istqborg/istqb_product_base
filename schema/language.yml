@@ -14,6 +14,18 @@ reference-labels:
   section: str()
   figure: str()
   table: str()
+sample-exam:
+  question: [str(), str()]
+  question-number: str()
+  correct-answer: str()
+  learning-objective: str()
+  k-level: str()
+  answer: [str(), str()]
+  answer-key: str()
+  select-answers: [str(), str()]
+  point: any(list(str(), min=2, max=2), include('point'))
+  number-of-points: str()
+  explanation: str()
 page: [str(), str()]
 provided-by: [str(), str()]
 istqb: str()
@@ -23,3 +35,8 @@ contents: str()
 lists:
   table: str()
   figure: str()
+---
+point:
+  exceptions: map(str(), key=int(), required=False)
+  singular: str()
+  plural: str()

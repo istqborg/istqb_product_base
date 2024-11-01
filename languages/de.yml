@@ -13,6 +13,20 @@ reference-labels:
   section: Kapitel
   figure: Abbildung
   table: Tabelle
+sample-exam:
+  question: [Frage, Fragen]
+  question-number: Fragenummer
+  learning-objective: Lernziel
+  k-level: K-Level
+  answer: [Antwort, Antworten]
+  answer-key: Lösungsschlüssel
+  correct-answer: Korrekte Antwort
+  select-answers:
+    - Wähle Sie genau EINE Option.
+    - Wählen Sie genau ZWEI Optionen.
+  point: [Punkt, Punkte]
+  number-of-points: Punkteanzahl
+  explanation: Begründung
 page: [Seite, von]
 provided-by: [Zur Verfügung gestellt von, Zur Verfügung gestellt von]
 istqb: International Software Testing Qualifications Board

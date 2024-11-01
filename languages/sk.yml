@@ -13,6 +13,26 @@ reference-labels:
   section: kapitolu
   figure: obrázok
   table: tabuľku
+sample-exam:
+  question: [Otázka, Otázky]
+  question-number: Číslo otázky
+  learning-objective: Študijný cieľ
+  k-level: K-Level
+  answer: [Odpoveď, Odpovede]
+  answer-key: Kľúč k odpovediam
+  correct-answer: Správna odpoveď
+  select-answers:
+    - Vyberte JEDNU možnosť.
+    - Vyberte DVE možnosti.
+  point:
+    exceptions:
+      2: body
+      3: body
+      4: body
+    singular: bod
+    plural: bodov
+  number-of-points: Počet bodov
+  explanation: Odôvodnenie
 page: [Strana, z]
 provided-by: [Poskytol, Poskytli]
 istqb: International Software Testing Qualifications Board
