@@ -958,9 +958,6 @@ def _convert_md_questions_to_yaml() -> None:
                     print(f'    learning-objective: {json.dumps(question["learning-objective"], ensure_ascii=False)}', file=f)
                     print(f'    k-level: {json.dumps(question["k-level"], ensure_ascii=False)}', file=f)
                     print(f'    number-of-points: {json.dumps(question["number-of-points"], ensure_ascii=False)}', file=f)
-                    print(f'    question: {json.dumps(question["question"], ensure_ascii=False)}', file=f)
-                    print(f'    answers: {json.dumps(question["answers"], ensure_ascii=False)}', file=f)
-                    print(f'    correct: {json.dumps(question["correct"], ensure_ascii=False)}', file=f)
 
                     def normalize_justification(justification: str) -> str:
                         # TODO: Remove this function after <https://github.com/witiko/markdown/issues/508> has been closed.
@@ -972,6 +969,9 @@ def _convert_md_questions_to_yaml() -> None:
 
                         return FANCY_LIST_ITEM_REGEXP.sub(repl, justification)
 
+                    print(f'    question: {json.dumps(normalize_justification(question["question"]), ensure_ascii=False)}', file=f)
+                    print(f'    answers: {json.dumps(question["answers"], ensure_ascii=False)}', file=f)
+                    print(f'    correct: {json.dumps(question["correct"], ensure_ascii=False)}', file=f)
                     print(f'    explanation: {json.dumps(normalize_justification(question["explanation"]), ensure_ascii=False)}', file=f)
                 LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
