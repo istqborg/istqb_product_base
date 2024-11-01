@@ -20,7 +20,11 @@
     type .code:n = {
       \tl_gset:Nn
         \g_istqb_type_tl
-        { #1~--~Answers }
+        {
+          #1~--~
+          \tl_use:N
+            \g_istqb_translation_answer_plural_tl
+        }
     },
   }
 
@@ -88,15 +92,30 @@
           {
             \hline
             \textbf
-              { Question~Number~(\#) } &
+              {
+                \tl_use:N
+                  \g_istqb_translation_question_number_tl
+              } &
             \textbf
-              { Correct~Answer } &
+              {
+                \tl_use:N
+                  \g_istqb_translation_correct_answer_tl
+              } &
             \textbf
-              { Learning~Objective~(LO) } &
+              {
+                \tl_use:N
+                  \g_istqb_translation_learning_objective_tl
+              } &
             \textbf
-              { K-Level } &
+              {
+                \tl_use:N
+                  \g_istqb_translation_k_level_tl
+              } &
             \textbf
-              { Number~of~Points } \\
+              {
+                \tl_use:N
+                  \g_istqb_translation_number_of_points_tl
+              } \\
           }
         \tabletail { \hline }
         \tablelasttail { \hline }
@@ -237,8 +256,15 @@
                 | C { 1.9cm } | }
             \hline
             \textbf
-              { Question~Number~(\#) } &
-            \textbf { Correct~Answer } &
+              {
+                \tl_use:N
+                  \g_istqb_translation_question_number_tl
+              } &
+            \textbf
+              {
+                \tl_use:N
+                  \g_istqb_translation_correct_answer_tl
+              } &
             \multicolumn
               { 1 }
               { C
@@ -246,12 +272,26 @@
                 | }
               {
                 \textbf
-                  { Explanation~/~Rationale }
+                  {
+                    \tl_use:N
+                      \g_istqb_translation_explanation_tl
+                  }
               } &
             \textbf
-              { Learning~Objective~(LO) } &
-            \textbf { K-Level } &
-            \textbf { Number~of~Points } \\
+              {
+                \tl_use:N
+                  \g_istqb_translation_learning_objective_tl
+              } &
+            \textbf
+              {
+                \tl_use:N
+                  \g_istqb_translation_k_level_tl
+              } &
+            \textbf
+              {
+                \tl_use:N
+                  \g_istqb_translation_number_of_points_tl
+              } \\
             \hline
             \endhead
           }
@@ -268,7 +308,11 @@
                 \addcontentsline
                   { toc }
                   { subsection }
-                  { Question~\# ##1 } &
+                  {
+                    \tl_use:N
+                      \g_istqb_translation_question_singular_tl
+                    {}~\# ##1
+                  } &
               }
             % Record the correct answers.
             \prop_get:cnN

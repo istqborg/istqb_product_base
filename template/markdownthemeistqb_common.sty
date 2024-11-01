@@ -50,7 +50,13 @@
       [ snippet = istqb / common / language ]
       { istqb_product_base / languages / #1.yml }
   }
-\tl_new:N \l_istqb_language_position_tl
+\tl_new:N
+  \l_istqb_language_position_tl
+\tl_gset:Nn
+  \l_istqb_language_position_tl
+  { istqb / language }
+\seq_new:N
+  \g_istqb_language_allow_unknown_keys_seq
 \markdownSetupSnippet
   { language }
   {
@@ -66,31 +72,31 @@
           {
             \tl_put_right:Nn
               \l_istqb_language_position_tl
-              { #1 / }
+              { / #1 }
           }
       },
       jekyllData(Sequence|Mapping)End = {
         \group_end:
       },
-      jekyllDataTypographicString = ,
-      jekyllDataProgrammaticString = {
+      jekyllDataProgrammaticString = ,
+      jekyllDataTypographicString = {
         \tl_set:Nx
           \l_tmpa_tl
-          { { \l_istqb_language_position_tl #1 } }
+          { { \l_istqb_language_position_tl / #1 } }
         \tl_put_right:Nn
           \l_tmpa_tl
           { = { #2 } }
-        \tl_if_eq:VnTF
+        \seq_if_in:NVTF
+          \g_istqb_language_allow_unknown_keys_seq
           \l_istqb_language_position_tl
-          { reference-labels / }
           {
             \keys_set:nV
-              { istqb / language }
+              { }
               \l_tmpa_tl
           }
           {
             \keys_set_known:nV
-              { istqb / language }
+              { }
               \l_tmpa_tl
           }
       },
@@ -186,6 +192,9 @@
     },
   }
 \prop_new:N \g_istqb_reference_labels_prop
+\seq_gput_right:Nn
+  \g_istqb_language_allow_unknown_keys_seq
+  { istqb / language / reference-labels }
 \keys_define:nn
   { istqb / language / reference-labels }
   {

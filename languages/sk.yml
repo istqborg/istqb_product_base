@@ -19,7 +19,6 @@ sample-exam:
   learning-objective: Študijný cieľ
   k-level: K-Level
   answer: [Odpoveď, Odpovede]
-  answer-key: Kľúč k odpovediam
   correct-answer: Správna odpoveď
   select-answers:
     - Vyberte JEDNU možnosť.

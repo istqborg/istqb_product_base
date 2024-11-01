@@ -15,17 +15,16 @@ reference-labels:
   table: Tabelle
 sample-exam:
   question: [Frage, Fragen]
-  question-number: Fragenummer
+  question-number: Frage`\-`{=tex}nummer
   learning-objective: Lernziel
   k-level: K-Level
   answer: [Antwort, Antworten]
-  answer-key: Lösungsschlüssel
   correct-answer: Korrekte Antwort
   select-answers:
-    - Wähle Sie genau EINE Option.
+    - Wählen Sie genau EINE Option.
     - Wählen Sie genau ZWEI Optionen.
   point: [Punkt, Punkte]
-  number-of-points: Punkteanzahl
+  number-of-points: Punkte`\-`{=tex}anzahl
   explanation: Begründung
 page: [Seite, von]
 provided-by: [Zur Verfügung gestellt von, Zur Verfügung gestellt von]

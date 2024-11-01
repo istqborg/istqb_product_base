@@ -19,7 +19,6 @@ sample-exam:
   learning-objective: Learning Objective (LO)
   k-level: K-Level
   answer: [Answer, Answers]
-  answer-key: Answer Key
   correct-answer: Correct Answer
   select-answers:
     - Select ONE Option.

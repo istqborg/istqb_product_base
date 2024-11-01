@@ -21,7 +21,6 @@ sample-exam:
   learning-objective: str()
   k-level: str()
   answer: [str(), str()]
-  answer-key: str()
   select-answers: [str(), str()]
   point: any(list(str(), min=2, max=2), include('point'))
   number-of-points: str()

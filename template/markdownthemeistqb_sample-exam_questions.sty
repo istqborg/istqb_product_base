@@ -20,7 +20,11 @@
     type .code:n = {
       \tl_gset:Nn
         \g_istqb_type_tl
-        { #1~--~Questions }
+        {
+          #1~--~
+          \tl_use:N
+            \g_istqb_translation_question_plural_tl
+        }
     },
   }
 
@@ -50,7 +54,11 @@
                 % Print question heading.
                 \tl_set:Nn
                   \l_tmpa_tl
-                  { Question~\# ##1~( }
+                  {
+                    \tl_use:N
+                      \g_istqb_translation_question_singular_tl
+                    {}~\# ##1~(
+                  }
                 \prop_get:cnN
                   { g_istqb_question_number
                     _of_points_prop }
@@ -61,14 +69,13 @@
                   \l_tmpb_tl
                 \tl_put_right:Nn
                   \l_tmpa_tl
-                  { ~Point }
-                \int_compare:VNnF
-                  \l_tmpb_tl = { 1 }
-                  {
-                    \tl_put_right:Nn
-                      \l_tmpa_tl
-                      { s }
-                  }
+                  { ~ }
+                \istqb_translation_points:VN
+                  \l_tmpb_tl
+                  \l_tmpb_tl
+                \tl_put_right:NV
+                  \l_tmpa_tl
+                  \l_tmpb_tl
                 \tl_put_right:Nn
                   \l_tmpa_tl
                   { ) }
@@ -131,22 +138,18 @@
                     \clist_count:N
                       \l_tmpa_clist
                   }
-                Select~\int_case:nnF
+                \int_compare:nNnTF
                   { \l_tmpa_int }
+                  =
+                  { 1 }
                   {
-                    { 1 } { ONE }
-                    { 2 } { TWO }
-                    { 3 } { THREE }
-                    { 4 } { FOUR }
-                    { 5 } { FIVE }
+                    \tl_use:N
+                      \g_istqb_translation_select_answers_one_tl
                   }
                   {
-                    \int_use:N
-                      \l_tmpa_int
-                  }~option
-                  \int_compare:VNnF
-                  \l_tmpa_int = { 1 }
-                  { s }.
+                    \tl_use:N
+                      \g_istqb_translation_select_answers_two_tl
+                  }
                 \group_end:
               }
             \vbox_set:NV
@@ -173,3 +176,6 @@
 \cs_generate_variant:Nn
   \vbox_set:Nn
   { NV }
+\cs_generate_variant:Nn
+  \istqb_translation_points:nN
+  { VN }
