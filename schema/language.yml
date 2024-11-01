@@ -25,6 +25,10 @@ sample-exam:
   point: any(list(str(), min=2, max=2), include('point'))
   number-of-points: str()
   explanation: str()
+traceability-matrix:
+  section-name: str()
+  description: [str(), str()]
+  business-outcomes: str()
 page: [str(), str()]
 provided-by: [str(), str()]
 istqb: str()

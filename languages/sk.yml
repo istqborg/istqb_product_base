@@ -32,6 +32,14 @@ sample-exam:
     plural: bodov
   number-of-points: Počet bodov
   explanation: Odôvodnenie
+traceability-matrix:
+  section-name: |
+    Trasovacia matica medzi profesijnými cieľmi (Business Outcomes)
+    a`~`{=tex}študijnými cieľmi
+  description:
+    - Táto sekcia uvádza trasovateľnosť medzi profesijnými cieľmi a`~`{=tex}študijnými cieľmi
+    - z`~`{=tex}dokumentu
+  business-outcomes: Profesijné ciele
 page: [Strana, z]
 provided-by: [Poskytol, Poskytli]
 istqb: International Software Testing Qualifications Board

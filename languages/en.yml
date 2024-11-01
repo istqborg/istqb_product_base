@@ -26,6 +26,13 @@ sample-exam:
   point: [Point, Points]
   number-of-points: Number of Points
   explanation: Explanation / Rationale
+traceability-matrix:
+  section-name: |
+    Business Outcomes traceability matrix with Learning Objectives
+  description:
+    - This section lists the traceability between the Business Outcomes and the Learning Objectives
+    - of
+  business-outcomes: Business Outcomes
 page: [Page, of]
 provided-by: [Provided by, Provided by]
 istqb: International Software Testing Qualifications Board
