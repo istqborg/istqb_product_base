@@ -7,6 +7,9 @@ bibliography-subsections:
   documents: str()
   books: str()
   articles: str()
+float-labels:
+  figure: str()
+  table: str()
 reference-labels:
   section: str()
   figure: str()

@@ -6,6 +6,9 @@ bibliography-subsections:
   documents: ISTQB® dokumenty
   books: Knihy
   articles: Články
+float-labels:
+  figure: Obrázek
+  table: Tabulka
 reference-labels:
   section: kapitolu
   figure: obrázok
