@@ -8,6 +8,9 @@ biblatex-iso690
 collection-latexrecommended
 csquotes
 graphbox
+hyphen-czech
+hyphen-german
+hyphen-slovak
 imakeidx
 lastpage
 latexmk
