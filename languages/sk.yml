@@ -35,7 +35,7 @@ sample-exam:
 traceability-matrix:
   section-name: |
     Trasovacia matica medzi profesijnými cieľmi (Business Outcomes)
-    a`~`{=tex}študijnými cieľmi
+    a`~`{=tex}študijnými cieľmi (Learning Objectives)
   description:
     - Táto sekcia uvádza trasovateľnosť medzi profesijnými cieľmi a`~`{=tex}študijnými cieľmi
     - z`~`{=tex}dokumentu
