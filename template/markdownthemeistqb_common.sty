@@ -397,7 +397,6 @@
           }
       },
       jekyllDataEnd = {
-        \istqblandscapebegin
         \istqbsection
           { Business~Outcomes~traceability~matrix~with~Learning~Objectives }
         This~section~lists~the~traceability~between~the~Business~Outcomes~and~the~Learning~Objectives
@@ -431,8 +430,19 @@
       / traceability-matrix
       / number-of-related-learning-objectives,
     renderers = {
+      jekyllDataBegin = {
+        \istqblandscapebegin
+      },
       jekyllDataEnd += {
         \istqblandscapeend
+        \cs_gset:Npn
+          \markdownRendererDocumentBegin
+          {
+            \restoregeometry
+            \cs_gset:Npn
+              \markdownRendererDocumentBegin
+              { }
+          }
       },
     },
   }
