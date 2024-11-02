@@ -839,7 +839,7 @@
 \markdownSetup
   {
     linkAttributes,
-    rendererPrototypes = {
+    renderers = {
       image = {
         \bool_if:NTF
           \g_istqb_intable_bool
@@ -895,7 +895,7 @@
 \markdownSetup
   {
     headerAttributes,
-    rendererPrototypes = {
+    renderers = {
       headingOne = {
         \istqbsection { #1 }
       },
@@ -912,7 +912,7 @@
       headerAttributeContextBegin = {
         \markdownSetup
           {
-            rendererPrototypes = {
+            renderers = {
               attributeClassName = ,
               %% Unnumbered sections
               attributeClassName += {
@@ -924,7 +924,7 @@
                     \markdownSetup
                       {
                         %% Stop numbering all levels of sections.
-                        rendererPrototypes = {
+                        renderers = {
                           headingOne = {
                             \istqbunnumberedsection { ####1 }
                           },
@@ -955,13 +955,13 @@
                     \istqblandscapebegin
                     \markdownSetup
                       {
-                        rendererPrototypes = {
+                        renderers = {
                           sectionBegin = {
                             %% Prevent nested sections from ending landscape mode prematurely.
                             \group_begin:
                             \markdownSetup
                               {
-                                rendererPrototypes = {
+                                renderers = {
                                   sectionBegin = { \group_begin: },
                                   sectionEnd = { \group_end: },
                                 },
@@ -1010,7 +1010,7 @@
                       }
                     \markdownSetup
                       {
-                        rendererPrototypes = {
+                        renderers = {
                           table = {
                             \markdownLaTeXTable = { }
                             \markdownLaTeXTableAlignment = { }
@@ -1035,17 +1035,17 @@
                     \group_begin:
                     \markdownSetup
                       {
-                        rendererPrototypes = {
+                        renderers = {
                           olBegin = {
                             \group_begin:
                             \markdownSetup
                               {
-                                rendererPrototypes = {
+                                renderers = {
                                   olBegin = {
                                     \group_begin:
                                     \markdownSetup
                                       {
-                                        rendererPrototypes = {
+                                        renderers = {
                                           olItemWithNumber = {
                                             \def\next################################1\markdownRendererOlItemEnd
                                               {
@@ -1095,7 +1095,7 @@
                     \group_begin:
                     \markdownSetup
                       {
-                        rendererPrototypes = {
+                        renderers = {
                           olBegin = {
                             \group_begin:
                             \tl_set:Nn
@@ -1107,7 +1107,7 @@
                               }
                             \markdownSetup
                               {
-                                rendererPrototypes = {
+                                renderers = {
                                   olItemWithNumber = {
                                     \def\next################1\markdownRendererOlItemEnd
                                       {
@@ -1273,12 +1273,12 @@
     pipeTables,
     tableCaptions,
     tableAttributes,
-    rendererPrototypes = {
+    renderers = {
       tableAttributeContextBegin = {
         \group_begin:
         \markdownSetup
           {
-            rendererPrototypes = {
+            renderers = {
               attributeIdentifier = {
                 \tl_set:Nx
                   \l_istqb_table_identifier_tl
@@ -1404,7 +1404,7 @@
 \markdownSetup
   {
     linkAttributes,
-    rendererPrototypes = {
+    renderers = {
       linkAttributeContextBegin = {
         \group_begin:
         \bool_set_false:N
@@ -1529,11 +1529,11 @@
 \markdownSetup
   {
     bracketedSpans,
-    rendererPrototypes = {
+    renderers = {
       bracketedSpanAttributeContextBegin = {
         \markdownSetup
           {
-            rendererPrototypes = {
+            renderers = {
               attributeClassName = ,
               attributeKeyValue = ,
               %% Index
