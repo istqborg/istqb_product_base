@@ -108,19 +108,6 @@ QUESTIONS_ANSWER_REGEXP = re.compile(
 )
 QUESTIONS_EXPLANATION_REGEXP = re.compile(r'\s{0,3}##\s*(explanation|justification)\s*', flags=re.IGNORECASE)
 
-# TODO: Remove this function after <https://github.com/witiko/markdown/issues/508> has been closed.
-ROMAN_NUMERALS = r'M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})'
-FANCY_LIST_ITEM_REGEXP = re.compile(
-    (
-        r'^[ ]{0,3}(?P<number_or_letter>('
-        f'{ROMAN_NUMERALS}'
-        r'|[a-z]|[0-9]+))(?P<separator>[.)])((?!\n\n)\s)*(?P<text>((?!(\r?\n|\r){2})(?!^\s{0,3}('
-        f'{ROMAN_NUMERALS}'
-        r'|[a-z]|[0-9]+)[.)]).)*)'
-    ),
-    flags=re.IGNORECASE | re.MULTILINE | re.DOTALL,
-)
-
 VARIABLE_PREFIX, VARIABLE_SUFFIX = r'(?:^|(?<=[^\\]))(?P<backslashes>(?:\\\\)*)', r'\$\{(?P<variable_name>[^}]+)\}'
 VARIABLE_REGEXP = re.compile(f'{VARIABLE_PREFIX}{VARIABLE_SUFFIX}')
 ESCAPED_VARIABLE_REGEXP = re.compile(f'{VARIABLE_PREFIX}\\\\{VARIABLE_SUFFIX}')
@@ -958,21 +945,10 @@ def _convert_md_questions_to_yaml() -> None:
                     print(f'    learning-objective: {json.dumps(question["learning-objective"], ensure_ascii=False)}', file=f)
                     print(f'    k-level: {json.dumps(question["k-level"], ensure_ascii=False)}', file=f)
                     print(f'    number-of-points: {json.dumps(question["number-of-points"], ensure_ascii=False)}', file=f)
-
-                    def normalize_justification(justification: str) -> str:
-                        # TODO: Remove this function after <https://github.com/witiko/markdown/issues/508> has been closed.
-                        def repl(match: re.Match) -> str:
-                            number_or_letter = match.group('number_or_letter')
-                            separator = match.group('separator')
-                            text = match.group('text')
-                            return f'{number_or_letter}{separator} {text.rstrip()}\n'
-
-                        return FANCY_LIST_ITEM_REGEXP.sub(repl, justification)
-
-                    print(f'    question: {json.dumps(normalize_justification(question["question"]), ensure_ascii=False)}', file=f)
+                    print(f'    question: {json.dumps(question["question"], ensure_ascii=False)}', file=f)
                     print(f'    answers: {json.dumps(question["answers"], ensure_ascii=False)}', file=f)
                     print(f'    correct: {json.dumps(question["correct"], ensure_ascii=False)}', file=f)
-                    print(f'    explanation: {json.dumps(normalize_justification(question["explanation"]), ensure_ascii=False)}', file=f)
+                    print(f'    explanation: {json.dumps(question["explanation"], ensure_ascii=False)}', file=f)
                 LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
 
 
