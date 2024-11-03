@@ -26,6 +26,14 @@ sample-exam:
   point: [Punkt, Punkte]
   number-of-points: Punkte`\-`{=tex}anzahl
   explanation: Begründung
+traceability-matrix:
+  section-name: |
+    Verfolgbarkeitsmatrix des geschäftlichen Nutzens (Business
+    Outcomes) mit Lernzielen (Learning Objectives)
+  description:
+    - Dieser Abschnitt listet die Anzahl der Lernziele des vorliegenden Lehrplans auf, die mit dem geschäftlichen Nutzen in Verbindung stehen, sowie die Verfolgbarkeit zwischen dem geschäftlichen Nutzen des Lehrplans und den Lernzielen
+    - des
+  business-outcomes: Geschäftlichen Nutzen
 page: [Seite, von]
 provided-by: [Zur Verfügung gestellt von, Zur Verfügung gestellt von]
 istqb: International Software Testing Qualifications Board

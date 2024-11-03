@@ -32,6 +32,14 @@ sample-exam:
     plural: bodů
   number-of-points: Počet bodů
   explanation: Odůvodnění
+traceability-matrix:
+  section-name: |
+    Trasovací matice mezi profesními cíli (Business Outcomes)
+    a`~`{=tex}studijními cíli (Learning Objectives)
+  description:
+    - Tato sekce uvádí trasovatelnost mezi profesními cíli a`~`{=tex}studijními cíli
+    - z`~`{=tex}dokumentu
+  business-outcomes: Profesní cíle
 page: [Strana, z]
 provided-by: [Poskytl, Poskytli]
 istqb: International Software Testing Qualifications Board
