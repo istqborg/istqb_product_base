@@ -1284,6 +1284,8 @@ def _should_compile_tex_file(input_path: Path) -> bool:
 def _compile_tex_files(compile_fn: 'CompilationFunction', *args, input_paths: Optional[Iterable[Path]] = None, **kwargs) -> None:
     if input_paths is None:
         input_paths = list(_find_files(file_types=['tex']))
+    else:
+        input_paths = list(input_paths)
     if not _should_do_full_compile():
         removed_indexes = []
         for input_path_index, input_path in enumerate(input_paths):
