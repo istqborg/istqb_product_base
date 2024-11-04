@@ -309,11 +309,12 @@
     \fontsize{14}{16.8}\selectfont
     ##1%
   }%
-  \printbibliography[filter=standards, title=\istqbstandardsname]%
-  \printbibliography[filter=istqb-documents, title=\istqbdocumentsname]%
-  \printbibliography[filter=books, title=\istqbbooksname]%
-  \printbibliography[filter=articles, title=\istqbarticlesname]%
-  \printbibliography[filter=web-pages, title=\istqbwebpagesname]%
+  \defbibnote{skip}{}%
+  \printbibliography[filter=standards, title=\istqbstandardsname, postnote=skip]%
+  \printbibliography[filter=istqb-documents, title=\istqbdocumentsname, postnote=skip]%
+  \printbibliography[filter=books, title=\istqbbooksname, postnote=skip]%
+  \printbibliography[filter=articles, title=\istqbarticlesname, postnote=skip]%
+  \printbibliography[filter=web-pages, title=\istqbwebpagesname, postnote=skip]%
   \endgroup
   \begingroup
   \defbibheading{bibliography}{\section{##1}\label{section:further-reading}}%
