@@ -6,10 +6,34 @@ bibliography-subsections:
   documents: ISTQB® Dokumente
   books: Bücher
   articles: Artikel
+float-labels:
+  figure: Abbildung
+  table: Tabelle
 reference-labels:
   section: Kapitel
   figure: Abbildung
   table: Tabelle
+sample-exam:
+  question: [Frage, Fragen]
+  question-number: Frage`\-`{=tex}nummer
+  learning-objective: Lernziel
+  k-level: K-Level
+  answer: [Antwort, Antworten]
+  correct-answer: Korrekte Antwort
+  select-answers:
+    - Wählen Sie genau EINE Option.
+    - Wählen Sie genau ZWEI Optionen.
+  point: [Punkt, Punkte]
+  number-of-points: Punkte`\-`{=tex}anzahl
+  explanation: Begründung
+traceability-matrix:
+  section-name: |
+    Verfolgbarkeitsmatrix des geschäftlichen Nutzens (Business
+    Outcomes) mit Lernzielen (Learning Objectives)
+  description:
+    - Dieser Abschnitt listet die Anzahl der Lernziele des vorliegenden Lehrplans auf, die mit dem geschäftlichen Nutzen in Verbindung stehen, sowie die Verfolgbarkeit zwischen dem geschäftlichen Nutzen des Lehrplans und den Lernzielen
+    - des
+  business-outcomes: Geschäftlichen Nutzen
 page: [Seite, von]
 provided-by: [Zur Verfügung gestellt von, Zur Verfügung gestellt von]
 istqb: International Software Testing Qualifications Board

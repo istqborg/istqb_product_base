@@ -6,10 +6,33 @@ bibliography-subsections:
   documents: ISTQB® Documents
   books: Books
   articles: Articles
+float-labels:
+  figure: Figure
+  table: Table
 reference-labels:
   section: Section
   figure: Figure
   table: Table
+sample-exam:
+  question: [Question, Questions]
+  question-number: Question Number (#)
+  learning-objective: Learning Objective (LO)
+  k-level: K-Level
+  answer: [Answer, Answers]
+  correct-answer: Correct Answer
+  select-answers:
+    - Select ONE Option.
+    - Select TWO Options.
+  point: [Point, Points]
+  number-of-points: Number of Points
+  explanation: Explanation / Rationale
+traceability-matrix:
+  section-name: |
+    Business Outcomes traceability matrix with Learning Objectives
+  description:
+    - This section lists the traceability between the Business Outcomes and the Learning Objectives
+    - of
+  business-outcomes: Business Outcomes
 page: [Page, of]
 provided-by: [Provided by, Provided by]
 istqb: International Software Testing Qualifications Board

@@ -50,7 +50,13 @@
       [ snippet = istqb / common / language ]
       { istqb_product_base / languages / #1.yml }
   }
-\tl_new:N \l_istqb_language_position
+\tl_new:N
+  \l_istqb_language_position_tl
+\tl_gset:Nn
+  \l_istqb_language_position_tl
+  { istqb / language }
+\seq_new:N
+  \g_istqb_language_allow_unknown_keys_seq
 \markdownSetupSnippet
   { language }
   {
@@ -64,25 +70,35 @@
           { #1 }
           { null }
           {
-            \tl_set:Nn
-              \l_istqb_language_position
-              { #1 / }
+            \tl_put_right:Nn
+              \l_istqb_language_position_tl
+              { / #1 }
           }
       },
       jekyllData(Sequence|Mapping)End = {
         \group_end:
       },
-      jekyllDataTypographicString = ,
-      jekyllDataProgrammaticString = {
+      jekyllDataProgrammaticString = ,
+      jekyllDataTypographicString = {
         \tl_set:Nx
           \l_tmpa_tl
-          { { \l_istqb_language_position #1 } }
+          { { \l_istqb_language_position_tl / #1 } }
         \tl_put_right:Nn
           \l_tmpa_tl
           { = { #2 } }
-        \keys_set:nV
-          { istqb / language }
-          \l_tmpa_tl
+        \seq_if_in:NVTF
+          \g_istqb_language_allow_unknown_keys_seq
+          \l_istqb_language_position_tl
+          {
+            \keys_set:nV
+              { }
+              \l_tmpa_tl
+          }
+          {
+            \keys_set_known:nV
+              { }
+              \l_tmpa_tl
+          }
       },
       jekyllDataEnd = { },
     },
@@ -176,6 +192,9 @@
     },
   }
 \prop_new:N \g_istqb_reference_labels_prop
+\seq_gput_right:Nn
+  \g_istqb_language_allow_unknown_keys_seq
+  { istqb / language / reference-labels }
 \keys_define:nn
   { istqb / language / reference-labels }
   {
@@ -185,6 +204,36 @@
         \l_keys_key_str
         { #1 }
     },
+  }
+\keys_define:nn
+  { istqb / language / float-labels }
+  {
+    figure .tl_gset:N = \figurename,
+    table .tl_gset:N = \tablename,
+  }
+\tl_new:N
+  \g_istqb_translation_traceability_matrix_section_name_tl
+\tl_new:N
+  \g_istqb_translation_traceability_matrix_business_outcomes_tl
+\keys_define:nn
+  { istqb / language / traceability-matrix }
+  {
+    section-name .tl_gset:N =
+      \g_istqb_translation_traceability_matrix_section_name_tl,
+    business-outcomes .tl_gset:N =
+      \g_istqb_translation_traceability_matrix_business_outcomes_tl,
+  }
+\tl_new:N
+  \g_istqb_translation_traceability_matrix_description_tl
+\tl_new:N
+  \g_istqb_translation_traceability_matrix_description_of_tl
+\keys_define:nn
+  { istqb / language / traceability-matrix / description }
+  {
+    1 .tl_gset:N =
+      \g_istqb_translation_traceability_matrix_description_tl,
+    2 .tl_gset:N =
+      \g_istqb_translation_traceability_matrix_description_of_tl,
   }
 
 % Metadata
@@ -398,30 +447,42 @@
       },
       jekyllDataEnd = {
         \istqbsection
-          { Business~Outcomes~traceability~matrix~with~Learning~Objectives }
-        This~section~lists~the~traceability~between~the~Business~Outcomes~and~the~Learning~Objectives
-        \tl_if_empty:NTF
-          \g_istqb_level_tl
           {
-            \tl_if_empty:NF
-              \g_istqb_title_tl
-              {
-                {}~of~
-                \tl_use:N
-                  \g_istqb_title_tl
-              }
-          }
-          {
-            {}~of~
             \tl_use:N
+              \g_istqb_translation_traceability_matrix_section_name_tl
+          }
+        \tl_use:N
+          \g_istqb_translation_traceability_matrix_description_tl
+
+        \tl_if_empty:NF
+          \g_istqb_title_tl
+          {
+            {}~
+            \tl_use:N
+              \g_istqb_translation_traceability_matrix_description_of_tl
+            {}~
+            \tl_if_empty:NF
               \g_istqb_level_tl
+              {
+                \tl_use:N
+                  \g_istqb_level_tl
+                {}~
+              }
+            \tl_if_empty:NF
+              \g_istqb_type_tl
+              {
+                \tl_use:N
+                  \g_istqb_type_tl
+                {}~
+              }
             \tl_if_empty:NF
               \g_istqb_title_tl
               {
-                {}~
                 \tl_use:N
                   \g_istqb_title_tl
+                {}~
               }
+            \unskip
           }
         .
       },
@@ -592,41 +653,49 @@
         \tl_put_right:Nn
           \l_istqb_traceability_matrix_body_tl
           { \SetCell [ c = 2 ] { l, bg = istqbbluetableheader } \Large }
-        \tl_set:Nn
+        \tl_set:NV
           \l_tmpa_tl
-          { Business~Outcomes }
-        \tl_if_empty:NTF
-          \g_istqb_level_tl
-          {
-            \tl_if_empty:NF
-              \g_istqb_title_tl
-              {
-                \tl_put_right:Nn
-                  \l_tmpa_tl
-                  { :~ }
-                \tl_put_right:NV
-                  \l_tmpa_tl
-                  \g_istqb_title_tl
-              }
-          }
-          {
-            \tl_put_right:Nn
-              \l_tmpa_tl
-              { :~ }
-            \tl_put_right:NV
-              \l_tmpa_tl
-              \g_istqb_level_tl
-            \tl_if_empty:NF
-              \g_istqb_title_tl
-              {
-                \tl_put_right:Nn
-                  \l_tmpa_tl
-                  { ~ }
-                \tl_put_right:NV
-                  \l_tmpa_tl
-                  \g_istqb_title_tl
-              }
-          }
+          \g_istqb_translation_traceability_matrix_business_outcomes_tl
+        \tl_if_empty:NF
+          \g_istqb_title_tl
+            {
+              \tl_put_right:Nn
+                \l_tmpa_tl
+                { :~ }
+              \tl_if_empty:NF
+                \g_istqb_level_tl
+                {
+                  \tl_put_right:NV
+                    \l_tmpa_tl
+                    \g_istqb_level_tl
+                  \tl_put_right:Nn
+                    \l_tmpa_tl
+                    { ~ }
+                }
+              \tl_if_empty:NF
+                \g_istqb_type_tl
+                {
+                  \tl_put_right:NV
+                    \l_tmpa_tl
+                    \g_istqb_type_tl
+                  \tl_put_right:Nn
+                    \l_tmpa_tl
+                    { ~ }
+                }
+              \tl_if_empty:NF
+                \g_istqb_title_tl
+                {
+                  \tl_put_right:NV
+                    \l_tmpa_tl
+                    \g_istqb_title_tl
+                  \tl_put_right:Nn
+                    \l_tmpa_tl
+                    { ~ }
+                }
+              \tl_put_right:Nn
+                \l_tmpa_tl
+                { \unskip }
+            }
         \tl_put_right:Nx
           \l_istqb_traceability_matrix_body_tl
           { { \tl_use:N \l_tmpa_tl } }

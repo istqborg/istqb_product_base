@@ -15,6 +15,130 @@
     },
   }
 
+% Language
+\tl_new:N
+  \g_istqb_translation_question_number_tl
+\tl_new:N
+  \g_istqb_translation_learning_objective_tl
+\tl_new:N
+  \g_istqb_translation_k_level_tl
+\tl_new:N
+  \g_istqb_translation_correct_answer_tl
+\tl_new:N
+  \g_istqb_translation_number_of_points_tl
+\tl_new:N
+  \g_istqb_translation_explanation_tl
+\keys_define:nn
+  { istqb / language / sample-exam }
+  {
+    question-number .tl_gset:N =
+      \g_istqb_translation_question_number_tl,
+    learning-objective .tl_gset:N =
+      \g_istqb_translation_learning_objective_tl,
+    k-level .tl_gset:N =
+      \g_istqb_translation_k_level_tl,
+    correct-answer .tl_gset:N =
+      \g_istqb_translation_correct_answer_tl,
+    number-of-points .tl_gset:N =
+      \g_istqb_translation_number_of_points_tl,
+    explanation .tl_gset:N =
+      \g_istqb_translation_explanation_tl,
+  }
+\tl_new:N
+  \g_istqb_translation_question_singular_tl
+\tl_new:N
+  \g_istqb_translation_question_plural_tl
+\keys_define:nn
+  { istqb / language / sample-exam / question }
+  {
+    1 .tl_gset:N =
+      \g_istqb_translation_question_singular_tl,
+    2 .tl_gset:N =
+      \g_istqb_translation_question_plural_tl,
+  }
+\tl_new:N
+  \g_istqb_translation_answer_singular_tl
+\tl_new:N
+  \g_istqb_translation_answer_plural_tl
+\keys_define:nn
+  { istqb / language / sample-exam / answer }
+  {
+    1 .tl_gset:N =
+      \g_istqb_translation_answer_singular_tl,
+    2 .tl_gset:N =
+      \g_istqb_translation_answer_plural_tl,
+  }
+\tl_new:N
+  \g_istqb_translation_select_answers_one_tl
+\tl_new:N
+  \g_istqb_translation_select_answers_two_tl
+\keys_define:nn
+  { istqb / language / sample-exam / select-answers }
+  {
+    1 .tl_gset:N =
+      \g_istqb_translation_select_answers_one_tl,
+    2 .tl_gset:N =
+      \g_istqb_translation_select_answers_two_tl,
+  }
+\tl_new:N
+  \g_istqb_translation_point_singular_tl
+\tl_new:N
+  \g_istqb_translation_point_plural_tl
+\seq_gput_right:Nn
+  \g_istqb_language_allow_unknown_keys_seq
+  { istqb / language / sample-exam / point }
+\keys_define:nn
+  { istqb / language / sample-exam / point }
+  {
+    1 .tl_gset:N =
+      \g_istqb_translation_point_singular_tl,
+    singular .tl_gset:N =
+      \g_istqb_translation_point_singular_tl,
+    2 .tl_gset:N =
+      \g_istqb_translation_point_plural_tl,
+    plural .tl_gset:N =
+      \g_istqb_translation_point_plural_tl,
+  }
+\prop_new:N
+  \g_istqb_translation_point_exceptions_prop
+\seq_gput_right:Nn
+  \g_istqb_language_allow_unknown_keys_seq
+  { istqb / language / sample-exam / point / exceptions }
+\keys_define:nn
+  { istqb / language / sample-exam / point / exceptions }
+  {
+    unknown .code:n = {
+      \prop_gput:NVn
+        \g_istqb_translation_point_exceptions_prop
+        \l_keys_key_str
+        { #1 }
+    },
+  }
+\cs_new:Nn
+  \istqb_translation_points:nN
+  {
+    \int_compare:nNnTF
+      { #1 }
+      =
+      { 1 }
+      {
+        \tl_set:NV
+          #2
+          \g_istqb_translation_point_singular_tl
+      }
+      {
+        \prop_get:NnNF
+          \g_istqb_translation_point_exceptions_prop
+          { #1 }
+          #2
+          {
+            \tl_set:NV
+              #2
+              \g_istqb_translation_point_plural_tl
+          }
+      }
+  }
+
 % Questions
 \keys_define:nn
   { istqb / questions }

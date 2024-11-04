@@ -6,10 +6,40 @@ bibliography-subsections:
   documents: ISTQB® dokumenty
   books: Knihy
   articles: Články
+float-labels:
+  figure: Obrázek
+  table: Tabulka
 reference-labels:
   section: sekci
   figure: obrázek
   table: tabulku
+sample-exam:
+  question: [Otázka, Otázky]
+  question-number: Číslo otázky
+  learning-objective: Studijní cíl
+  k-level: K-Level
+  answer: [Odpověď, Odpovědi]
+  correct-answer: Správná odpověď
+  select-answers:
+    - Vyberte JEDNU možnost.
+    - Vyberte DVĚ možnosti.
+  point:
+    exceptions:
+      2: body
+      3: body
+      4: body
+    singular: bod
+    plural: bodů
+  number-of-points: Počet bodů
+  explanation: Odůvodnění
+traceability-matrix:
+  section-name: |
+    Trasovací matice mezi profesními cíli (Business Outcomes)
+    a`~`{=tex}studijními cíli (Learning Objectives)
+  description:
+    - Tato sekce uvádí trasovatelnost mezi profesními cíli a`~`{=tex}studijními cíli
+    - z`~`{=tex}dokumentu
+  business-outcomes: Profesní cíle
 page: [Strana, z]
 provided-by: [Poskytl, Poskytli]
 istqb: International Software Testing Qualifications Board
