@@ -587,6 +587,15 @@ First, you would define the references in file `example-document/bibliography.bi
   volume = {2}
 }
 
+% Web Pages
+@online{marick:2013,
+  author = {Brian Marick},
+  title = {Exploration through Example},
+  date = {2003-08-21},
+  url = {http://www.exampler.com/old-blog/2003/08/21/},
+  urldate = {2023-07-11}
+}
+
 % Articles
 @article{brykczynski:1992,
   author = {Bill Brykczynski},
@@ -599,12 +608,11 @@ First, you would define the references in file `example-document/bibliography.bi
 }
 
 % Further Reading
-@online{marick:2013,
-  author = {Brian Marick},
-  title = {Exploration through Example},
-  date = {2003-08-21},
-  url = {http://www.exampler.com/old-blog/2003/08/21/},
-  urldate = {2023-07-11}
+@book{carroll:1869,
+  title = {Alice's Adventures in Wonderland},
+  author = {Lewis Carroll},
+  year = {1869},
+  publisher = {Lee and Shepard}
 }
 ```
 
@@ -618,7 +626,7 @@ Several citations without parentheses can be stringed together by writing `@iso-
 Cited references of all types except web pages are placed in section *References* at the end of each document.
 You can reference the section from the text of the document by writing `<#section:references>`. This will produce the following output: <#section:references>.
 
-Uncited references and web pages are placed in section *Further Reading* at the end of the document.
+Uncited references are placed in section *Further Reading* at the end of the document.
 You can reference the section from the text of the document by writing `<#section:further-reading>`. This will produce the following output: <#section:further-reading>.
 
 For further instructions on defining references, see the `Bib\LaTeX`{=tex} manual [@kime:2023, Chapter 2].

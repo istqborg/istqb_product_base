@@ -6,6 +6,7 @@ bibliography-subsections:
   documents: ISTQB® Documents
   books: Books
   articles: Articles
+  web-pages: Web Pages
 float-labels:
   figure: Figure
   table: Table

@@ -294,7 +294,8 @@
 \defbibfilter{istqb-documents}{type=misc and keyword=istqb and not category=uncited}
 \defbibfilter{books}{type=book and not category=uncited}
 \defbibfilter{articles}{type=article and not category=uncited}
-\defbibfilter{further-reading}{not ( type=report or ( type=misc and keyword=istqb ) or type=book or type=article ) or category=uncited}
+\defbibfilter{web-pages}{type=online and not category=uncited}
+\defbibfilter{further-reading}{category=uncited}
 
 %% Reference printing
 \newcommand\printistqbbibliography{%
@@ -312,6 +313,7 @@
   \printbibliography[filter=istqb-documents, title=\istqbdocumentsname]%
   \printbibliography[filter=books, title=\istqbbooksname]%
   \printbibliography[filter=articles, title=\istqbarticlesname]%
+  \printbibliography[filter=web-pages, title=\istqbwebpagesname]%
   \endgroup
   \begingroup
   \defbibheading{bibliography}{\section{##1}\label{section:further-reading}}%
