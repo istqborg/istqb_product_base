@@ -1281,8 +1281,11 @@ def _should_compile_tex_file(input_path: Path) -> bool:
     return bool(referenced_paths & changed_paths)
 
 
-def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> None:
-    input_paths = list(_find_files(file_types=['tex']))
+def _compile_tex_files(compile_fn: 'CompilationFunction', *args, input_paths: Optional[Iterable[Path]] = None, **kwargs) -> None:
+    if input_paths is None:
+        input_paths = list(_find_files(file_types=['tex']))
+    else:
+        input_paths = list(input_paths)
     if not _should_do_full_compile():
         removed_indexes = []
         for input_path_index, input_path in enumerate(input_paths):
@@ -1327,23 +1330,23 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, **kwargs) -> No
                 pass
 
 
-def _compile_tex_files_to_pdf(previous_continuous: bool) -> None:
-    _compile_tex_files(_compile_tex_file_to_pdf, previous_continuous)
+def _compile_tex_files_to_pdf(previous_continuous: bool, input_paths: Optional[Iterable[Path]]) -> None:
+    _compile_tex_files(_compile_tex_file_to_pdf, previous_continuous, input_paths=input_paths)
 
 
-def _compile_tex_files_to_html(output_directory: Path) -> None:
+def _compile_tex_files_to_html(output_directory: Path, input_paths: Optional[Iterable[Path]]) -> None:
     output_directory.mkdir(parents=True, exist_ok=True)
-    _compile_tex_files(_compile_tex_file_to_html, output_directory)
+    _compile_tex_files(_compile_tex_file_to_html, output_directory, input_paths=input_paths)
 
 
-def _compile_tex_files_to_epub(output_directory: Path) -> None:
+def _compile_tex_files_to_epub(output_directory: Path, input_paths: Optional[Iterable[Path]]) -> None:
     output_directory.mkdir(parents=True, exist_ok=True)
-    _compile_tex_files(_compile_tex_file_to_epub, output_directory)
+    _compile_tex_files(_compile_tex_file_to_epub, output_directory, input_paths=input_paths)
 
 
-def _compile_tex_files_to_docx(output_directory: Path) -> None:
+def _compile_tex_files_to_docx(output_directory: Path, input_paths: Optional[Iterable[Path]]) -> None:
     output_directory.mkdir(parents=True, exist_ok=True)
-    _compile_tex_files(_compile_tex_file_to_docx, output_directory)
+    _compile_tex_files(_compile_tex_file_to_docx, output_directory, input_paths=input_paths)
 
 
 def find_files(args: Namespace) -> None:
@@ -1383,19 +1386,23 @@ def convert_yaml_questions_to_md(args: Namespace) -> None:
 
 
 def compile_tex_files_to_pdf(args: Namespace) -> None:
-    _compile_tex_files_to_pdf(args.previous_continuous)
+    input_paths = sorted(map(Path, args.filenames)) if args.filenames else None
+    _compile_tex_files_to_pdf(args.previous_continuous, input_paths)
 
 
 def compile_tex_files_to_html(args: Namespace) -> None:
-    _compile_tex_files_to_html(output_directory=Path(args.outputdir))
+    input_paths = sorted(map(Path, args.filenames)) if args.filenames else None
+    _compile_tex_files_to_html(Path(args.outputdir), input_paths)
 
 
 def compile_tex_files_to_epub(args: Namespace) -> None:
-    _compile_tex_files_to_epub(output_directory=Path(args.outputdir))
+    input_paths = sorted(map(Path, args.filenames)) if args.filenames else None
+    _compile_tex_files_to_epub(Path(args.outputdir), input_paths)
 
 
 def compile_tex_files_to_docx(args: Namespace) -> None:
-    _compile_tex_files_to_docx(output_directory=Path(args.outputdir))
+    input_paths = sorted(map(Path, args.filenames)) if args.filenames else None
+    _compile_tex_files_to_docx(Path(args.outputdir), input_paths)
 
 
 def main():
@@ -1466,6 +1473,7 @@ def main():
         action='store_true',
         help='Keep recompiling the TeX files as they change',
     )
+    parser_compile_tex_to_pdf.add_argument('filenames', nargs='*')
     parser_compile_tex_to_pdf.set_defaults(func=compile_tex_files_to_pdf)
 
     parser_compile_tex_to_html = subparsers.add_parser(
@@ -1473,6 +1481,7 @@ def main():
         help='Compile all TeX files in this repository to HTML',
     )
     parser_compile_tex_to_html.add_argument('outputdir')
+    parser_compile_tex_to_html.add_argument('filenames', nargs='*')
     parser_compile_tex_to_html.set_defaults(func=compile_tex_files_to_html)
 
     parser_compile_tex_to_epub = subparsers.add_parser(
@@ -1480,6 +1489,7 @@ def main():
         help='Compile all TeX files in this repository to EPUB',
     )
     parser_compile_tex_to_epub.add_argument('outputdir')
+    parser_compile_tex_to_epub.add_argument('filenames', nargs='*')
     parser_compile_tex_to_epub.set_defaults(func=compile_tex_files_to_epub)
 
     parser_compile_tex_files_to_docx = subparsers.add_parser(
@@ -1487,6 +1497,7 @@ def main():
         help='Compile all TeX files in this repository to DOCX',
     )
     parser_compile_tex_files_to_docx.add_argument('outputdir')
+    parser_compile_tex_files_to_docx.add_argument('filenames', nargs='*')
     parser_compile_tex_files_to_docx.set_defaults(func=compile_tex_files_to_docx)
 
     args = parser.parse_args()

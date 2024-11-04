@@ -85,67 +85,65 @@
   \g_istqb_organization_tl
   { ISTQB® }
 \lhead{%
-  \kern 0.1in
   \fontsize{9}{10.8}\selectfont
-  \begin{minipage}[b]{0.7\linewidth}
-    \tl_if_empty:NF
-      \g_istqb_organization_tl
-      {
-        \mbox { \g_istqb_organization_tl }
-        \tl_if_empty:NF
-          \g_istqb_schema_tl
-          { ~ }
-      }
-    \tl_if_empty:NF
-      \g_istqb_schema_tl
-      { \mbox { \g_istqb_schema_tl } }
-    \bool_if:nF
-      {
+  \kern 0.1in
+  \tl_if_empty:NF
+    \g_istqb_organization_tl
+    {
+      \mbox { \g_istqb_organization_tl }
+      \tl_if_empty:NF
+        \g_istqb_schema_tl
+        { ~ }
+    }
+  \tl_if_empty:NF
+    \g_istqb_schema_tl
+    { \mbox { \g_istqb_schema_tl } }
+  \bool_if:nF
+    {
+      \tl_if_empty_p:N
+        \g_istqb_organization_tl &&
+      \tl_if_empty_p:N
+        \g_istqb_schema_tl
+    }
+    { \\ \leavevmode \kern 0.1in }
+  \tl_if_empty:NF
+    \g_istqb_level_tl
+    {
+      \mbox { \g_istqb_level_tl }
+      \tl_if_empty:NF
+        \g_istqb_type_tl
+        { ~ }
+    }
+  \tl_if_empty:NF
+    \g_istqb_type_tl
+    { \mbox { \g_istqb_type_tl } }
+  \bool_if:nF
+    {
+      (
         \tl_if_empty_p:N
-          \g_istqb_organization_tl &&
+          \g_istqb_level_tl &&
         \tl_if_empty_p:N
-          \g_istqb_schema_tl
-      }
-      { \\ }
-    \tl_if_empty:NF
-      \g_istqb_level_tl
-      {
-        \mbox { \g_istqb_level_tl }
-        \tl_if_empty:NF
           \g_istqb_type_tl
-          { ~ }
-      }
-    \tl_if_empty:NF
-      \g_istqb_type_tl
-      { \mbox { \g_istqb_type_tl } }
-    \bool_if:nF
-      {
-        (
-          \tl_if_empty_p:N
-            \g_istqb_level_tl &&
-          \tl_if_empty_p:N
-            \g_istqb_type_tl
-        ) ||
-        (
-          \tl_if_empty_p:N
-            \g_istqb_title_tl &&
-          \tl_if_empty_p:N
-            \g_istqb_code_tl
-        )
-      }
-      { \,--\, }
-    \tl_if_empty:NF
-      \g_istqb_title_tl
-      {
-        \mbox { \g_istqb_title_tl }
-        \tl_if_empty:NF
+      ) ||
+      (
+        \tl_if_empty_p:N
+          \g_istqb_title_tl &&
+        \tl_if_empty_p:N
           \g_istqb_code_tl
-          { ~ }
-      }
-    \tl_if_empty:NF
-      \g_istqb_code_tl
-      { \mbox { ( \g_istqb_code_tl ) } }
-  \end{minipage}
+      )
+    }
+    { \,--\, }
+  \tl_if_empty:NF
+    \g_istqb_title_tl
+    {
+      \mbox { \g_istqb_title_tl }
+      \tl_if_empty:NF
+        \g_istqb_code_tl
+        { ~ }
+    }
+  \tl_if_empty:NF
+    \g_istqb_code_tl
+    { \mbox { ( \g_istqb_code_tl ) } }
 }
 \rhead{%
   \includegraphics[height=\headheight]{\g_istqb_logo_tl}%
@@ -231,9 +229,8 @@
       \begin{minipage}{0.4\linewidth}
       \hfill
       \mbox{\g_istqb_date_tl}
-      \end{minipage}
-      \\[5pt]
-      \fontsize{6}{6}\selectfont
+      \end{minipage}~
+      \fontsize{6}{12}\selectfont
       \textcopyright{}~\istqborgname
     \end{mdframed}
   }
