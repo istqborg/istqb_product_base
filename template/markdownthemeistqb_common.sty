@@ -126,7 +126,8 @@
     documents .tl_gset:N = \istqbdocumentsname,
     books .tl_gset:N = \istqbbooksname,
     articles .tl_gset:N = \istqbarticlesname,
-    web-pages .tl_gset:N = \istqbwebpagesname,
+    web-pages / 1 .tl_gset:N = \istqbwebpagesname,
+    web-pages / 2 .tl_gset:N = \istqbwebpagespostnote,
   }
 \keys_define:nn
   { istqb / language / lists }

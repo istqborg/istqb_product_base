@@ -6,7 +6,9 @@ bibliography-subsections:
   documents: ISTQB® Documents
   books: Books
   articles: Articles
-  web-pages: Web Pages
+  web-pages:
+  - Web Pages
+  - The previous references point to information available on the Internet and elsewhere. Even though those references were checked at the time of publication of this syllabus, the ISTQB® cannot be held responsible if the references are unavailable anymore.
 float-labels:
   figure: Figure
   table: Table

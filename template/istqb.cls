@@ -304,17 +304,20 @@
   \label{section:references}%
   \begingroup
   \defbibheading{bibliography}{%
+    \begingroup
     \normalfont
     \mdseries
     \fontsize{14}{16.8}\selectfont
     ##1%
+    \endgroup
   }%
   \defbibnote{skip}{}%
+  \defbibnote{web-pages}{\emph{\istqbwebpagespostnote}}%
   \printbibliography[filter=standards, title=\istqbstandardsname, postnote=skip]%
   \printbibliography[filter=istqb-documents, title=\istqbdocumentsname, postnote=skip]%
   \printbibliography[filter=books, title=\istqbbooksname, postnote=skip]%
   \printbibliography[filter=articles, title=\istqbarticlesname, postnote=skip]%
-  \printbibliography[filter=web-pages, title=\istqbwebpagesname, postnote=skip]%
+  \printbibliography[filter=web-pages, title=\istqbwebpagesname, postnote=web-pages]%
   \endgroup
   \begingroup
   \defbibheading{bibliography}{\section{##1}\label{section:further-reading}}%
