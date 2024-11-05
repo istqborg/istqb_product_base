@@ -289,6 +289,18 @@
 \DeclareBibliographyCategory{uncited}
 \AtEveryBibitem{\ifciteseen{}{\addtocategory{uncited}{\thefield{entrykey}}}}
 
+%% Formatting of Glossary References
+\DeclareFieldFormat{glossary-references-url}{\url{#1}}
+\DeclareBibliographyDriver{glossary-references}{%
+  \printfield[noformat]{title}%
+  \setunit{\addcolon\space}%
+  \printfield[glossary-references-url]{url}%
+}
+\defbibenvironment{glossary-references}
+  {\begin{itemize}}
+  {\end{itemize}}
+  {\item}
+
 %% Bibliographic notes
 \defbibnote{skip}{}
 \defbibnote{web-pages}{%
@@ -345,13 +357,23 @@
         title = \istqbdocumentsname,
         postnote = skip,
       ]
-    \printbibliography
-      [
-        filter = glossary-references,
-        title = \istqbglossaryreferencesname,
-        prenote = glossary-references,
-        postnote = skip,
-      ]
+    \group_begin:
+      \cs_set:Npn
+        \blx@driver
+        ##1
+        {
+          \csuse
+            { blx@bbx@glossary-references }
+        }
+      \printbibliography
+        [
+          env = glossary-references,
+          filter = glossary-references,
+          title = \istqbglossaryreferencesname,
+          prenote = glossary-references,
+          postnote = skip,
+        ]
+    \group_end:
     \printbibliography
       [
         filter = books,
