@@ -20,6 +20,7 @@ release: For internal use only
 logo: istqb-logo-default
 language: en
 line-numbers: false
+further-reading: true
 compatibility: |
   Compatible with Syllabus on Foundation and Advanced Levels,
   and Specialist Modules
@@ -627,7 +628,8 @@ Cited references of all types except web pages are placed in section *References
 You can reference the section from the text of the document by writing `<#section:references>`. This will produce the following output: <#section:references>.
 
 Uncited references are placed in section *Further Reading* at the end of the document.
-You can reference the section from the text of the document by writing `<#section:further-reading>`. This will produce the following output: <#section:further-reading>.
+You can reference this section from the text of the document by writing `<#section:further-reading>`. This will produce the following output: <#section:further-reading>.
+Furthermore, you can also hide this section by writing `further-reading: false` in the file `metadata.yml.
 
 For further instructions on defining references, see the `Bib\LaTeX`{=tex} manual [@kime:2023, Chapter 2].
 

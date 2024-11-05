@@ -298,32 +298,90 @@
 \defbibfilter{further-reading}{category=uncited}
 
 %% Reference printing
-\newcommand\printistqbbibliography{%
-  \clearpage
-  \section{\istqbrefname}%
-  \label{section:references}%
-  \begingroup
-  \defbibheading{bibliography}{%
-    \begingroup
-    \normalfont
-    \mdseries
-    \fontsize{14}{16.8}\selectfont
-    ##1%
-    \endgroup
-  }%
-  \defbibnote{skip}{}%
-  \defbibnote{web-pages}{\emph{\istqbwebpagespostnote}}%
-  \printbibliography[filter=standards, title=\istqbstandardsname, postnote=skip]%
-  \printbibliography[filter=istqb-documents, title=\istqbdocumentsname, postnote=skip]%
-  \printbibliography[filter=books, title=\istqbbooksname, postnote=skip]%
-  \printbibliography[filter=articles, title=\istqbarticlesname, postnote=skip]%
-  \printbibliography[filter=web-pages, title=\istqbwebpagesname, postnote=web-pages]%
-  \endgroup
-  \begingroup
-  \defbibheading{bibliography}{\section{##1}\label{section:further-reading}}%
-  \printbibliography[filter=further-reading, title=\istqbfurtherreadingname]%
-  \endgroup
-}
+\ExplSyntaxOn
+\cs_new:Npn
+  \printistqbbibliography
+  {
+    \clearpage
+    \section
+      { \istqbrefname }
+    \label
+      { section:references }
+    \group_begin:
+    \defbibheading
+      { bibliography }
+      {
+        \group_begin:
+        \normalfont
+        \mdseries
+        \fontsize
+          { 14 }
+          { 16.8 }
+        \selectfont
+        ##1
+        \group_end:
+      }
+    \defbibnote
+      { skip }
+      { }
+    \defbibnote
+      { web-pages }
+      {
+        \emph
+          { \istqbwebpagespostnote }
+      }
+    \printbibliography
+      [
+        filter = standards,
+        title = \istqbstandardsname,
+        postnote = skip,
+      ]
+    \printbibliography
+      [
+        filter = istqb-documents,
+        title = \istqbdocumentsname,
+        postnote = skip,
+      ]
+    \printbibliography
+      [
+        filter = books,
+        title = \istqbbooksname,
+        postnote = skip,
+      ]
+    \printbibliography
+      [
+        filter = articles,
+        title = \istqbarticlesname,
+        postnote = skip,
+      ]
+    \printbibliography
+      [
+        filter = web-pages,
+        title = \istqbwebpagesname,
+        postnote = web-pages,
+      ]
+    \group_end:
+    \bool_if:NT
+      \g_istqb_further_reading_bool
+      {
+        \group_begin:
+        \defbibheading
+          { bibliography }
+          {
+            \section
+              { ##1 }
+            \label
+              { section:further-reading }
+          }
+        \printbibliography
+          [
+            filter = further-reading,
+            title = \istqbfurtherreadingname,
+          ]
+      }
+    \group_end:
+  }
+\ExplSyntaxOff
 
 % Landing Page
 \ExplSyntaxOn
