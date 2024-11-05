@@ -289,13 +289,25 @@
 \DeclareBibliographyCategory{uncited}
 \AtEveryBibitem{\ifciteseen{}{\addtocategory{uncited}{\thefield{entrykey}}}}
 
+%% Bibliographic notes
+\defbibnote{skip}{}
+\defbibnote{web-pages}{%
+  \emph{\istqbwebpagespostnote}%
+}
+\defbibnote{glossary-references}{%
+  \par
+  \istqbglossaryreferencesprenote
+  :%
+}
+
 %% Bibliographic filters
 \defbibfilter{standards}{type=report and not category=uncited}
 \defbibfilter{istqb-documents}{type=misc and keyword=istqb and not category=uncited}
+\defbibfilter{glossary-references}{type=online and keyword=glossary}
 \defbibfilter{books}{type=book and not category=uncited}
 \defbibfilter{articles}{type=article and not category=uncited}
 \defbibfilter{web-pages}{type=online and not category=uncited}
-\defbibfilter{further-reading}{category=uncited}
+\defbibfilter{further-reading}{not type=online and not keyword=glossary and category=uncited}
 
 %% Reference printing
 \ExplSyntaxOn
@@ -321,15 +333,6 @@
         ##1
         \group_end:
       }
-    \defbibnote
-      { skip }
-      { }
-    \defbibnote
-      { web-pages }
-      {
-        \emph
-          { \istqbwebpagespostnote }
-      }
     \printbibliography
       [
         filter = standards,
@@ -340,6 +343,13 @@
       [
         filter = istqb-documents,
         title = \istqbdocumentsname,
+        postnote = skip,
+      ]
+    \printbibliography
+      [
+        filter = glossary-references,
+        title = \istqbglossaryreferencesname,
+        prenote = glossary-references,
         postnote = skip,
       ]
     \printbibliography

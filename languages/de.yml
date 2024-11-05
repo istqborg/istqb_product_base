@@ -9,6 +9,9 @@ bibliography-subsections:
   web-pages:
   - Webseiten
   - Die obigen Referenzen verweisen auf Information, die im Internet und an anderen Orten verfügbar sind. Obwohl diese Referenzen zur Zeit der Veröffentlichung dieses Lehrplans geprüft worden sind, kann das ISTQB® nicht dafür verantwortlich gemacht werden, wenn sie nicht mehr verfügbar sind.
+  glossary-references:
+  - Referenzen zu Glossaren
+  - Referenzen für die im Lehrplan verwendeten Begriffe
 float-labels:
   figure: Abbildung
   table: Tabelle

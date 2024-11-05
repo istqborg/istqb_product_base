@@ -9,6 +9,9 @@ bibliography-subsections:
   web-pages:
   - Webové stránky
   - Predchádzajúce referencie odkazujú na informácie dostupné na internete a inde. Aj keď boli tieto referencie skontrolované v čase zverejnenia tohto sylabu, ISTQB® nemôže byť brané na zodpovednosť, ak referencie už nie sú k dispozícii.
+  glossary-references:
+  - Odkazy na slovníky
+  - Odkazy na terminológiu použitú v tomto dokumente
 float-labels:
   figure: Obrázek
   table: Tabulka

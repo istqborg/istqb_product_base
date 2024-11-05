@@ -8,6 +8,7 @@ bibliography-subsections:
   books: str()
   articles: str()
   web-pages: [str(), str()]
+  glossary-references: [str(), str()]
 float-labels:
   figure: str()
   table: str()

@@ -579,6 +579,13 @@ First, you would define the references in file `example-document/bibliography.bi
   keywords = {istqb}
 }
 
+% Glossary References
+@online{agile-alliance,
+  title = {Agile Alliance},
+  url = {https://www.agilealliance.org/agile-practice-guide/},
+  keywords = {glossary}
+}
+
 % Books
 @book{beizer:1990,
   author = {Boris Beizer},
