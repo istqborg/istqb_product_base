@@ -273,6 +273,9 @@
 %% Place lists into the Table of Contents.
 \PassOptionsToPackage{nottoc}{tocbibind}
 \RequirePackage{tocbibind}
+%% Number the sections.
+\renewcommand{\listoftables}{\begingroup\tocsection\tocfile{\listtablename}{lot}\endgroup}
+\renewcommand{\listoffigures}{\begingroup\tocsection\tocfile{\listfigurename}{lof}\endgroup}
 
 % Table of Contents
 \setcounter{tocdepth}{3}  % Show level 1 up to level 3 of headings.
