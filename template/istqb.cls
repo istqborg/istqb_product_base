@@ -301,7 +301,6 @@
 
 %% Reference printing
 \newcommand\printistqbbibliography{%
-  \clearpage
   \section{\istqbrefname}%
   \label{section:references}%
   \begingroup
@@ -503,9 +502,9 @@
 \RequirePackage{xpatch, mdframed}
 \xpatchcmd{\section}{\normalfont\Large\bfseries}{\istqbsectionbox}{}{\PatchFailed}
 \xpatchcmd{\subsection}{\normalfont\large\bfseries}{\istqbsubsectionbox}{}{\PatchFailed}
-\RequirePackage{titlesec}
+\RequirePackage{titlesec, etoolbox}
+\pretocmd{\section}{\clearpage}{}{\PatchFailed}
 \newcommand\istqbsectionbox[1]{%
-  \clearpage
   \begin{mdframed}[
     linewidth=0.95pt,
     linecolor=black,
