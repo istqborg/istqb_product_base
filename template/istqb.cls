@@ -273,6 +273,9 @@
 %% Place lists into the Table of Contents.
 \PassOptionsToPackage{nottoc}{tocbibind}
 \RequirePackage{tocbibind}
+%% Number the sections.
+\renewcommand{\listoftables}{\begingroup\tocsection\tocfile{\listtablename}{lot}\endgroup}
+\renewcommand{\listoffigures}{\begingroup\tocsection\tocfile{\listfigurename}{lof}\endgroup}
 
 % Table of Contents
 \setcounter{tocdepth}{3}  % Show level 1 up to level 3 of headings.
@@ -326,7 +329,6 @@
 \cs_new:Npn
   \printistqbbibliography
   {
-    \clearpage
     \section
       { \istqbrefname }
     \label
@@ -596,9 +598,9 @@
 \RequirePackage{xpatch, mdframed}
 \xpatchcmd{\section}{\normalfont\Large\bfseries}{\istqbsectionbox}{}{\PatchFailed}
 \xpatchcmd{\subsection}{\normalfont\large\bfseries}{\istqbsubsectionbox}{}{\PatchFailed}
-\RequirePackage{titlesec}
+\RequirePackage{titlesec, etoolbox}
+\pretocmd{\section}{\clearpage}{}{\PatchFailed}
 \newcommand\istqbsectionbox[1]{%
-  \clearpage
   \begin{mdframed}[
     linewidth=0.95pt,
     linecolor=black,
