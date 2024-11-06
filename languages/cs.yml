@@ -6,6 +6,12 @@ bibliography-subsections:
   documents: ISTQB® dokumenty
   books: Knihy
   articles: Články
+  web-pages:
+  - Webové stránky
+  - Předchozí reference odkazují na informace dostupné na internetu a jinde. I když byly tyto reference zkontrolovány v době zveřejnění tohoto sylabu, ISTQB® nemůže nést odpovědnost, pokud reference již nejsou k dispozici.
+  glossary-references:
+  - Odkazy na slovníky
+  - Odkazy na terminologii použitou v tomto dokumentu
 float-labels:
   figure: Obrázek
   table: Tabulka

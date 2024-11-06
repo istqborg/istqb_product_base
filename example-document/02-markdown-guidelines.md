@@ -20,6 +20,7 @@ release: For internal use only
 logo: istqb-logo-default
 language: en
 line-numbers: false
+further-reading: true
 compatibility: |
   Compatible with Syllabus on Foundation and Advanced Levels,
   and Specialist Modules
@@ -578,6 +579,13 @@ First, you would define the references in file `example-document/bibliography.bi
   keywords = {istqb}
 }
 
+% Glossary References
+@online{agile-alliance,
+  title = {Agile Alliance},
+  url = {https://www.agilealliance.org/agile-practice-guide/},
+  keywords = {glossary}
+}
+
 % Books
 @book{beizer:1990,
   author = {Boris Beizer},
@@ -585,6 +593,15 @@ First, you would define the references in file `example-document/bibliography.bi
   year = {1990},
   publisher = {Van Nostrand Reinhold: Boston MA},
   volume = {2}
+}
+
+% Web Pages
+@online{marick:2013,
+  author = {Brian Marick},
+  title = {Exploration through Example},
+  date = {2003-08-21},
+  url = {http://www.exampler.com/old-blog/2003/08/21/},
+  urldate = {2023-07-11}
 }
 
 % Articles
@@ -599,12 +616,11 @@ First, you would define the references in file `example-document/bibliography.bi
 }
 
 % Further Reading
-@online{marick:2013,
-  author = {Brian Marick},
-  title = {Exploration through Example},
-  date = {2003-08-21},
-  url = {http://www.exampler.com/old-blog/2003/08/21/},
-  urldate = {2023-07-11}
+@book{carroll:1869,
+  title = {Alice's Adventures in Wonderland},
+  author = {Lewis Carroll},
+  year = {1869},
+  publisher = {Lee and Shepard}
 }
 ```
 
@@ -618,8 +634,9 @@ Several citations without parentheses can be stringed together by writing `@iso-
 Cited references of all types except web pages are placed in section *References* at the end of each document.
 You can reference the section from the text of the document by writing `<#section:references>`. This will produce the following output: <#section:references>.
 
-Uncited references and web pages are placed in section *Further Reading* at the end of the document.
-You can reference the section from the text of the document by writing `<#section:further-reading>`. This will produce the following output: <#section:further-reading>.
+Uncited references are placed in section *Further Reading* at the end of the document.
+You can reference this section from the text of the document by writing `<#section:further-reading>`. This will produce the following output: <#section:further-reading>.
+Furthermore, you can also hide this section by writing `further-reading: false` in the file `metadata.yml.
 
 For further instructions on defining references, see the `Bib\LaTeX`{=tex} manual [@kime:2023, Chapter 2].
 
