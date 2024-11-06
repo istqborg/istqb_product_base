@@ -289,35 +289,131 @@
 \DeclareBibliographyCategory{uncited}
 \AtEveryBibitem{\ifciteseen{}{\addtocategory{uncited}{\thefield{entrykey}}}}
 
+%% Formatting of Glossary References
+\DeclareFieldFormat{glossary-references-url}{\url{#1}}
+\DeclareBibliographyDriver{glossary-references}{%
+  \printfield[noformat]{title}%
+  \setunit{\addcolon\space}%
+  \printfield[glossary-references-url]{url}%
+}
+\defbibenvironment{glossary-references}
+  {\begin{itemize}}
+  {\end{itemize}}
+  {\item}
+
+%% Bibliographic notes
+\defbibnote{skip}{}
+\defbibnote{web-pages}{%
+  \emph{\istqbwebpagespostnote}%
+}
+\defbibnote{glossary-references}{%
+  \par
+  \istqbglossaryreferencesprenote
+  :%
+}
+
 %% Bibliographic filters
 \defbibfilter{standards}{type=report and not category=uncited}
 \defbibfilter{istqb-documents}{type=misc and keyword=istqb and not category=uncited}
+\defbibfilter{glossary-references}{type=online and keyword=glossary}
 \defbibfilter{books}{type=book and not category=uncited}
 \defbibfilter{articles}{type=article and not category=uncited}
-\defbibfilter{further-reading}{not ( type=report or ( type=misc and keyword=istqb ) or type=book or type=article ) or category=uncited}
+\defbibfilter{web-pages}{type=online and not category=uncited}
+\defbibfilter{further-reading}{not type=online and not keyword=glossary and category=uncited}
 
 %% Reference printing
-\newcommand\printistqbbibliography{%
-  \clearpage
-  \section{\istqbrefname}%
-  \label{section:references}%
-  \begingroup
-  \defbibheading{bibliography}{%
-    \normalfont
-    \mdseries
-    \fontsize{14}{16.8}\selectfont
-    ##1%
-  }%
-  \printbibliography[filter=standards, title=\istqbstandardsname]%
-  \printbibliography[filter=istqb-documents, title=\istqbdocumentsname]%
-  \printbibliography[filter=books, title=\istqbbooksname]%
-  \printbibliography[filter=articles, title=\istqbarticlesname]%
-  \endgroup
-  \begingroup
-  \defbibheading{bibliography}{\section{##1}\label{section:further-reading}}%
-  \printbibliography[filter=further-reading, title=\istqbfurtherreadingname]%
-  \endgroup
-}
+\ExplSyntaxOn
+\cs_new:Npn
+  \printistqbbibliography
+  {
+    \clearpage
+    \section
+      { \istqbrefname }
+    \label
+      { section:references }
+    \group_begin:
+    \defbibheading
+      { bibliography }
+      {
+        \group_begin:
+        \normalfont
+        \mdseries
+        \fontsize
+          { 14 }
+          { 16.8 }
+        \selectfont
+        ##1
+        \group_end:
+      }
+    \printbibliography
+      [
+        filter = standards,
+        title = \istqbstandardsname,
+        postnote = skip,
+      ]
+    \printbibliography
+      [
+        filter = istqb-documents,
+        title = \istqbdocumentsname,
+        postnote = skip,
+      ]
+    \group_begin:
+      \cs_set:Npn
+        \blx@driver
+        ##1
+        {
+          \csuse
+            { blx@bbx@glossary-references }
+        }
+      \printbibliography
+        [
+          env = glossary-references,
+          filter = glossary-references,
+          title = \istqbglossaryreferencesname,
+          prenote = glossary-references,
+          postnote = skip,
+        ]
+    \group_end:
+    \printbibliography
+      [
+        filter = books,
+        title = \istqbbooksname,
+        postnote = skip,
+      ]
+    \printbibliography
+      [
+        filter = articles,
+        title = \istqbarticlesname,
+        postnote = skip,
+      ]
+    \printbibliography
+      [
+        filter = web-pages,
+        title = \istqbwebpagesname,
+        postnote = web-pages,
+      ]
+    \group_end:
+    \bool_if:NT
+      \g_istqb_further_reading_bool
+      {
+        \group_begin:
+        \defbibheading
+          { bibliography }
+          {
+            \section
+              { ##1 }
+            \label
+              { section:further-reading }
+          }
+        \printbibliography
+          [
+            filter = further-reading,
+            title = \istqbfurtherreadingname,
+          ]
+      }
+    \group_end:
+  }
+\ExplSyntaxOff
 
 % Landing Page
 \ExplSyntaxOn
