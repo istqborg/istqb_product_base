@@ -9,4 +9,4 @@ $pdf_mode = 1;
 $warnings_as_errors = 1;
 
 ## Allow many compilation runs
-$max_repeat=10;
+$max_repeat = 50;
