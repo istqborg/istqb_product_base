@@ -82,7 +82,6 @@ Here is the structure of file `example.tex`:
 
      ``` tex
      % Bibliography
-     \nocite{*}  % Include references that are not cited in the text
      \printistqbbibliography
 
      % List of Tables
