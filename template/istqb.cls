@@ -1012,6 +1012,7 @@
 \newunicodechar{≠}{\ensuremath{\neq}}
 %% Spacing
 \newunicodechar{ }{\,}
+\newunicodechar{ }{\,}
 \newunicodechar{​}{}
 %% Miscellaneous
 \newunicodechar{®}{\textsuperscript{\textregistered}}
