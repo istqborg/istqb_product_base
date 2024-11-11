@@ -112,7 +112,10 @@ VARIABLE_PREFIX, VARIABLE_SUFFIX = r'(?:^|(?<=[^\\]))(?P<backslashes>(?:\\\\)*)'
 VARIABLE_REGEXP = re.compile(f'{VARIABLE_PREFIX}{VARIABLE_SUFFIX}')
 ESCAPED_VARIABLE_REGEXP = re.compile(f'{VARIABLE_PREFIX}\\\\{VARIABLE_SUFFIX}')
 
-PDFTEX_UNPRINTED_REFERENCES = re.compile(r'pdfTeX warning \(dest\): name\{cite\.[0-9]+@(?P<cite_key>[^}]*)\} has been referenced but does not exist, replaced by a fixed one'.replace(' ', r'\s+'))
+PDFTEX_UNPRINTED_REFERENCES = (
+    r'pdfTeX warning \(dest\): name\{cite\.[0-9]+@(?P<cite_key>[^}]*)\} has been referenced but does not exist, replaced by a fixed one'
+)
+PDFTEX_UNPRINTED_REFERENCES = re.compile(PDFTEX_UNPRINTED_REFERENCES.replace(' ', r'\s+'))
 
 
 FileLocation = Tuple[Path, int]
