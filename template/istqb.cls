@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{istqb}[2024/07/03 1.2.0 LaTeX class for ISTQB Documents]
+\ProvidesClass{istqb}[2024/11/11 1.2.1 LaTeX class for ISTQB Documents]
 
 % Fonts
 \LoadClass[10pt]{article}
@@ -289,8 +289,8 @@
 \setlength\bibitemsep{0.5\baselineskip}
 
 %% Bibliographic categories
-\DeclareBibliographyCategory{uncited}
-\AtEveryBibitem{\ifciteseen{}{\addtocategory{uncited}{\thefield{entrykey}}}}
+\DeclareBibliographyCategory{cited}
+\AtEveryBibitem{\ifciteseen{\addtocategory{cited}{\thefield{entrykey}}}{}}
 
 %% Formatting of Glossary References
 \DeclareFieldFormat{glossary-references-url}{\url{#1}}
@@ -316,19 +316,21 @@
 }
 
 %% Bibliographic filters
-\defbibfilter{standards}{type=report and not category=uncited}
-\defbibfilter{istqb-documents}{type=misc and keyword=istqb and not category=uncited}
+\defbibfilter{standards}{type=report and category=cited}
+\defbibfilter{istqb-documents}{type=misc and keyword=istqb and category=cited}
 \defbibfilter{glossary-references}{type=online and keyword=glossary}
-\defbibfilter{books}{type=book and not category=uncited}
-\defbibfilter{articles}{type=article and not category=uncited}
-\defbibfilter{web-pages}{type=online and not category=uncited}
-\defbibfilter{further-reading}{not type=online and not keyword=glossary and category=uncited}
+\defbibfilter{books}{type=book and category=cited}
+\defbibfilter{articles}{type=article and category=cited}
+\defbibfilter{web-pages}{type=online and category=cited}
+\defbibfilter{further-reading}{not type=online and not keyword=glossary and not category=cited}
 
 %% Reference printing
 \ExplSyntaxOn
 \cs_new:Npn
   \printistqbbibliography
   {
+    \nocite
+      { * }
     \section
       { \istqbrefname }
     \label
