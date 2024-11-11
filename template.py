@@ -112,6 +112,11 @@ VARIABLE_PREFIX, VARIABLE_SUFFIX = r'(?:^|(?<=[^\\]))(?P<backslashes>(?:\\\\)*)'
 VARIABLE_REGEXP = re.compile(f'{VARIABLE_PREFIX}{VARIABLE_SUFFIX}')
 ESCAPED_VARIABLE_REGEXP = re.compile(f'{VARIABLE_PREFIX}\\\\{VARIABLE_SUFFIX}')
 
+PDFTEX_UNPRINTED_REFERENCES = (
+    r'pdfTeX warning \(dest\): name\{cite\.[0-9]+@(?P<cite_key>[^}]*)\} has been referenced but does not exist, replaced by a fixed one'
+)
+PDFTEX_UNPRINTED_REFERENCES = re.compile(PDFTEX_UNPRINTED_REFERENCES.replace(' ', r'\s+'))
+
 
 FileLocation = Tuple[Path, int]
 
@@ -1172,6 +1177,23 @@ def _get_project_name(input_path: Path) -> str:
     return project_name
 
 
+def _validate_log_file(input_path: Path) -> None:
+    with input_path.open('rt') as f:
+        log_text = f.read()
+    unprinted_references = [
+        f'"{match.group("cite_key")}"'
+        for match
+        in PDFTEX_UNPRINTED_REFERENCES.finditer(log_text)
+    ]
+    if unprinted_references:
+        raise ValueError(
+            f'The BIB entry for the citation{"s" if len(unprinted_references) > 1 else ""} {", ".join(unprinted_references)} '
+            'matches no known reference type (Standards, ISTQB Documents, Books, Articles, Web Pages, and Glossary References). '
+            'To see how the the BIB entries should be formatted, see Section 1.14 (References) of the example document '
+            '<https://github.com/istqborg/istqb_product_base/releases/download/latest/example-document.pdf>'
+        )
+
+
 def _compile_tex_file_to_pdf(input_path: Path, previous_continuous: bool) -> Optional[Path]:
     if not _should_compile_tex_file_to_pdf(input_path):
         return
@@ -1179,6 +1201,7 @@ def _compile_tex_file_to_pdf(input_path: Path, previous_continuous: bool) -> Opt
         _run_command('latexmk', '-pvc', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=None)
     else:
         _run_command('latexmk', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=600)
+        _validate_log_file(input_path.with_suffix('.log'))
     project_name = _get_project_name(input_path)
     output_path = Path(f'{project_name}.pdf')
     input_path.with_suffix('.pdf').rename(output_path)

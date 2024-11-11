@@ -283,14 +283,14 @@
 
 % Bibliography
 \RequirePackage{csquotes}
-\PassOptionsToPackage{style=iso-authoryear, citetracker=true}{biblatex}
+\PassOptionsToPackage{style=iso-authoryear}{biblatex}
 \RequirePackage{biblatex}
 \urlstyle{same}
 \setlength\bibitemsep{0.5\baselineskip}
 
 %% Bibliographic categories
 \DeclareBibliographyCategory{cited}
-\AtEveryBibitem{\ifciteseen{\addtocategory{cited}{\thefield{entrykey}}}{}}
+\AtEveryCitekey{\addtocategory{cited}{\thefield{entrykey}}}
 
 %% Formatting of Glossary References
 \DeclareFieldFormat{glossary-references-url}{\url{#1}}
