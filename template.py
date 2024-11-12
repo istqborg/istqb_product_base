@@ -1178,8 +1178,8 @@ def _get_project_name(input_path: Path) -> str:
 
 
 def _validate_log_file(input_path: Path) -> None:
-    with input_path.open('rt') as f:
-        log_text = f.read()
+    with input_path.open('rb') as f:
+        log_text = f.read().decode('utf8', 'ignore')
     unprinted_references = [
         f'"{match.group("cite_key")}"'
         for match
