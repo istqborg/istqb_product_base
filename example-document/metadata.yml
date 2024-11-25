@@ -12,6 +12,8 @@ logo: istqb-logo-default
 language: en
 line-numbers: false
 further-reading: true
+# Whether the text should be hyphenated. Uncomment the following line to override the per-language settings.
+#hyphenation: false
 compatibility: |
   Compatible with Syllabus on Foundation and Advanced Levels,
   and Specialist Modules

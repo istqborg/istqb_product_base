@@ -15,12 +15,10 @@ prefix: EXMPL
 code: CT-EXMPL
 type: Syllabus
 version: v0.1
-date: YYYY/MM/DD
+date: 2024/06/04
 release: For internal use only
 logo: istqb-logo-default
 language: en
-line-numbers: false
-further-reading: true
 compatibility: |
   Compatible with Syllabus on Foundation and Advanced Levels,
   and Specialist Modules
@@ -146,6 +144,22 @@ This will produce the following output:
 
 Here is the first line of a paragraph  
 and here is the second line of the paragraph.
+
+## Hyphenation
+
+The language of the document controls whether the text will be hyphenated or not. However, you can override the per-language hyphenation settings in the file `metadata.yml`.
+
+If hyphenation is disabled by default for the language of your document, you can enable it manually by writing the following line in the file `metadata.yml`:
+
+```yaml
+hyphenation: true
+```
+
+Conversely, if hyphenation is enabled by default, you can disable it as follows:
+
+```yaml
+hyphenation: false
+```
 
 ## Superscripts and subscripts
 
