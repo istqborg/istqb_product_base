@@ -79,7 +79,7 @@
         \group_end:
       },
       jekyllDataProgrammaticString = ,
-      jekyllDataTypographicString = {
+      jekyllData(TypographicString|Boolean) = {
         \tl_set:Nx
           \l_tmpa_tl
           { { \l_istqb_language_position_tl / #1 } }
@@ -104,15 +104,40 @@
     },
   }
 \RequirePackage
-  [ shorthands = off ]
-  { babel }
+  { etoolbox }
+\AtEndPreamble
+  {
+    \exp_args:NV
+      \PassOptionsToPackage
+      \g_istqb_babel_language_tl
+      { babel }
+    \RequirePackage
+      [ shorthands = off ]
+      { babel }
+    \bool_if:NF
+      \g_istqb_hyphenation_bool
+      {
+        \tl_set:Nn
+          \l_tmpa_tl
+          {
+            \babelprovide
+              [ hyphenrules = nohyphenation ]
+          }
+        \exp_args:NNV
+          \tl_use:N
+            \l_tmpa_tl
+          \g_istqb_babel_language_tl
+      }
+  }
+\tl_new:N
+  \g_istqb_babel_language_tl
+\bool_new:N
+  \g_istqb_hyphenation_bool
 \keys_define:nn
   { istqb / language }
   {
-    babel-language .code:n = {
-      \selectlanguage
-        { #1 }
-    },
+    babel-language .tl_gset:N = \g_istqb_babel_language_tl,
+    hyphenation .bool_gset:N = \g_istqb_hyphenation_bool,
     appendix .tl_gset:N = \istqbappendixname,
     references .tl_gset:N = \istqbrefname,
     further-reading .tl_gset:N = \istqbfurtherreadingname,
