@@ -3,7 +3,7 @@
 -- Usage: ./check-yaml.lua YAML_DOCUMENT...
 local kpse = require("kpse")
 kpse.set_program_name("luatex")
-local tinyyaml = require("markdown-tinyyaml")
+local tinyyaml = require("tinyyaml")
 local file, input, output, ran_ok, err
 local some_failed = false
 for _, filename in ipairs(arg) do
