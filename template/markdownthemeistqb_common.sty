@@ -79,7 +79,7 @@
         \group_end:
       },
       jekyllDataProgrammaticString = ,
-      jekyllDataTypographicString = {
+      jekyllData(TypographicString|Boolean) = {
         \tl_set:Nx
           \l_tmpa_tl
           { { \l_istqb_language_position_tl / #1 } }
@@ -104,15 +104,45 @@
     },
   }
 \RequirePackage
-  [ shorthands = off ]
-  { babel }
+  { etoolbox }
+\AtEndPreamble
+  {
+    \exp_args:NV
+      \PassOptionsToPackage
+      \g_istqb_babel_language_tl
+      { babel }
+    \RequirePackage
+      [ shorthands = off ]
+      { babel }
+    \bool_if:nF
+      {
+        \g_istqb_metadata_hyphenation_specified_bool
+        && \g_istqb_metadata_hyphenation_bool
+        || ! \g_istqb_metadata_hyphenation_specified_bool
+        && \g_istqb_language_hyphenation_bool
+      }
+      {
+        \tl_set:Nn
+          \l_tmpa_tl
+          {
+            \babelprovide
+              [ hyphenrules = nohyphenation ]
+          }
+        \exp_args:NNV
+          \tl_use:N
+            \l_tmpa_tl
+          \g_istqb_babel_language_tl
+      }
+  }
+\tl_new:N
+  \g_istqb_babel_language_tl
+\bool_new:N
+  \g_istqb_language_hyphenation_bool
 \keys_define:nn
   { istqb / language }
   {
-    babel-language .code:n = {
-      \selectlanguage
-        { #1 }
-    },
+    babel-language .tl_gset:N = \g_istqb_babel_language_tl,
+    hyphenation .bool_gset:N = \g_istqb_language_hyphenation_bool,
     appendix .tl_gset:N = \istqbappendixname,
     references .tl_gset:N = \istqbrefname,
     further-reading .tl_gset:N = \istqbfurtherreadingname,
@@ -252,6 +282,12 @@
   \g_istqb_further_reading_bool
 \bool_gset_true:N
   \g_istqb_further_reading_bool
+\bool_new:N
+  \g_istqb_metadata_hyphenation_bool
+\bool_new:N
+  \g_istqb_metadata_hyphenation_specified_bool
+\bool_gset_false:N
+  \g_istqb_metadata_hyphenation_specified_bool
 \RequirePackage { lineno }
 \cs_gset:Npn
   \linenumberfont
@@ -273,6 +309,21 @@
     language .tl_gset:N = \g_istqb_language_tl,
     organization .tl_gset:N = \g_istqb_organization_tl,
     further-reading .bool_gset:N = \g_istqb_further_reading_bool,
+    hyphenation .code:n = {
+      \bool_gset_true:N
+        \g_istqb_metadata_hyphenation_specified_bool
+      \str_if_eq:nnTF
+        { #1 }
+        { true }
+        {
+          \bool_gset_true:N
+            \g_istqb_metadata_hyphenation_bool
+        }
+        {
+          \bool_gset_false:N
+            \g_istqb_metadata_hyphenation_bool
+        }
+    },
     line-numbers .code:n = {
       \tl_if_eq:nnT
         { #1 }
@@ -643,6 +694,7 @@
             rowhead = 1,
             hlines,
             vlines,
+            hspan = minimal,
           }
         \tl_set:Nn
           \l_istqb_traceability_matrix_colspec_tl
@@ -663,7 +715,13 @@
         % Construct the table body for the number of related learning objectives.
         \tl_put_right:Nn
           \l_istqb_traceability_matrix_body_tl
-          { \SetCell [ c = 2 ] { l, bg = istqbbluetableheader } \Large }
+          {
+            \SetCell
+              [ c = 2 ]
+              { halign = l, valign = m, bg = istqbbluetableheader }
+            \Large
+            \RaggedRight
+          }
         \tl_set:NV
           \l_tmpa_tl
           \g_istqb_translation_traceability_matrix_business_outcomes_tl
