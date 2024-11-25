@@ -668,6 +668,7 @@
             rowhead = 1,
             hlines,
             vlines,
+            hspan = minimal,
           }
         \tl_set:Nn
           \l_istqb_traceability_matrix_colspec_tl
@@ -688,7 +689,12 @@
         % Construct the table body for the number of related learning objectives.
         \tl_put_right:Nn
           \l_istqb_traceability_matrix_body_tl
-          { \SetCell [ c = 2 ] { l, bg = istqbbluetableheader } \Large }
+          {
+            \SetCell
+              [ c = 2 ]
+              { halign = l, valign = m, bg = istqbbluetableheader }
+            \Large
+          }
         \tl_set:NV
           \l_tmpa_tl
           \g_istqb_translation_traceability_matrix_business_outcomes_tl
