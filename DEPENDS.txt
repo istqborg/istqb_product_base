@@ -15,6 +15,7 @@ imakeidx
 lastpage
 latexmk
 lipsum
+lua-tinyyaml
 luaxml
 make4ht
 makeindex
