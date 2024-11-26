@@ -47,6 +47,9 @@ traceability-matrix:
     - Tato sekce uvádí trasovatelnost mezi profesními cíli a`~`{=tex}studijními cíli
     - z`~`{=tex}dokumentu
   business-outcomes: Profesní cíle
+  learning-objective:
+    number: Číslo cíle
+    description: Studijní cíl (úroveň)
 page: [Strana, z]
 provided-by: [Poskytl, Poskytli]
 istqb: International Software Testing Qualifications Board

@@ -251,6 +251,10 @@
   \g_istqb_translation_traceability_matrix_section_name_tl
 \tl_new:N
   \g_istqb_translation_traceability_matrix_business_outcomes_tl
+\tl_new:N
+  \g_istqb_translation_traceability_matrix_learning_objective_number_tl
+\tl_new:N
+  \g_istqb_translation_traceability_matrix_learning_objective_description_tl
 \keys_define:nn
   { istqb / language / traceability-matrix }
   {
@@ -258,6 +262,10 @@
       \g_istqb_translation_traceability_matrix_section_name_tl,
     business-outcomes .tl_gset:N =
       \g_istqb_translation_traceability_matrix_business_outcomes_tl,
+    learning-objective / number .tl_gset:N =
+      \g_istqb_translation_traceability_matrix_learning_objective_number_tl,
+    learning-objective / description .tl_gset:N =
+      \g_istqb_translation_traceability_matrix_learning_objective_description_tl,
   }
 \tl_new:N
   \g_istqb_translation_traceability_matrix_description_tl
@@ -840,10 +848,12 @@
           \l_istqb_traceability_matrix_body_tl
           {
             \SetCell { bg = istqbbluetableheader }
-            Unique~LO
+            \tl_use:N
+              \g_istqb_translation_traceability_matrix_learning_objective_number_tl
             &
             \SetCell { bg = istqbbluetableheader }
-            Learning~Objective~(K-Level)
+            \tl_use:N
+              \g_istqb_translation_traceability_matrix_learning_objective_description_tl
             \\
           }
         % Print out chapters.

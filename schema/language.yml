@@ -32,6 +32,9 @@ traceability-matrix:
   section-name: str()
   description: [str(), str()]
   business-outcomes: str()
+  learning-objective:
+    number: str()
+    description: str()
 page: [str(), str()]
 provided-by: [str(), str()]
 istqb: str()
