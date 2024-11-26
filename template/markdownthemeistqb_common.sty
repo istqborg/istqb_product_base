@@ -539,13 +539,6 @@
                 {}~
               }
             \tl_if_empty:NF
-              \g_istqb_type_tl
-              {
-                \tl_use:N
-                  \g_istqb_type_tl
-                {}~
-              }
-            \tl_if_empty:NF
               \g_istqb_title_tl
               {
                 \tl_use:N
@@ -745,16 +738,6 @@
                   \tl_put_right:NV
                     \l_tmpa_tl
                     \g_istqb_level_tl
-                  \tl_put_right:Nn
-                    \l_tmpa_tl
-                    { ~ }
-                }
-              \tl_if_empty:NF
-                \g_istqb_type_tl
-                {
-                  \tl_put_right:NV
-                    \l_tmpa_tl
-                    \g_istqb_type_tl
                   \tl_put_right:Nn
                     \l_tmpa_tl
                     { ~ }
