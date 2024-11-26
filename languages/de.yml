@@ -41,6 +41,9 @@ traceability-matrix:
     - Dieser Abschnitt listet die Anzahl der Lernziele des vorliegenden Lehrplans auf, die mit dem geschäftlichen Nutzen in Verbindung stehen, sowie die Verfolgbarkeit zwischen dem geschäftlichen Nutzen des Lehrplans und den Lernzielen
     - des
   business-outcomes: Geschäftlicher Nutzen
+  learning-objective:
+    number: LO-Nummer
+    description: Lernziel (K-level)
 page: [Seite, von]
 provided-by: [Zur Verfügung gestellt von, Zur Verfügung gestellt von]
 istqb: International Software Testing Qualifications Board

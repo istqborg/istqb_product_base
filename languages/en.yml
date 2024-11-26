@@ -40,6 +40,9 @@ traceability-matrix:
     - This section lists the traceability between the Business Outcomes and the Learning Objectives
     - of
   business-outcomes: Business Outcomes
+  learning-objective:
+    number: LO Number
+    description: Learning Objective (K-Level)
 page: [Page, of]
 provided-by: [Provided by, Provided by]
 istqb: International Software Testing Qualifications Board
