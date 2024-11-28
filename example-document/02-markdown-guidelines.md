@@ -147,18 +147,18 @@ and here is the second line of the paragraph.
 
 ## Page breaks
 
-You can insert a page break by using the ``` \pagebreak ``` to force the content to continue on the next page as follows:
+You can insert a page break by using the `\pagebreak{=tex}` to force the content to continue on the next page as follows:
 
 ``` md
 This is the content on the first page
-\pagebreak
+\pagebreak{=tex}
 This content will appear on the next page.
 ```
 
 This will produce the following output:
 
 This is the content on the first page  
-\pagebreak
+\pagebreak{=tex}
 This content will appear on the next page.
 
 Recommended use of page breaks:
