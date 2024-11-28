@@ -15,7 +15,7 @@ line-numbers: bool(required=False)
 provided-by: include('third-parties', required=False)
 pdf-output: bool(required=False)
 docx-output: bool(required=False)
-epub-output: true
+epub-output: bool(required=True)
 html-output: bool(required=False)
 further-reading: bool(required=False)
 hyphenation: bool(required=False)
