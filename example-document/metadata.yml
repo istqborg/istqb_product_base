@@ -31,3 +31,4 @@ variables:
   foo: bar
   bar: baz
 epub-output: true
+html-output: true
