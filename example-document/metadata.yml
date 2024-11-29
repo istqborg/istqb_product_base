@@ -30,3 +30,4 @@ provided-by:
 variables:
   foo: bar
   bar: baz
+epub-output: true
