@@ -280,6 +280,12 @@
 % Table of Contents
 \setcounter{tocdepth}{3}  % Show level 1 up to level 3 of headings.
 \setcounter{section}{-1}  % Start sections from 0.
+\newcommand\istqbtableofcontents{%
+  \clearpage
+  \phantomsection
+  \currentpdfbookmark{\contentsname}{istqbtoc}%
+  \tableofcontents
+}
 
 % Bibliography
 \RequirePackage{csquotes}
@@ -873,13 +879,6 @@
   \begin{istqbtable}{|l|l|X|}%
 }{%
   \end{istqbtable}%
-}
-
-% Table of Contents
-\newcommand\istqbtableofcontents{%
-  \phantomsection
-  \currentpdfbookmark{\contentsname}{istqbtoc}%
-  \tableofcontents
 }
 
 % Structure Tables
