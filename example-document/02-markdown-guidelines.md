@@ -145,6 +145,27 @@ This will produce the following output:
 Here is the first line of a paragraph  
 and here is the second line of the paragraph.
 
+## Page breaks
+
+You can insert a page break by using the ``` `\pagebreak`{=tex} ``` to force the content to continue on the next page as follows:
+
+``` md
+This is the content on the first page
+`\pagebreak`{=tex}
+This content will appear on the next page.
+```
+
+This will produce the following output:
+
+This is the content on the first page  
+`\pagebreak`{=tex}
+This content will appear on the next page.
+
+Recommended use of page breaks:
+1. **Avoid Isolated Headings** - When a heading appears alone at the bottom of a page without accompanying text, insert a page break to move the heading to the next page with its content.
+2. **Prevent Single Lines at the Page Start (Orphan Lines)** - If a single line of text starts a new page, insert a page break to shift an additional line from the previous page, creating a better balance.
+3. **Eliminate Stray Lines at the Page End (Widow Lines)** - If a single line of text is left at the bottom of a page, use a page break to move it to the next page with more text, improving the visual coherence.
+
 ## Hyphenation
 
 The language of the document controls whether the text will be hyphenated or not. However, you can override the per-language hyphenation settings in the file `metadata.yml`.
