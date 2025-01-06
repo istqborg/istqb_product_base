@@ -95,7 +95,7 @@ TEMPLATE_REGEXP = re.compile(r'\.(sty|cls|lua)$', flags=re.IGNORECASE)
 
 METADATA_REGEXP = re.compile(r'metadata.*\.ya?ml', flags=re.IGNORECASE)
 QUESTIONS_YAML_REGEXP = re.compile(r'questions.*\.ya?ml', flags=re.IGNORECASE)
-QUESTIONS_MARKDOWN_REGEXP = re.compile(r'questions.*\.(md|mdown|markdown)', flags=re.IGNORECASE)
+QUESTIONS_MARKDOWN_REGEXP = re.compile(r'.*question.*\.(md|mdown|markdown)', flags=re.IGNORECASE)
 LANGUAGES_REGEXP = re.compile(r'..\.ya?ml', flags=re.IGNORECASE)
 TRACEABILITY_MATRIX_REGEXP = re.compile(r'traceability-matrix\.ya?ml$', flags=re.IGNORECASE)
 
@@ -374,7 +374,7 @@ def _get_line_number_from_file_location(location: FileLocation) -> int:
 
 
 @lru_cache(maxsize=None)
-def _get_references_from_tex_file(tex_input_path: Path) -> List[Tuple[FileLocation, Path, Iterable[Path]]]:
+def _get_references_from_tex_file(tex_input_path: Path, include_sources: bool = True) -> List[Tuple[FileLocation, Path, Iterable[Path]]]:
     results = []
     with tex_input_path.open('rt') as f:
         text = f.read()
@@ -389,8 +389,10 @@ def _get_references_from_tex_file(tex_input_path: Path) -> List[Tuple[FileLocati
                 referenced_path = referenced_path.resolve()
                 referenced_paths = [referenced_path]
                 # For YAML questions, yield also MD question source files.
-                if QUESTIONS_YAML_REGEXP.fullmatch(referenced_path.name):
-                    for referenced_md_path in referenced_path.parent.glob(f'{referenced_path.stem}.*'):
+                if include_sources and QUESTIONS_YAML_REGEXP.fullmatch(referenced_path.name):
+                    for referenced_md_path in referenced_path.parent.iterdir():
+                        if not referenced_md_path.is_file():
+                            continue
                         if QUESTIONS_MARKDOWN_REGEXP.fullmatch(referenced_md_path.name):
                             referenced_md_path = referenced_md_path.resolve()
                             referenced_paths.append(referenced_md_path)
@@ -399,17 +401,17 @@ def _get_references_from_tex_file(tex_input_path: Path) -> List[Tuple[FileLocati
     return results
 
 
-def _get_references_from_tex_files(tex_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, Path, Iterable[Path]]]:
+def _get_references_from_tex_files(tex_input_paths: Iterable[Path], *args, **kwargs) -> Iterable[Tuple[FileLocation, Path, Iterable[Path]]]:
     for tex_input_path in tex_input_paths:
-        yield from _get_references_from_tex_file(tex_input_path)
+        yield from _get_references_from_tex_file(tex_input_path, *args, **kwargs)
 
 
 def _flatten_references(references: Iterable[Tuple[FileLocation, Path, Iterable[Path]]]) -> Iterable[Path]:
     return chain(*[paths for *_, paths in references])
 
 
-def _get_flat_references_from_tex_files(tex_input_paths: Iterable[Path]) -> Iterable[Path]:
-    return _flatten_references(_get_references_from_tex_files(tex_input_paths))
+def _get_flat_references_from_tex_files(tex_input_paths: Iterable[Path], *args, **kwargs) -> Iterable[Path]:
+    return _flatten_references(_get_references_from_tex_files(tex_input_paths, *args, **kwargs))
 
 
 def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Path]] = None, root: Path = Path('.')) -> Iterable[Path]:
@@ -798,150 +800,166 @@ def _answer_number_to_letter(number: Union[int, str]) -> str:
     return {'1': 'a', '2': 'b', '3': 'c', '4': 'd', '5': 'e'}.get(str(number), str(number))
 
 
-def _read_md_questions(input_file: Path) -> Iterable[Tuple[int, Dict]]:
-    with input_file.open('rt') as f:
-        input_md_lines = f.read().splitlines()
-
+def _read_md_questions(input_files: Iterable[Path]) -> Iterable[Tuple[int, Dict]]:
     question_number = 1
-    question: Optional[Dict] = None
-    section: Optional[str] = None
-    section_line_numbers = []
-    heading_line_number: Optional[int] = None
 
-    def finish_section():
-        assert question is not None
-        assert section is not None
-        assert heading_line_number is not None
-        if not section_line_numbers:
-            raise ValueError(f'An empty section in file "{input_file}" below line {heading_line_number+1}')
-        section_lines = [input_md_lines[index] for index in section_line_numbers]
-        section_text = '\n'.join(section_lines)
-        line_range = f'{heading_line_number+1}-{max(section_line_numbers)+1}'
-        if section == 'metadata':
-            input_yaml = yaml.safe_load(section_text)
-            if 'lo' not in input_yaml:
-                raise ValueError(f'Missing YAML key "lo" in file "{input_file}" on lines {line_range}')
-            question['learning-objective'] = input_yaml['lo']
-            if 'k-level' not in input_yaml:
-                raise ValueError(f'Missing YAML key "k-level" in file "{input_file}" on lines {line_range}')
-            question['k-level'] = input_yaml['k-level']
-            if 'points' not in input_yaml:
-                raise ValueError(f'Missing YAML key "points" in file "{input_file}" on lines {line_range}')
-            question['number-of-points'] = input_yaml['points']
-            if 'correct' not in input_yaml:
-                raise ValueError(f'Missing YAML key "correct" in file "{input_file}" on lines {line_range}')
+    for input_file in input_files:
 
-            def normalize_correct_answers(correct: Union[List[Union[str, int]], str, int]) -> List[str]:
-                def normalize_correct_answer(correct: Union[str, int]) -> Iterable[str]:
-                    if isinstance(correct, str):
-                        for letter in correct:
-                            if letter in (' ', ',', '.', ')'):
-                                continue
-                            if letter not in ('a', 'b', 'c', 'd', 'e', '1', '2', '3', '4', '5'):
+        question: Optional[Dict] = None
+        section: Optional[str] = None
+        section_line_numbers = []
+        heading_line_number: Optional[int] = None
+
+        with input_file.open('rt') as f:
+            input_md_lines = f.read().splitlines()
+
+        def finish_section():
+            assert question is not None
+            assert section is not None
+            assert heading_line_number is not None
+            if not section_line_numbers:
+                raise ValueError(f'An empty section in file "{input_file}" below line {heading_line_number+1}')
+            section_lines = [input_md_lines[index] for index in section_line_numbers]
+            section_text = '\n'.join(section_lines)
+            line_range = f'{heading_line_number+1}-{max(section_line_numbers)+1}'
+            if section == 'metadata':
+                input_yaml = yaml.safe_load(section_text)
+                if 'lo' not in input_yaml:
+                    raise ValueError(f'Missing YAML key "lo" in file "{input_file}" on lines {line_range}')
+                question['learning-objective'] = input_yaml['lo']
+                if 'k-level' not in input_yaml:
+                    raise ValueError(f'Missing YAML key "k-level" in file "{input_file}" on lines {line_range}')
+                question['k-level'] = input_yaml['k-level']
+                if 'points' not in input_yaml:
+                    raise ValueError(f'Missing YAML key "points" in file "{input_file}" on lines {line_range}')
+                question['number-of-points'] = input_yaml['points']
+                if 'correct' not in input_yaml:
+                    raise ValueError(f'Missing YAML key "correct" in file "{input_file}" on lines {line_range}')
+
+                def normalize_correct_answers(correct: Union[List[Union[str, int]], str, int]) -> List[str]:
+                    def normalize_correct_answer(correct: Union[str, int]) -> Iterable[str]:
+                        if isinstance(correct, str):
+                            for letter in correct:
+                                if letter in (' ', ',', '.', ')'):
+                                    continue
+                                if letter not in ('a', 'b', 'c', 'd', 'e', '1', '2', '3', '4', '5'):
+                                    raise ValueError(
+                                        f'Expected a letter a-e or a number 1-5 in YAML key "correct" in file "{input_file}" '
+                                        f'on lines {line_range}, got "{correct}"'
+                                    )
+                                if letter in ('1', '2', '3', '4', '5'):
+                                    yield _answer_number_to_letter(int(letter))
+                                else:
+                                    yield letter
+                        elif isinstance(correct, int):
+                            if correct not in (1, 2, 3, 4, 5):
                                 raise ValueError(
-                                    f'Expected a letter a-e or a number 1-5 in YAML key "correct" in file "{input_file}" '
+                                    f'Expected a number 1-5 in YAML key "correct" in file "{input_file}" '
                                     f'on lines {line_range}, got "{correct}"'
                                 )
-                            if letter in ('1', '2', '3', '4', '5'):
-                                yield _answer_number_to_letter(int(letter))
-                            else:
-                                yield letter
-                    elif isinstance(correct, int):
-                        if correct not in (1, 2, 3, 4, 5):
-                            raise ValueError(
-                                f'Expected a number 1-5 in YAML key "correct" in file "{input_file}" '
-                                f'on lines {line_range}, got "{correct}"'
-                            )
-                        correct = _answer_number_to_letter(correct)
-                        yield correct
+                            correct = _answer_number_to_letter(correct)
+                            yield correct
+                        else:
+                            assert False
+
+                    if isinstance(correct, (str, int)):
+                        return list(normalize_correct_answer(correct))
+                    elif isinstance(correct, list):
+                        return list(chain(*[normalize_correct_answer(correct_answer) for correct_answer in correct]))
                     else:
-                        assert False
+                        raise ValueError(
+                            f'Expected a letter, a number, or a list in YAML key "correct" in file "{input_file}" '
+                            f'on lines {line_range}, got "{correct}" of type "{type(correct)}"'
+                        )
 
-                if isinstance(correct, (str, int)):
-                    return list(normalize_correct_answer(correct))
-                elif isinstance(correct, list):
-                    return list(chain(*[normalize_correct_answer(correct_answer) for correct_answer in correct]))
-                else:
-                    raise ValueError(
-                        f'Expected a letter, a number, or a list in YAML key "correct" in file "{input_file}" '
-                        f'on lines {line_range}, got "{correct}" of type "{type(correct)}"'
-                    )
+                question['correct'] = normalize_correct_answers(input_yaml['correct'])
+            elif section == 'question':
+                question['question'] = section_text
+            elif section == 'answers':
+                answers = {}
+                for answer_match in QUESTIONS_ANSWER_REGEXP.finditer(section_text):
+                    answer_number = answer_match.group('number_or_letter')
+                    answer_letter = _answer_number_to_letter(answer_number)
+                    answer_text = answer_match.group('text').strip()
+                    answers[answer_letter] = answer_text
+                question['answers'] = answers
+            elif section == 'explanation':
+                question['explanation'] = section_text
+            else:
+                raise ValueError(f'Unknown section "{section}" in file "{input_file}" on lines {line_range}')
+            section_line_numbers.clear()
 
-            question['correct'] = normalize_correct_answers(input_yaml['correct'])
-        elif section == 'question':
-            question['question'] = section_text
-        elif section == 'answers':
-            answers = {}
-            for answer_match in QUESTIONS_ANSWER_REGEXP.finditer(section_text):
-                answer_number = answer_match.group('number_or_letter')
-                answer_letter = _answer_number_to_letter(answer_number)
-                answer_text = answer_match.group('text').strip()
-                answers[answer_letter] = answer_text
-            question['answers'] = answers
-        elif section == 'explanation':
-            question['explanation'] = section_text
-        else:
-            raise ValueError(f'Unknown section "{section}" in file "{input_file}" on lines {line_range}')
-        section_line_numbers.clear()
-
-    for line_number, line in enumerate(input_md_lines):
-        # Check whether a new question has started.
-        metadata_match = QUESTIONS_METADATA_REGEXP.fullmatch(line)
-        if question is None and not metadata_match:
-            if not line.strip():
+        for line_number, line in enumerate(input_md_lines):
+            # Check whether a new question has started.
+            metadata_match = QUESTIONS_METADATA_REGEXP.fullmatch(line)
+            if question is None and not metadata_match:
+                if not line.strip():
+                    continue
+                raise ValueError(f'Unexpected line {line_number+1} of file "{input_file}": "{line}"; expected "# metadata" or similar')
+            if metadata_match:
+                if section is not None:
+                    finish_section()
+                if question is not None:
+                    yield question_number, question
+                    question_number += 1
+                question = {}
+                section = 'metadata'
+                heading_line_number = line_number
                 continue
-            raise ValueError(f'Unexpected line {line_number+1} of file "{input_file}": "{line}"; expected "# metadata" or similar')
-        if metadata_match:
-            if section is not None:
+
+            # Check whether a new section has started.
+            question_match = QUESTIONS_QUESTION_REGEXP.fullmatch(line)
+            answers_match = QUESTIONS_ANSWERS_REGEXP.fullmatch(line)
+            explanation_match = QUESTIONS_EXPLANATION_REGEXP.fullmatch(line)
+            if question_match:
                 finish_section()
-            if question is not None:
-                yield question_number, question
-                question_number += 1
-            question = {}
-            section = 'metadata'
-            heading_line_number = line_number
-            continue
+                section = 'question'
+                heading_line_number = line_number
+                continue
+            if answers_match:
+                finish_section()
+                section = 'answers'
+                heading_line_number = line_number
+                continue
+            if explanation_match:
+                finish_section()
+                section = 'explanation'
+                heading_line_number = line_number
+                continue
 
-        # Check whether a new section has started.
-        question_match = QUESTIONS_QUESTION_REGEXP.fullmatch(line)
-        answers_match = QUESTIONS_ANSWERS_REGEXP.fullmatch(line)
-        explanation_match = QUESTIONS_EXPLANATION_REGEXP.fullmatch(line)
-        if question_match:
-            finish_section()
-            section = 'question'
-            heading_line_number = line_number
-            continue
-        if answers_match:
-            finish_section()
-            section = 'answers'
-            heading_line_number = line_number
-            continue
-        if explanation_match:
-            finish_section()
-            section = 'explanation'
-            heading_line_number = line_number
-            continue
+            # Otherwise, accumulate the lines.
+            section_line_numbers.append(line_number)
 
-        # Otherwise, accumulate the lines.
-        section_line_numbers.append(line_number)
+        if section is not None:
+            finish_section()
+        if question is not None:
+            yield question_number, question
+            question_number += 1
 
-    if section is not None:
-        finish_section()
-    if question is not None:
-        yield question_number, question
+
+def _cluster_files(input_paths: Iterable[Path]) -> Iterable[Tuple[Path, List[Path]]]:
+    clusters = defaultdict(lambda: list())
+    for input_path in input_paths:
+        clusters[input_path.parent].append(input_path)
+    for parent_directory in sorted(clusters):
+        input_paths = sorted(clusters[parent_directory])
+        yield parent_directory, input_paths
 
 
 def _convert_md_questions_to_yaml() -> None:
-    for input_path in _find_files(['questions-markdown']):
-        output_path = input_path.with_suffix('.yml')
-        if output_path.exists() and input_path.stat().st_mtime <= output_path.stat().st_mtime:
-            _warning('Skipping creation of existing file "%s"', output_path)
-            continue
+    for parent_directory, input_paths in _cluster_files(_find_files(['questions-markdown'])):
+        output_path = parent_directory / 'questions.yml'
+        if output_path.exists():
+            output_path_modification_time = output_path.stat().st_mtime
+            if all(input_path.stat().st_mtime <= output_path_modification_time for input_path in input_paths):
+                _warning('Skipping creation of existing file "%s"', output_path)
+                continue
 
-        output_yaml = {'questions': dict(_read_md_questions(input_path))}
+        formatted_input_paths = ', '.join(f'"{input_path}"' for input_path in input_paths)
+        output_yaml = {'questions': dict(_read_md_questions(input_paths))}
 
         if not output_yaml:
-            _warning('Found no questions in file "%s", skipping creation of empty file "%s"', input_path, output_path)
+            _warning('Found no questions in files %s, skipping creation of empty file "%s"', formatted_input_paths, output_path)
         else:
             with output_path.open('wt') as f:
                 print('questions:', file=f)
@@ -954,7 +972,7 @@ def _convert_md_questions_to_yaml() -> None:
                     print(f'    answers: {json.dumps(question["answers"], ensure_ascii=False)}', file=f)
                     print(f'    correct: {json.dumps(question["correct"], ensure_ascii=False)}', file=f)
                     print(f'    explanation: {json.dumps(question["explanation"], ensure_ascii=False)}', file=f)
-                LOGGER.info('Converted file "%s" to "%s"', input_path, output_path)
+                LOGGER.info('Converted files %s to "%s"', formatted_input_paths, output_path)
 
 
 def _convert_yaml_questions_to_md(force_overwrite: bool = False) -> None:
@@ -1252,15 +1270,20 @@ def _compile_tex_file_to_docx(input_path: Path, output_directory: Path) -> Optio
 
     # Collect files referenced from the TeX file.
     markdown_texts = []
-    for nested_path in _get_flat_references_from_tex_files(tex_input_paths=[input_path]):
+    for nested_path in _get_flat_references_from_tex_files(tex_input_paths=[input_path], include_sources=False):
         if MARKDOWN_REGEXP.search(nested_path.name):
             with nested_path.open('rt') as f:
                 markdown_text = f.read()
                 markdown_texts.append(markdown_text)
-        elif YAML_REGEXP.search(nested_path.name) and not QUESTIONS_YAML_REGEXP.fullmatch(nested_path.name):
-            with nested_path.open('rt') as f:
-                markdown_text = f'``` yml\n{f.read()}\n```'
-                markdown_texts.append(markdown_text)
+        elif YAML_REGEXP.search(nested_path.name):
+            if QUESTIONS_YAML_REGEXP.fullmatch(nested_path.name):
+                with nested_path.with_suffix('.md').open('rt') as f:
+                    markdown_text = f.read()
+                    markdown_texts.append(markdown_text)
+            else:
+                with nested_path.open('rt') as f:
+                    markdown_text = f'``` yml\n{f.read()}\n```'
+                    markdown_texts.append(markdown_text)
         elif BIB_REGEXP.search(nested_path.name):
             with nested_path.open('rt') as f:
                 markdown_text = f'``` bib\n{f.read()}\n```'
