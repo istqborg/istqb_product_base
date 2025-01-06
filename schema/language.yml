@@ -19,6 +19,7 @@ reference-labels:
   table: str()
 sample-exam:
   question: [str(), str()]
+  additional-question: [str(), str()]
   question-number: str()
   correct-answer: str()
   learning-objective: str()

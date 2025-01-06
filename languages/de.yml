@@ -22,6 +22,7 @@ reference-labels:
   table: Tabelle
 sample-exam:
   question: [Frage, Fragen]
+  additional-question: [Zusätzliche Frage, Zusätzliche Fragen]
   question-number: Frage`\-`{=tex}nummer
   learning-objective: Lernziel
   k-level: K-Level

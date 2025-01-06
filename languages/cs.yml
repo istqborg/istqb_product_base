@@ -22,6 +22,7 @@ reference-labels:
   table: tabulku
 sample-exam:
   question: [Otázka, Otázky]
+  additional-question: [Dodatečná otázka, Dodatečné otázky]
   question-number: Číslo otázky
   learning-objective: Studijní cíl
   k-level: K-Level

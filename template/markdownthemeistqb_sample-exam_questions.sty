@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_sample-exam_questions}%
-  {2024-06-15}%
-  {1.0.0}%
+  {2025-01-06}%
+  {1.1.0}%
   {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Questions documents}
 
 % Import common code
@@ -32,126 +32,135 @@
 \RequirePackage { paralist }
 \tl_new:N
   \l_istqb_question_tl
-\markdownSetupSnippet
-  { questions }
+\cs_new:Nn
+  \istqb_print_questions:nn
   {
-    snippet = istqb / sample-exam
-      / questions,
-    fancyLists = true,
-    renderers = {
-      interblockSeparator = {
-        \par
-        \medskip
-      },
-      jekyllDataEnd = {
-        \seq_map_inline:Nn
-          \g_istqb_questions_seq
+    \int_set:Nn
+      \l_tmpa_int
+      { 1 }
+    \seq_map_inline:Nn
+      \g_istqb_questions_seq
+      {
+        \tl_set:Nn
+          \l_istqb_question_tl
+          {
+            \group_begin:
+            % Print question heading.
+            \tl_set:Nn
+              \l_tmpa_tl
+              { #1~\# }
+            \tl_put_right:NV
+              \l_tmpa_tl
+              \l_tmpa_int
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { ~( }
+            \prop_get:cnN
+              { g_istqb_question_number
+                _of_points_prop }
+              { ##1 }
+              \l_tmpb_tl
+            \tl_put_right:NV
+              \l_tmpa_tl
+              \l_tmpb_tl
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { ~ }
+            \istqb_translation_points:VN
+              \l_tmpb_tl
+              \l_tmpb_tl
+            \tl_put_right:NV
+              \l_tmpa_tl
+              \l_tmpb_tl
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { ) }
+            \exp_args:NNV
+              \subsection *
+              \l_tmpa_tl
+            \exp_args:NVV
+              \markboth
+              \l_tmpa_tl
+              \l_tmpa_tl
+            \exp_args:NnnV
+              \addcontentsline
+              { toc }
+              { subsection }
+              \l_tmpa_tl
+            % Print question text.
+            \setdefaultleftmargin
+              { 3.2em }
+              { 2.2em }
+              { 1.87em }
+              { 1.7em }
+              { 1em }
+              { 1em }
+            \prop_item:Nn
+              \g_istqb_question_text_prop
+              { ##1 }
+            % Print answers.
+            \prop_get:NnN
+              \g_istqb_answer_keys_prop
+              { ##1 }
+              \l_tmpa_clist
+            \medskip
+            \setdefaultleftmargin
+              { 1.5em }
+              { }
+              { }
+              { }
+              { }
+              { }
+            \begin { enumerate }
+            \clist_map_inline:Nn
+              \l_tmpa_clist
+              {
+                \item [ ####1 ) ]
+                  \prop_item:Nn
+                    \g_istqb_answers_prop
+                    { ##1 / ####1 }
+              }
+            \end { enumerate }
+            \medskip
+            % Print the number of questions to select.
+            \prop_get:cnN
+              { g_istqb_answer_correct
+                _keys_prop }
+              { ##1 }
+              \l_tmpa_clist
+            \int_set:Nn
+              \l_tmpb_int
+              {
+                \clist_count:N
+                  \l_tmpa_clist
+              }
+            \int_compare:nNnTF
+              { \l_tmpb_int }
+              =
+              { 1 }
+              {
+                \tl_use:N
+                  \g_istqb_translation_select_answers_one_tl
+              }
+              {
+                \tl_use:N
+                  \g_istqb_translation_select_answers_two_tl
+              }
+            \group_end:
+          }
+        \prop_get:cnNF
+          { g_istqb_question_additional_prop }
+          { ##1 }
+          \l_tmpa_tl
           {
             \tl_set:Nn
-              \l_istqb_question_tl
-              {
-                \group_begin:
-                % Print question heading.
-                \tl_set:Nn
-                  \l_tmpa_tl
-                  {
-                    \tl_use:N
-                      \g_istqb_translation_question_singular_tl
-                    {}~\# ##1~(
-                  }
-                \prop_get:cnN
-                  { g_istqb_question_number
-                    _of_points_prop }
-                  { ##1 }
-                  \l_tmpb_tl
-                \tl_put_right:NV
-                  \l_tmpa_tl
-                  \l_tmpb_tl
-                \tl_put_right:Nn
-                  \l_tmpa_tl
-                  { ~ }
-                \istqb_translation_points:VN
-                  \l_tmpb_tl
-                  \l_tmpb_tl
-                \tl_put_right:NV
-                  \l_tmpa_tl
-                  \l_tmpb_tl
-                \tl_put_right:Nn
-                  \l_tmpa_tl
-                  { ) }
-                \exp_args:NNV
-                  \subsection *
-                  \l_tmpa_tl
-                \exp_args:NVV
-                  \markboth
-                  \l_tmpa_tl
-                  \l_tmpa_tl
-                \exp_args:NnnV
-                  \addcontentsline
-                  { toc }
-                  { subsection }
-                  \l_tmpa_tl
-                % Print question text.
-                \setdefaultleftmargin
-                  { 3.2em }
-                  { 2.2em }
-                  { 1.87em }
-                  { 1.7em }
-                  { 1em }
-                  { 1em }
-                \prop_item:Nn
-                  \g_istqb_question_text_prop
-                  { ##1 }
-                % Print answers.
-                \prop_get:NnN
-                  \g_istqb_answer_keys_prop
-                  { ##1 }
-                  \l_tmpa_clist
-                \medskip
-                \setdefaultleftmargin
-                  { 1.5em }
-                  { }
-                  { }
-                  { }
-                  { }
-                  { }
-                \begin { enumerate }
-                \clist_map_inline:Nn
-                  \l_tmpa_clist
-                  {
-                    \item [ ####1 ) ]
-                      \prop_item:Nn
-                        \g_istqb_answers_prop
-                        { ##1 / ####1 }
-                  }
-                \end { enumerate }
-                \medskip
-                % Print the number of questions to select.
-                \prop_get:cnN
-                  { g_istqb_answer_correct
-                    _keys_prop }
-                  { ##1 }
-                  \l_tmpa_clist
-                \int_set:Nn
-                  \l_tmpa_int
-                  {
-                    \clist_count:N
-                      \l_tmpa_clist
-                  }
-                \int_compare:nNnTF
-                  { \l_tmpa_int }
-                  =
-                  { 1 }
-                  {
-                    \tl_use:N
-                      \g_istqb_translation_select_answers_one_tl
-                  }
-                  {
-                    \tl_use:N
-                      \g_istqb_translation_select_answers_two_tl
-                  }
-                \group_end:
-              }
+              \l_tmpa_tl
+              { false }
+          }
+        \str_if_eq:VnT
+          \l_tmpa_tl
+          { #2 }
+          {
             \vbox_set:NV
               \l_tmpa_box
               \l_istqb_question_tl
@@ -164,8 +173,48 @@
                   \l_istqb_question_tl
               }
               { \box_use:N \l_tmpa_box }
+            \int_incr:N
+              \l_tmpa_int
             \par
           }
+      }
+  }
+\markdownSetupSnippet
+  { questions-base }
+  {
+    snippet = istqb / sample-exam
+      / questions,
+    fancyLists = true,
+    renderers = {
+      interblockSeparator = {
+        \par
+        \medskip
+      },
+    },
+  }
+\markdownSetupSnippet
+  { questions }
+  {
+    snippet = istqb / sample-exam
+      / questions / questions-base,
+    renderers = {
+      jekyllDataEnd = {
+        \istqb_print_questions:Vn
+          \g_istqb_translation_question_singular_tl
+          { false }
+      },
+    },
+  }
+\markdownSetupSnippet
+  { additional-questions }
+  {
+    snippet = istqb / sample-exam
+      / questions / questions-base,
+    renderers = {
+      jekyllDataEnd = {
+        \istqb_print_questions:Vn
+          \g_istqb_translation_additional_question_singular_tl
+          { true }
       },
     },
   }
@@ -179,3 +228,6 @@
 \cs_generate_variant:Nn
   \istqb_translation_points:nN
   { VN }
+\cs_generate_variant:Nn
+  \istqb_print_questions:nn
+  { Vn }

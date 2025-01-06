@@ -22,6 +22,7 @@ reference-labels:
   table: Table
 sample-exam:
   question: [Question, Questions]
+  additional-question: [Additional Question, Additional Questions]
   question-number: Question Number (#)
   learning-objective: Learning Objective (LO)
   k-level: K-Level

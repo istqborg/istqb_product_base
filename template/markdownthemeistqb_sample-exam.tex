@@ -1,7 +1,7 @@
 \ProvidesExplFile
   {markdownthemeistqb_sample-exam.tex}%
-  {2024-08-09}
-  {1.0.0}
+  {2025-01-06}
+  {1.1.0}
   {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Questions and Answers documents}
 
 % Import common code
@@ -55,6 +55,18 @@
       \g_istqb_translation_question_singular_tl,
     2 .tl_gset:N =
       \g_istqb_translation_question_plural_tl,
+  }
+\tl_new:N
+  \g_istqb_translation_additional_question_singular_tl
+\tl_new:N
+  \g_istqb_translation_additional_question_plural_tl
+\keys_define:nn
+  { istqb / language / sample-exam / additional-question }
+  {
+    1 .tl_gset:N =
+      \g_istqb_translation_additional_question_singular_tl,
+    2 .tl_gset:N =
+      \g_istqb_translation_additional_question_plural_tl,
   }
 \tl_new:N
   \g_istqb_translation_answer_singular_tl
@@ -266,6 +278,8 @@
 \prop_new:N
   \g_istqb_question_text_prop
 \prop_new:N
+  \g_istqb_question_additional_prop
+\prop_new:N
   \g_istqb_answer_correct_keys_prop
 \seq_new:N
   \l_istqb_current_answer_correct_keys_seq
@@ -306,6 +320,12 @@
         \l_istqb_current_question_tl
         { #1 }
     },
+    additional .code:n = {
+      \prop_gput:NVn
+        \g_istqb_question_additional_prop
+        \l_istqb_current_question_tl
+        { #1 }
+    },
     correct .code:n = {
       \group_begin:
       \clist_map_inline:nn
@@ -333,7 +353,7 @@
   { questions / * }
   {
     renderers = {
-      jekyllData(TypographicString|Number) = {
+      jekyllData(TypographicString|Number|Boolean) = {
         \keys_set:nn
           { istqb / questions / * }
           { { #1 } = { #2 } }
