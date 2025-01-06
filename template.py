@@ -374,7 +374,7 @@ def _get_line_number_from_file_location(location: FileLocation) -> int:
 
 
 @lru_cache(maxsize=None)
-def _get_references_from_tex_file(tex_input_path: Path) -> List[Tuple[FileLocation, Path, Iterable[Path]]]:
+def _get_references_from_tex_file(tex_input_path: Path, include_sources: bool = True) -> List[Tuple[FileLocation, Path, Iterable[Path]]]:
     results = []
     with tex_input_path.open('rt') as f:
         text = f.read()
@@ -389,7 +389,7 @@ def _get_references_from_tex_file(tex_input_path: Path) -> List[Tuple[FileLocati
                 referenced_path = referenced_path.resolve()
                 referenced_paths = [referenced_path]
                 # For YAML questions, yield also MD question source files.
-                if QUESTIONS_YAML_REGEXP.fullmatch(referenced_path.name):
+                if include_sources and QUESTIONS_YAML_REGEXP.fullmatch(referenced_path.name):
                     for referenced_md_path in referenced_path.parent.iterdir():
                         if not referenced_md_path.is_file():
                             continue
@@ -401,17 +401,17 @@ def _get_references_from_tex_file(tex_input_path: Path) -> List[Tuple[FileLocati
     return results
 
 
-def _get_references_from_tex_files(tex_input_paths: Iterable[Path]) -> Iterable[Tuple[FileLocation, Path, Iterable[Path]]]:
+def _get_references_from_tex_files(tex_input_paths: Iterable[Path], *args, **kwargs) -> Iterable[Tuple[FileLocation, Path, Iterable[Path]]]:
     for tex_input_path in tex_input_paths:
-        yield from _get_references_from_tex_file(tex_input_path)
+        yield from _get_references_from_tex_file(tex_input_path, *args, **kwargs)
 
 
 def _flatten_references(references: Iterable[Tuple[FileLocation, Path, Iterable[Path]]]) -> Iterable[Path]:
     return chain(*[paths for *_, paths in references])
 
 
-def _get_flat_references_from_tex_files(tex_input_paths: Iterable[Path]) -> Iterable[Path]:
-    return _flatten_references(_get_references_from_tex_files(tex_input_paths))
+def _get_flat_references_from_tex_files(tex_input_paths: Iterable[Path], *args, **kwargs) -> Iterable[Path]:
+    return _flatten_references(_get_references_from_tex_files(tex_input_paths, *args, **kwargs))
 
 
 def _find_files(file_types: Iterable[str], tex_input_paths: Optional[Iterable[Path]] = None, root: Path = Path('.')) -> Iterable[Path]:
@@ -1270,15 +1270,20 @@ def _compile_tex_file_to_docx(input_path: Path, output_directory: Path) -> Optio
 
     # Collect files referenced from the TeX file.
     markdown_texts = []
-    for nested_path in _get_flat_references_from_tex_files(tex_input_paths=[input_path]):
+    for nested_path in _get_flat_references_from_tex_files(tex_input_paths=[input_path], include_sources=False):
         if MARKDOWN_REGEXP.search(nested_path.name):
             with nested_path.open('rt') as f:
                 markdown_text = f.read()
                 markdown_texts.append(markdown_text)
-        elif YAML_REGEXP.search(nested_path.name) and not QUESTIONS_YAML_REGEXP.fullmatch(nested_path.name):
-            with nested_path.open('rt') as f:
-                markdown_text = f'``` yml\n{f.read()}\n```'
-                markdown_texts.append(markdown_text)
+        elif YAML_REGEXP.search(nested_path.name):
+            if QUESTIONS_YAML_REGEXP.fullmatch(nested_path.name):
+                with nested_path.with_suffix('.md').open('rt') as f:
+                    markdown_text = f.read()
+                    markdown_texts.append(markdown_text)
+            else:
+                with nested_path.open('rt') as f:
+                    markdown_text = f'``` yml\n{f.read()}\n```'
+                    markdown_texts.append(markdown_text)
         elif BIB_REGEXP.search(nested_path.name):
             with nested_path.open('rt') as f:
                 markdown_text = f'``` bib\n{f.read()}\n```'
