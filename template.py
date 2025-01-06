@@ -950,14 +950,17 @@ def _cluster_files(input_paths: Iterable[Path]) -> Iterable[Tuple[Path, List[Pat
 def _convert_md_questions_to_yaml() -> None:
     for parent_directory, input_paths in _cluster_files(_find_files(['questions-markdown'])):
         output_path = parent_directory / 'questions.yml'
-        if output_path.exists() and input_path.stat().st_mtime <= output_path.stat().st_mtime:
-            _warning('Skipping creation of existing file "%s"', output_path)
-            continue
+        if output_path.exists():
+            output_path_modification_time = output_path.stat().st_mtime
+            if all(input_path.stat().st_mtime <= output_path_modification_time for input_path in input_paths):
+                _warning('Skipping creation of existing file "%s"', output_path)
+                continue
 
+        formatted_input_paths = ', '.join(f'"{input_path}"' for input_path in input_paths)
         output_yaml = {'questions': dict(_read_md_questions(input_paths))}
 
         if not output_yaml:
-            _warning('Found no questions in file "%s", skipping creation of empty file "%s"', input_path, output_path)
+            _warning('Found no questions in files %s, skipping creation of empty file "%s"', formatted_input_paths, output_path)
         else:
             with output_path.open('wt') as f:
                 print('questions:', file=f)
@@ -970,7 +973,7 @@ def _convert_md_questions_to_yaml() -> None:
                     print(f'    answers: {json.dumps(question["answers"], ensure_ascii=False)}', file=f)
                     print(f'    correct: {json.dumps(question["correct"], ensure_ascii=False)}', file=f)
                     print(f'    explanation: {json.dumps(question["explanation"], ensure_ascii=False)}', file=f)
-                LOGGER.info('Converted files %s to "%s"', ', '.join(f'"{input_path}"' for input_path in input_paths), output_path)
+                LOGGER.info('Converted files %s to "%s"', formatted_input_paths, output_path)
 
 
 def _convert_yaml_questions_to_md(force_overwrite: bool = False) -> None:
