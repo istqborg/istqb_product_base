@@ -810,7 +810,6 @@ def _read_md_questions(input_files: Iterable[Path]) -> Iterable[Tuple[int, Dict]
         section_line_numbers = []
         heading_line_number: Optional[int] = None
 
-        print(question_number, input_file)
         with input_file.open('rt') as f:
             input_md_lines = f.read().splitlines()
 
