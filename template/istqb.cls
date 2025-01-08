@@ -812,12 +812,24 @@
 
 %% Appendices
 \newcounter{istqbappendix}
+\RequirePackage{xparse}
 \newenvironment{istqbappendices}{%
   \begingroup
   \let\istqboldsection\section
-  \def\section##1{%
+  \RenewDocumentCommand\section{sm}{%
     \stepcounter{istqbappendix}%
-    \istqboldsection{\istqbappendixname~\Alph{istqbappendix}~--~##1}}%
+    \IfBooleanTF
+      {##1}%
+      {\istqboldsection*{\istqbappendixname~\Alph{istqbappendix}~--~##2}}%
+      {\istqboldsection{\istqbappendixname~\Alph{istqbappendix}~--~##2}}%
+  }%
+  \renewcommand\istqbunnumberedsection[1]{%
+    \istqbupdateheadinglevel{1}%
+    \section*{##1}%
+    \markboth{\istqbappendixname~\Alph{istqbappendix}~--~##1}%
+             {\istqbappendixname~\Alph{istqbappendix}~--~##1}%
+    \addcontentsline{toc}{section}{\istqbappendixname~\Alph{istqbappendix}~--~##1}%
+  }%
 }{%
   \setcounter{istqbappendix}{0}%
   \endgroup
