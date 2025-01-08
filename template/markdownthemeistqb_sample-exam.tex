@@ -321,10 +321,15 @@
         { #1 }
     },
     additional .code:n = {
-      \prop_gput:NVn
-        \g_istqb_question_additional_prop
-        \l_istqb_current_question_tl
+      \str_if_eq:nnT
         { #1 }
+        { true }
+        {
+          \prop_gput:NVn
+            \g_istqb_question_additional_prop
+            \l_istqb_current_question_tl
+            { #1 }
+        }
     },
     correct .code:n = {
       \group_begin:

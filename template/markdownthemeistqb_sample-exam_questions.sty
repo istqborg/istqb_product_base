@@ -191,7 +191,7 @@
       }
   }
 \markdownSetupSnippet
-  { questions-base }
+  { questions }
   {
     snippet = istqb / sample-exam
       / questions,
@@ -201,29 +201,23 @@
         \par
         \medskip
       },
-    },
-  }
-\markdownSetupSnippet
-  { questions }
-  {
-    snippet = istqb / sample-exam
-      / questions / questions-base,
-    renderers = {
       jekyllDataEnd = {
+        \exp_args:NV
+          \istqbunnumberedsection
+          \g_istqb_translation_question_plural_tl
         \istqb_print_questions:n
           { false }
-      },
-    },
-  }
-\markdownSetupSnippet
-  { additional-questions }
-  {
-    snippet = istqb / sample-exam
-      / questions / questions-base,
-    renderers = {
-      jekyllDataEnd = {
-        \istqb_print_questions:n
-          { true }
+        \prop_if_empty:NF
+          \g_istqb_question_additional_prop
+          {
+            \begin{istqbappendices}
+            \exp_args:NV
+              \istqbunnumberedsection
+              \g_istqb_translation_additional_question_plural_tl
+            \istqb_print_questions:n
+              { true }
+            \end{istqbappendices}
+          }
       },
     },
   }
