@@ -494,7 +494,41 @@
   { Ne }
 
 \markdownSetupSnippet
+  { answer-key }
+  {
+    snippet = istqb / sample-exam
+      / questions,
+    fancyLists = true,
+    renderers = {
+      interblockSeparator = {
+        \par
+        \medskip
+      },
+      jekyllDataEnd = {
+        \istqb_print_answer_key:n
+          { false }
+      },
+    },
+  }
+\markdownSetupSnippet
   { answers }
+  {
+    snippet = istqb / sample-exam
+      / questions,
+    fancyLists = true,
+    renderers = {
+      interblockSeparator = {
+        \par
+        \medskip
+      },
+      jekyllDataEnd = {
+        \istqb_print_answers:n
+          { false }
+      },
+    },
+  }
+\markdownSetupSnippet
+  { answers@v2 }
   {
     snippet = istqb / sample-exam
       / questions,

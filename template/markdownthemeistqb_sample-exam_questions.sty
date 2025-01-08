@@ -190,8 +190,36 @@
           }
       }
   }
+\prg_generate_conditional_variant:Nnn
+  \int_compare:nNn
+  { VNn }
+  { F }
+\cs_generate_variant:Nn
+  \vbox_set:Nn
+  { NV }
+\cs_generate_variant:Nn
+  \istqb_translation_points:nN
+  { VN }
+
 \markdownSetupSnippet
   { questions }
+  {
+    snippet = istqb / sample-exam
+      / questions,
+    fancyLists = true,
+    renderers = {
+      interblockSeparator = {
+        \par
+        \medskip
+      },
+      jekyllDataEnd = {
+        \istqb_print_questions:n
+          { false }
+      },
+    },
+  }
+\markdownSetupSnippet
+  { questions@v2 }
   {
     snippet = istqb / sample-exam
       / questions,
@@ -221,13 +249,3 @@
       },
     },
   }
-\prg_generate_conditional_variant:Nnn
-  \int_compare:nNn
-  { VNn }
-  { F }
-\cs_generate_variant:Nn
-  \vbox_set:Nn
-  { NV }
-\cs_generate_variant:Nn
-  \istqb_translation_points:nN
-  { VN }
