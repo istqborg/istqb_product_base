@@ -27,6 +27,9 @@ sample-exam:
   learning-objective: Lernziel
   k-level: K-Level
   answer: [Antwort, Antworten]
+  additional-answer: [Zusätzliche Antwort, Zusätzliche Antworten]
+  answer-key: Lösungsschlüssel
+  additional-answer-key: Zusätzlicher Lösungsschlüssel
   correct-answer: Korrekte Antwort
   select-answers:
     - Wählen Sie genau EINE Option.

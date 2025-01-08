@@ -28,6 +28,10 @@
   \g_istqb_translation_number_of_points_tl
 \tl_new:N
   \g_istqb_translation_explanation_tl
+\tl_new:N
+  \g_istqb_translation_answer_key_tl
+\tl_new:N
+  \g_istqb_translation_additional_answer_key_tl
 \keys_define:nn
   { istqb / language / sample-exam }
   {
@@ -43,6 +47,10 @@
       \g_istqb_translation_number_of_points_tl,
     explanation .tl_gset:N =
       \g_istqb_translation_explanation_tl,
+    answer-key .tl_gset:N =
+      \g_istqb_translation_answer_key_tl,
+    additional-answer-key .tl_gset:N =
+      \g_istqb_translation_additional_answer_key_tl,
   }
 \tl_new:N
   \g_istqb_translation_question_singular_tl
@@ -79,6 +87,18 @@
       \g_istqb_translation_answer_singular_tl,
     2 .tl_gset:N =
       \g_istqb_translation_answer_plural_tl,
+  }
+\tl_new:N
+  \g_istqb_translation_additional_answer_singular_tl
+\tl_new:N
+  \g_istqb_translation_additional_answer_plural_tl
+\keys_define:nn
+  { istqb / language / sample-exam / additional-answer }
+  {
+    1 .tl_gset:N =
+      \g_istqb_translation_additional_answer_singular_tl,
+    2 .tl_gset:N =
+      \g_istqb_translation_additional_answer_plural_tl,
   }
 \tl_new:N
   \g_istqb_translation_select_answers_one_tl

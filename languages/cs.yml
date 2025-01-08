@@ -27,6 +27,9 @@ sample-exam:
   learning-objective: Studijní cíl
   k-level: K-Level
   answer: [Odpověď, Odpovědi]
+  additional-answer: [Dodatečná odpověď, Dodatečné odpovědi]
+  answer-key: Klíč k odpovědím
+  additional-answer-key: Klíč k dodatečným odpovědím
   correct-answer: Správná odpověď
   select-answers:
     - Vyberte JEDNU možnost.
