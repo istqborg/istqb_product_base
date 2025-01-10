@@ -294,6 +294,16 @@
 \urlstyle{same}
 \setlength\bibitemsep{0.5\baselineskip}
 
+%% Citation style for ISTQB documents, based on the macros from the standard library `authoryear.cbx`.
+\renewbibmacro*{cite:labeldate+extradate}{%
+  \iffieldundef{version}
+    {%
+      \iffieldundef{labelyear}
+        {}
+        {\printtext[bibhyperref]{\printlabeldateextra}}%
+    }
+    {\printtext[bibhyperref]{v\printfield[default]{version}}}}
+
 %% Bibliographic categories
 \DeclareBibliographyCategory{cited}
 \AtEveryCitekey{\addtocategory{cited}{\thefield{entrykey}}}
