@@ -610,7 +610,7 @@ First, you would define the references in file `example-document/bibliography.bi
   title = {Certified Tester},
   subtitle = {Foundation Level Syllabus},
   date = {2023-04-21},
-  note = {Version 4.0},
+  version = {4.0},
   keywords = {istqb}
 }
 
