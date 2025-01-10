@@ -59,6 +59,11 @@ You can change some settings if you know what are you doing.
 
 To verify the installation, just type `git` into command line/terminal and see the output of git help.
 
+Additionally, you need to set your name and email to Git, so you are identified correctly on GitHub. Run following two commands in command line/terminal:
+
+* `git config --global user.name "<your_full_name>"`
+* `git config --global user.email "<email_used_to_register_to_GitHub>"`
+
 ### Install VS Code
 
 VS Code is one of the most versatile code editor with many extensions for your machine. You do not have to use it, but it's great.
@@ -102,8 +107,8 @@ This is the list of Git operations you will be using the most.
 Consider using these features while using VS Code
 
 * settings
-    * Files: Auto Save = onFocusChange
-    * Git: AutoFetch = True
+  * Files: Auto Save = onFocusChange
+  * Git: AutoFetch = True
 * search files
 * search within a file
 * search and replace
@@ -113,11 +118,11 @@ Consider using these features while using VS Code
 
 ## Useful links
 
-* GitHub docs: https://docs.github.com/en
-* VS Code docs: https://code.visualstudio.com/docs
-* VS Code extensions: https://marketplace.visualstudio.com/vscode
-* VS Code shortcuts for Win: https://code.visualstudio.com/shortcuts/keyboard-shortcuts-windows.pdf
-* VS Code shortcuts for Mac: https://code.visualstudio.com/shortcuts/keyboard-shortcuts-macos.pdf
-* Visualizing git: https://git-school.github.io/visualizing-git/#free
-* Learning git branching: https://learngitbranching.js.org/
-* Markdown cheatsheet: https://github.com/adam-p/markdown-here/wiki/markdown-cheatsheet
+* GitHub Help: https://docs.github.com/en
+* VS Code Help: https://code.visualstudio.com/docs
+* VS Code Extensions: https://marketplace.visualstudio.com/vscode
+* VS Code Shortcuts for Win: https://code.visualstudio.com/shortcuts/keyboard-shortcuts-windows.pdf
+* VS Code Shortcuts for Mac: https://code.visualstudio.com/shortcuts/keyboard-shortcuts-macos.pdf
+* Visualizing Git actions: https://git-school.github.io/visualizing-git/#free
+* Learning Git Branching: https://learngitbranching.js.org/
+* Markdown Cheatsheet: https://github.com/adam-p/markdown-here/wiki/markdown-cheatsheet
