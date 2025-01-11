@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_sample-exam_answers}%
-  {2024-07-03}%
-  {1.0.1}%
+  {2025-01-08}%
+  {2.0.0}%
   {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Answers documents}
 
 % Import common code
@@ -41,96 +41,107 @@
   { >{ \centering\arraybackslash } p { #1 } }
 \tl_new:N
   \l_istqb_answer_key_table_tl
-\markdownSetupSnippet
-  { answer-key }
+\cs_new:Nn
+  \istqb_print_answer_key:n
   {
-    snippet = istqb / sample-exam
-      / questions,
-    fancyLists = true,
-    renderers = {
-      jekyllDataEnd = {
-        % Start a two-column layout
-        \begin { multicols } { 2 }
+    % Start a two-column layout
+    \begin { multicols } { 2 }
+    \cs_set:Npn
+      \newpage
+      {
+        \if@firstcolumn
+          \hrule width
+            \linewidth height0pt
+          \columnbreak
+          % Prevent a page break after the second column.
+          \advance \@colroom \@colroom
+        \fi
+      }
+    % Set the dimensions of the table rows.
+    \advance
+      \@colroom
+      1.25cm
+    \int_compare:nTF
+      { \seq_count:N \g_istqb_questions_seq > 45 }
+      {
         \cs_set:Npn
-          \newpage
-          {
-            \if@firstcolumn
-              \hrule width
-                \linewidth height0pt
-              \columnbreak
-              % Prevent a page break after the second column.
-              \advance \@colroom \@colroom
-            \fi
-          }
-        % Set the dimensions of the table rows.
-        \advance
-          \@colroom
-          1.25cm
+          \arraystretch
+          { 0.95 }
+      }
+      {
         \int_compare:nTF
-          { \seq_count:N \g_istqb_questions_seq > 45 }
+        { \seq_count:N \g_istqb_questions_seq > 40 }
+        {
+          \cs_set:Npn
+            \arraystretch
+            { 1.025 }
+        }
+        {
+          \cs_set:Npn
+            \arraystretch
+            { 1.175 }
+        }
+      }
+    % Prepare the heading of the table.
+    \tablehead
+      {
+        \hline
+        \textbf
           {
-            \cs_set:Npn
-              \arraystretch
-              { 0.95 }
-          }
+            \tl_use:N
+              \g_istqb_translation_question_number_tl
+          } &
+        \textbf
           {
-            \int_compare:nTF
-            { \seq_count:N \g_istqb_questions_seq > 40 }
-            {
-              \cs_set:Npn
-                \arraystretch
-                { 1.025 }
-            }
-            {
-              \cs_set:Npn
-                \arraystretch
-                { 1.175 }
-            }
-          }
-        % Prepare the heading of the table.
-        \tablehead
+            \tl_use:N
+              \g_istqb_translation_correct_answer_tl
+          } &
+        \textbf
           {
-            \hline
-            \textbf
-              {
-                \tl_use:N
-                  \g_istqb_translation_question_number_tl
-              } &
-            \textbf
-              {
-                \tl_use:N
-                  \g_istqb_translation_correct_answer_tl
-              } &
-            \textbf
-              {
-                \tl_use:N
-                  \g_istqb_translation_learning_objective_tl
-              } &
-            \textbf
-              {
-                \tl_use:N
-                  \g_istqb_translation_k_level_tl
-              } &
-            \textbf
-              {
-                \tl_use:N
-                  \g_istqb_translation_number_of_points_tl
-              } \\
-          }
-        \tabletail { \hline }
-        \tablelasttail { \hline }
-        \tl_set:Nn
-          \l_istqb_answer_key_table_tl
+            \tl_use:N
+              \g_istqb_translation_learning_objective_tl
+          } &
+        \textbf
           {
-            \begin
-              { supertabular }
-              { | C { 1.9cm } | C { 1.5cm }
-                | C { 2.4cm } | C { 1.4cm }
-                | C { 1.9cm } | }
+            \tl_use:N
+              \g_istqb_translation_k_level_tl
+          } &
+        \textbf
+          {
+            \tl_use:N
+              \g_istqb_translation_number_of_points_tl
+          } \\
+      }
+    \tabletail { \hline }
+    \tablelasttail { \hline }
+    \tl_set:Nn
+      \l_istqb_answer_key_table_tl
+      {
+        \begin
+          { supertabular }
+          { | C { 1.9cm } | C { 1.5cm }
+            | C { 2.4cm } | C { 1.4cm }
+            | C { 1.9cm } | }
+      }
+    % Prepare the lines of the table
+    \int_set:Nn
+      \l_tmpa_int
+      { 1 }
+    \seq_map_inline:Nn
+      \g_istqb_questions_seq
+      {
+        \prop_get:cnNF
+          { g_istqb_question_additional_prop }
+          { ##1 }
+          \l_tmpa_tl
+          {
+            \tl_set:Nn
+              \l_tmpa_tl
+              { false }
           }
-        % Prepare the lines of the table
-        \seq_map_inline:Nn
-          \g_istqb_questions_seq
+        \str_if_eq:VnT
+          \l_tmpa_tl
+          { #1 }
           {
             \tl_put_right:Nn
               \l_istqb_answer_key_table_tl
@@ -138,7 +149,31 @@
             % Record the question number.
             \tl_put_right:Nn
               \l_istqb_answer_key_table_tl
-              { \textbf { ##1 } & }
+              { \textbf }
+            \tl_set:Nn
+              \l_tmpa_tl
+              { }
+            \str_if_eq:nnT
+              { #1 }
+              { true }
+              {
+                \tl_put_right:Nn
+                  \l_tmpa_tl
+                  { A }
+              }
+            \tl_put_right:NV
+              \l_tmpa_tl
+              \l_tmpa_int
+            \tl_put_right:Nx
+              \l_istqb_answer_key_table_tl
+              {
+                {
+                  \tl_use:N
+                    \l_tmpa_tl
+                } &
+              }
+            \int_incr:N
+              \l_tmpa_int
             % Record the correct answers.
             \prop_get:cnN
               { g_istqb_answer_correct
@@ -193,16 +228,15 @@
               \l_istqb_answer_key_table_tl
               { \\ }
           }
-        % Typeset the table.
-        \tl_put_right:Nn
-          \l_istqb_answer_key_table_tl
-          { \end { supertabular } }
-        \tl_use:N
-          \l_istqb_answer_key_table_tl
-        % End the two-column layout.
-        \end { multicols }
-      },
-    },
+      }
+    % Typeset the table.
+    \tl_put_right:Nn
+      \l_istqb_answer_key_table_tl
+      { \end { supertabular } }
+    \tl_use:N
+      \l_istqb_answer_key_table_tl
+    % End the two-column layout.
+    \end { multicols }
   }
 
 % Answers
@@ -227,94 +261,146 @@
           { #2 }
       }
   }
-\markdownSetupSnippet
-  { answers }
+\cs_new:Nn
+  \istqb_print_answers:n
   {
-    snippet = istqb / sample-exam
-      / questions,
-    fancyLists = true,
-    renderers = {
-      interblockSeparator = {
-        \par
-        \medskip
-      },
-      jekyllDataEnd = {
-        \group_begin:
-        % Prepare the heading of the table.
-        \cs_set:Npn
-          \arraystretch
-          { 1.5 }
-        \tl_set:Nn
-          \l_istqb_answers_table_tl
+    \group_begin:
+    % Prepare the heading of the table.
+    \cs_set:Npn
+      \arraystretch
+      { 1.5 }
+    \tl_set:Nn
+      \l_istqb_answers_table_tl
+      {
+        \begin
+          { longtable }
+          { | C { 1.9cm } | C { 1.5cm }
+            | p
+            { \c_explanation_width_dim }
+            | C { 2.4cm } | C { 1.4cm }
+            | C { 1.9cm } | }
+        \hline
+        \textbf
           {
-            \begin
-              { longtable }
-              { | C { 1.9cm } | C { 1.5cm }
-                | p
-                { \c_explanation_width_dim }
-                | C { 2.4cm } | C { 1.4cm }
-                | C { 1.9cm } | }
-            \hline
+            \tl_use:N
+              \g_istqb_translation_question_number_tl
+          } &
+        \textbf
+          {
+            \tl_use:N
+              \g_istqb_translation_correct_answer_tl
+          } &
+        \multicolumn
+          { 1 }
+          { C
+            { \c_explanation_width_dim }
+            | }
+          {
             \textbf
               {
                 \tl_use:N
-                  \g_istqb_translation_question_number_tl
-              } &
-            \textbf
-              {
-                \tl_use:N
-                  \g_istqb_translation_correct_answer_tl
-              } &
-            \multicolumn
-              { 1 }
-              { C
-                { \c_explanation_width_dim }
-                | }
-              {
-                \textbf
-                  {
-                    \tl_use:N
-                      \g_istqb_translation_explanation_tl
-                  }
-              } &
-            \textbf
-              {
-                \tl_use:N
-                  \g_istqb_translation_learning_objective_tl
-              } &
-            \textbf
-              {
-                \tl_use:N
-                  \g_istqb_translation_k_level_tl
-              } &
-            \textbf
-              {
-                \tl_use:N
-                  \g_istqb_translation_number_of_points_tl
-              } \\
-            \hline
-            \endhead
+                  \g_istqb_translation_explanation_tl
+              }
+          } &
+        \textbf
+          {
+            \tl_use:N
+              \g_istqb_translation_learning_objective_tl
+          } &
+        \textbf
+          {
+            \tl_use:N
+              \g_istqb_translation_k_level_tl
+          } &
+        \textbf
+          {
+            \tl_use:N
+              \g_istqb_translation_number_of_points_tl
+          } \\
+        \hline
+        \endhead
+      }
+    % Prepare the lines of the table
+    \int_set:Nn
+      \l_tmpa_int
+      { 1 }
+    \seq_map_inline:Nn
+      \g_istqb_questions_seq
+      {
+        \prop_get:cnNF
+          { g_istqb_question_additional_prop }
+          { ##1 }
+          \l_tmpa_tl
+          {
+            \tl_set:Nn
+              \l_tmpa_tl
+              { false }
           }
-        % Prepare the lines of the table
-        \seq_map_inline:Nn
-          \g_istqb_questions_seq
+        \str_if_eq:VnT
+          \l_tmpa_tl
+          { #1 }
           {
             % Record the question number.
             \tl_put_right:Nn
               \l_istqb_answers_table_tl
+              { \textbf }
+            \tl_set:Nn
+              \l_tmpa_tl
+              { }
+            \str_if_eq:nnT
+              { #1 }
+              { true }
               {
-                \textbf
-                  { ##1 }
+                \tl_put_right:Nn
+                  \l_tmpa_tl
+                  { A }
+              }
+            \tl_put_right:NV
+              \l_tmpa_tl
+              \l_tmpa_int
+            \tl_put_right:Nx
+              \l_istqb_answers_table_tl
+              {
+                {
+                  \tl_use:N
+                    \l_tmpa_tl
+                }
+              }
+            \tl_put_right:Nn
+              \l_istqb_answers_table_tl
+              {
                 \phantomsection
                 \addcontentsline
                   { toc }
                   { subsection }
-                  {
-                    \tl_use:N
-                      \g_istqb_translation_question_singular_tl
-                    {}~\# ##1
-                  } &
               }
+            \tl_set:NV
+              \l_tmpa_tl
+              \g_istqb_translation_question_singular_tl
+            \tl_put_right:Nn
+              \l_tmpa_tl
+              { ~\# }
+            \str_if_eq:nnT
+              { #1 }
+              { true }
+              {
+                \tl_put_right:Nn
+                  \l_tmpa_tl
+                  { A }
+              }
+            \tl_put_right:NV
+              \l_tmpa_tl
+              \l_tmpa_int
+            \tl_put_right:Nx
+              \l_istqb_answers_table_tl
+              {
+                {
+                  \tl_use:N
+                    \l_tmpa_tl
+                } &
+              }
+            \int_incr:N
+              \l_tmpa_int
             % Record the correct answers.
             \prop_get:cnN
               { g_istqb_answer_correct
@@ -394,16 +480,93 @@
               \l_istqb_answers_table_tl
               { \\ \hline }
           }
-        % Typeset the table.
-        \tl_put_right:Nn
-          \l_istqb_answers_table_tl
-          { \end { longtable } }
-        \tl_use:N
-          \l_istqb_answers_table_tl
-        \group_end:
-      },
-    },
+      }
+    % Typeset the table.
+    \tl_put_right:Nn
+      \l_istqb_answers_table_tl
+      { \end { longtable } }
+    \tl_use:N
+      \l_istqb_answers_table_tl
+    \group_end:
   }
 \cs_generate_variant:Nn
   \tl_put_right:Nn
   { Ne }
+
+\markdownSetupSnippet
+  { answer-key }
+  {
+    snippet = istqb / sample-exam
+      / questions,
+    fancyLists = true,
+    renderers = {
+      interblockSeparator = {
+        \par
+        \medskip
+      },
+      jekyllDataEnd = {
+        \istqb_print_answer_key:n
+          { false }
+      },
+    },
+  }
+\markdownSetupSnippet
+  { answers }
+  {
+    snippet = istqb / sample-exam
+      / questions,
+    fancyLists = true,
+    renderers = {
+      interblockSeparator = {
+        \par
+        \medskip
+      },
+      jekyllDataEnd = {
+        \istqb_print_answers:n
+          { false }
+      },
+    },
+  }
+\markdownSetupSnippet
+  { answers@v2 }
+  {
+    snippet = istqb / sample-exam
+      / questions,
+    fancyLists = true,
+    renderers = {
+      interblockSeparator = {
+        \par
+        \medskip
+      },
+      jekyllDataEnd = {
+        \istqblandscapebegin
+        \exp_args:NV
+          \istqbunnumberedsection
+          \g_istqb_translation_answer_key_tl
+        \istqb_print_answer_key:n
+          { false }
+        \exp_args:NV
+          \istqbunnumberedsection
+          \g_istqb_translation_answer_plural_tl
+        \istqb_print_answers:n
+          { false }
+        \prop_if_empty:NF
+          \g_istqb_question_additional_prop
+          {
+            \begin{istqbappendices}
+            \exp_args:NV
+              \istqbunnumberedsection
+              \g_istqb_translation_additional_answer_key_tl
+            \istqb_print_answer_key:n
+              { true }
+            \exp_args:NV
+              \istqbunnumberedsection
+              \g_istqb_translation_additional_answer_plural_tl
+            \istqb_print_answers:n
+              { true }
+            \end{istqbappendices}
+          }
+        \istqblandscapeend
+      },
+    },
+  }

@@ -19,11 +19,15 @@ reference-labels:
   table: str()
 sample-exam:
   question: [str(), str()]
+  additional-question: [str(), str()]
   question-number: str()
   correct-answer: str()
   learning-objective: str()
   k-level: str()
   answer: [str(), str()]
+  additional-answer: [str(), str()]
+  answer-key: str()
+  additional-answer-key: str()
   select-answers: [str(), str()]
   point: any(list(str(), min=2, max=2), include('point'))
   number-of-points: str()

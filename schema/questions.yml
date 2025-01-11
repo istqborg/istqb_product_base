@@ -7,6 +7,9 @@ questions: map(include('question'), key=any(str(), int()))
 duration: [int(), int()]  # minutes
 ---
 question:
+  # Is this an "additional question", which should be moved to a separate section?
+  # See also <https://github.com/istqborg/istqb_product_base/issues/160>.
+  additional: bool(required=False)
   learning-objective: str()
   k-level: str()
   number-of-points: int()
