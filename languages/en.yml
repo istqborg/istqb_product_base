@@ -52,7 +52,7 @@ provided-by: [Provided by, Provided by]
 istqb: International Software Testing Qualifications Board
 list-delimiters: [and, ',', ', and']
 business-outcomes: [Code, Description]
-contents: Contents
+contents: Table of Contents
 lists:
   table: List of Tables
   figure: List of Figures
