@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_common}%
-  {2024-08-09}%
-  {1.0.0}%
+  {2025-01-15}%
+  {1.0.1}%
   {LaTeX theme for the Markdown Package that contains common code for different types of ISTQB documents}
 
 % Hybrid Markdown + LaTeX text
@@ -107,6 +107,7 @@
   { etoolbox }
 \AtEndPreamble
   {
+    % Load babel.
     \exp_args:NV
       \PassOptionsToPackage
       \g_istqb_babel_language_tl
@@ -114,6 +115,46 @@
     \RequirePackage
       [ shorthands = off ]
       { babel }
+    % Override standard translations with our language definitions.
+    \AtBeginDocument
+      {
+        \tl_if_empty:NF
+          \g_istqb_translation_contents_name_tl
+          {
+            \tl_gset_eq:NN
+              \contentsname
+              \g_istqb_translation_contents_name_tl
+          }
+        \tl_if_empty:NF
+          \g_istqb_translation_list_of_tables_name_tl
+          {
+            \tl_gset_eq:NN
+              \listtablename
+              \g_istqb_translation_list_of_tables_name_tl
+          }
+        \tl_if_empty:NF
+          \g_istqb_translation_list_of_figures_name_tl
+          {
+            \tl_gset_eq:NN
+              \listfigurename
+              \g_istqb_translation_list_of_figures_name_tl
+          }
+        \tl_if_empty:NF
+          \g_istqb_translation_table_name_tl
+          {
+            \tl_gset_eq:NN
+              \tablename
+              \g_istqb_translation_table_name_tl
+          }
+        \tl_if_empty:NF
+          \g_istqb_translation_figure_name_tl
+          {
+            \tl_gset_eq:NN
+              \figurename
+              \g_istqb_translation_figure_name_tl
+          }
+      }
+    % Enable/disable hyphenation.
     \bool_if:nF
       {
         \g_istqb_metadata_hyphenation_specified_bool
@@ -138,6 +179,8 @@
   \g_istqb_babel_language_tl
 \bool_new:N
   \g_istqb_language_hyphenation_bool
+\tl_new:N
+  \g_istqb_translation_contents_name_tl
 \keys_define:nn
   { istqb / language }
   {
@@ -147,7 +190,7 @@
     references .tl_gset:N = \istqbrefname,
     further-reading .tl_gset:N = \istqbfurtherreadingname,
     istqb .tl_gset:N = \istqborgname,
-    contents .tl_gset:N = \contentsname,
+    contents .tl_gset:N = \g_istqb_translation_contents_name_tl,
   }
 \keys_define:nn
   { istqb / language / bibliography-subsections }
@@ -163,11 +206,15 @@
     glossary-references / 2 .tl_gset:N =
       \istqbglossaryreferencesprenote,
   }
+\tl_new:N
+  \g_istqb_translation_list_of_tables_name_tl
+\tl_new:N
+  \g_istqb_translation_list_of_figures_name_tl
 \keys_define:nn
   { istqb / language / lists }
   {
-    table .tl_gset:N = \listtablename,
-    figure .tl_gset:N = \listfigurename,
+    table .tl_gset:N = \g_istqb_translation_list_of_tables_name_tl,
+    figure .tl_gset:N = \g_istqb_translation_list_of_figures_name_tl,
   }
 \keys_define:nn
   { istqb / language / page }
@@ -241,11 +288,15 @@
         { #1 }
     },
   }
+\tl_new:N
+  \g_istqb_translation_table_name_tl
+\tl_new:N
+  \g_istqb_translation_figure_name_tl
 \keys_define:nn
   { istqb / language / float-labels }
   {
-    figure .tl_gset:N = \figurename,
-    table .tl_gset:N = \tablename,
+    table .tl_gset:N = \g_istqb_translation_table_name_tl,
+    figure .tl_gset:N = \g_istqb_translation_figure_name_tl,
   }
 \tl_new:N
   \g_istqb_translation_traceability_matrix_section_name_tl
