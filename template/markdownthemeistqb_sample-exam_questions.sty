@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_sample-exam_questions}%
-  {2025-01-08}%
-  {2.0.0}%
+  {2025-01-17}%
+  {2.0.1}%
   {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Questions documents}
 
 % Import common code
@@ -172,18 +172,33 @@
           \l_tmpa_tl
           { #1 }
           {
-            \vbox_set:NV
-              \l_tmpa_box
-              \l_istqb_question_tl
-            \dim_compare:nNnTF
-              { \box_ht:N \l_tmpa_box }
-              >
-              { 0.3 \paperheight }
+            \bool_if:NTF
+              \g_istqb_metadata_line_numbers_bool
               {
+                % In the review version, don't use vertical boxes, since they are incompatible with line numbering.
+                % See <https://github.com/istqborg/istqb_product_base/issues/167>.
                 \tl_use:N
                   \l_istqb_question_tl
               }
-              { \box_use:N \l_tmpa_box }
+              {
+                % In the final version, use vertical boxes to prevent splitting short questions over more pages.
+                % See <https://github.com/istqborg/istqb_product_base/pull/38>.
+                \vbox_set:NV
+                  \l_tmpa_box
+                  \l_istqb_question_tl
+                \dim_compare:nNnTF
+                  { \box_ht:N \l_tmpa_box }
+                  >
+                  { 0.3 \paperheight }
+                  {
+                    \tl_use:N
+                      \l_istqb_question_tl
+                  }
+                  {
+                    \box_use:N
+                      \l_tmpa_box
+                  }
+              }
             \int_incr:N
               \l_tmpa_int
             \par
