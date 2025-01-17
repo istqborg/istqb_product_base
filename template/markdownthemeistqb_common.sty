@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_common}%
-  {2025-01-15}%
-  {1.0.1}%
+  {2025-01-17}%
+  {1.0.2}%
   {LaTeX theme for the Markdown Package that contains common code for different types of ISTQB documents}
 
 % Hybrid Markdown + LaTeX text
@@ -347,6 +347,10 @@
   \g_istqb_metadata_hyphenation_specified_bool
 \bool_gset_false:N
   \g_istqb_metadata_hyphenation_specified_bool
+\bool_new:N
+  \g_istqb_metadata_line_numbers_bool
+\bool_gset_false:N
+  \g_istqb_metadata_line_numbers_bool
 \RequirePackage { lineno }
 \cs_gset:Npn
   \linenumberfont
@@ -384,15 +388,28 @@
         }
     },
     line-numbers .code:n = {
-      \tl_if_eq:nnT
+      \str_if_eq:nnTF
         { #1 }
         { true }
-        { \AtBeginDocument { \linenumbers } }
+        {
+          \bool_gset_true:N
+            \g_istqb_metadata_line_numbers_bool
+        }
+        {
+          \bool_gset_false:N
+            \g_istqb_metadata_line_numbers_bool
+        }
     },
     pdf-output .code:n = { },
     docx-output .code:n = { },
     epub-output .code:n = { },
     html-output .code:n = { },
+  }
+\AtBeginDocument
+  {
+    \bool_if:NT
+      \g_istqb_metadata_line_numbers_bool
+      { \linenumbers }
   }
 \markdownSetupSnippet
   { metadata }
