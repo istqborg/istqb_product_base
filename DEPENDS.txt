@@ -19,7 +19,6 @@ lua-tinyyaml
 luaxml
 make4ht
 makeindex
-mdframed
 multirow
 mwe
 needspace
@@ -28,6 +27,7 @@ nicematrix
 ninecolors
 supertabular
 tabularray
+tcolorbox
 tex-gyre
 tex4ebook
 titlesec

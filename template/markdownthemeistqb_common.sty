@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_common}%
-  {2025-01-15}%
-  {1.0.1}%
+  {2025-01-20}%
+  {1.0.2}%
   {LaTeX theme for the Markdown Package that contains common code for different types of ISTQB documents}
 
 % Hybrid Markdown + LaTeX text
@@ -1726,7 +1726,12 @@
                   {
                     \def\next####1\markdownRendererBracketedSpanAttributeContextEnd
                       {
-                        \index { ####1 }
+                        \exp_args:Nx
+                        \index
+                          {
+                            \str_lowercase:n
+                              { ####1 }
+                          }
                         ####1
                       }
                     \next
