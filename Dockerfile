@@ -15,6 +15,9 @@ set -ex
 retry -t 30 -d 60 tlmgr update --self --all
 retry -t 30 -d 60 tlmgr install $(sort -u /opt/istqb_product_base/DEPENDS.txt)
 tlmgr path add
+# Update the library lua-tinyyaml to the latest version.
+# As discussed in <https://github.com/istqborg/istqb_product_base/issues/172>.
+wget https://github.com/api7/lua-tinyyaml/raw/refs/heads/master/tinyyaml.lua -O /usr/local/texlive/*/texmf-dist/scripts/lua-tinyyaml/tinyyaml.lua  # TODO: Remove me after <https://ctan.org/pkg/lua-tinyyaml> has been updated to version v0.4.4-1-g197632c.
 EOF
 RUN <<EOF
 set -ex
