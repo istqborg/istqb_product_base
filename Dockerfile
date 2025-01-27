@@ -1,9 +1,10 @@
-FROM witiko/markdown:latest-minimal
+ARG MARKDOWN_VERSION=latest-minimal
+FROM witiko/markdown:$MARKDOWN_VERSION
 RUN <<EOF
 set -ex
 # Install OS dependencies
 apt -qy update
-apt -qy install --no-install-recommends git pandoc python3 python3-pip retry tidy
+apt -qy install --no-install-recommends git pandoc python3 python3-pip retry tidy wget
 # Configure Git to consider all directories safe
 git config --system --add safe.directory '*'
 EOF
