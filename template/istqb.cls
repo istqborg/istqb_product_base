@@ -866,7 +866,7 @@
 
 % Index
 \RequirePackage{imakeidx}
-\AtBeginDocument{\makeindex[columns=2, columnsep=1cm, noautomatic]}
+\makeindex[columns=2, columnsep=1cm, noautomatic]
 \indexsetup{firstpagestyle=fancy}
 %% Ensure that the index is numbered and part of the table of contents.
 \renewcommand\imki@indexlevel{\section}

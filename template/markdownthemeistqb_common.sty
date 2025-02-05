@@ -1708,48 +1708,11 @@
 
 % Index and multi-row cells
 \RequirePackage{multirow}
-%% Collect index terms from the previous run
+%% Function for indexing terms
 \tl_new:N
   \l_istqb_index_current_term_tl
 \str_new:N
   \l_istqb_index_current_term_str
-\prop_new:N
-  \g_istqb_index_terms_prop
-\tl_const:Nx
-  \c_istqb_index_filename
-  { \c_sys_jobname_str .idx }
-\group_begin:
-  \cs_set:Npn
-    \indexentry
-    #1#2
-    {
-      \tl_set:Nn
-        \l_istqb_index_current_term_tl
-        { #1 }
-      \regex_replace_once:nnN
-        { \| hyperpage $ }
-        { }
-        \l_istqb_index_current_term_tl
-      \str_set:NV
-        \l_istqb_index_current_term_str
-        \l_istqb_index_current_term_tl
-      \prop_gput:NVn
-        \g_istqb_index_terms_prop
-        \l_istqb_index_current_term_str
-        { true }
-    }
-  \file_if_exist:VT
-    \c_istqb_index_filename
-    {
-      \ExplSyntaxOff
-      \file_input:V
-        \c_istqb_index_filename
-      \ExplSyntaxOn
-    }
-\group_end:
-%% Function for indexing terms
-\str_new:N
-  \l_istqb_index_current_lower_cased_term_str
 \cs_new:Nn
   \istqb_index:n
   {
@@ -1764,26 +1727,11 @@
     \str_set:NV
       \l_istqb_index_current_term_str
       \l_istqb_index_current_term_tl
-    % Determine whether there exists a lower-case variant of the term.
-    \str_set:Nx
-      \l_istqb_index_current_lower_cased_term_str
+    % Index a lower-cased variant of the term.
+    \exp_args:Nx
+      \index
       {
         \str_lowercase:V
-          \l_istqb_index_current_term_str
-      }
-    \prop_if_in:NVTF
-      \g_istqb_index_terms_prop
-      \l_istqb_index_current_lower_cased_term_str
-      {
-        % Index the lower-cased term.
-        \exp_args:NV
-          \index
-          \l_istqb_index_current_lower_cased_term_str
-      }
-      {
-        % Index the original term.
-        \exp_args:NV
-          \index
           \l_istqb_index_current_term_str
       }
   }
