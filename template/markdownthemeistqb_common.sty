@@ -1708,6 +1708,29 @@
 
 % Index and multi-row cells
 \RequirePackage{multirow}
+\cs_new:Nn
+  \istqb_index:n
+  {
+    \tl_set:Nn
+      \l_tmpa_tl
+      { #1 }
+    % Strip formatting from the term.
+    \regex_replace_all:nnN
+      { \c[CBE]. }
+      { }
+      \l_tmpa_tl
+    % Lower-case the term.
+    \tl_set:Nx
+      \l_tmpa_tl
+      {
+        \str_lowercase:V
+          \l_tmpa_tl
+      }
+    % Index the term.
+    \exp_args:NV
+      \index
+      \l_tmpa_tl
+  }
 \markdownSetup
   {
     bracketedSpans,
@@ -1726,12 +1749,8 @@
                   {
                     \def\next####1\markdownRendererBracketedSpanAttributeContextEnd
                       {
-                        \exp_args:Nx
-                        \index
-                          {
-                            \str_lowercase:n
-                              { ####1 }
-                          }
+                        \istqb_index:n
+                          { ####1 }
                         ####1
                       }
                     \next
