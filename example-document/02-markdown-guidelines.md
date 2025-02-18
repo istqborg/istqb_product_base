@@ -187,7 +187,7 @@ hyphenation: false
 You can write superscripts and subscripts by surrounding a span of text with `^`s or `~`s as follows:
 
 ``` md
-E = mc^2^␣␣
+E = mc^2^
 a~n~ = a~1~ + (n − 1)d
 ```
 
@@ -199,7 +199,7 @@ a~n~ = a~1~ + (n − 1)d
 Alternatively, you may also use Unicode superscript and subscript characters as follows:
 
 ``` md
-E = mc²␣␣
+E = mc²
 aₙ = a₁ + (n − 1)d
 ```
 
