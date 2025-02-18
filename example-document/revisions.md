@@ -1,6 +1,6 @@
 # Revision History {- .revision-history}
 
-History information should be entered below in chronological order starting with most recent revision to be entered in first available line.  
+History information should be entered below in chronological order starting with the most recent revision to be entered in first available line.  
 The file version should follow the format vM-mm where M is the major version and mm is the minor version with a leading zero.
 Date: Provide the date of the version in the following format YYYY/MM/DD  
 Remarks: Provide a brief summary of the changes in that version.  

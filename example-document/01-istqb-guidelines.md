@@ -26,24 +26,37 @@ Texts that are easy and difficult to understand differ in several individual fea
 
 The following Checklists supports the four above "intelligibility features":
 
-1. Readability must not be higher than 8th grade student. Measure the readability of the syllabus, goal is level for an 8th grade student to read and understand the text.
+1. The numbered sections of the syllabus have a maximum of 3 levels as defined below:  
+    a. Chapter number Chapter name,  
+    b. X.Y Section name,  
+    c. X.Y.Z - Sub section name  
+
+    Note: To ensure consistency, it is important to follow the rules regarding what information should go in a chapter or in an appendix.
+
+    Chapters with numbers: all content of the syllabus and all supportive content for the syllabus (Bibliography, List of abbreviations, Non-testing terms, etc.)
+    Appendices: all extended content not directly connected to reading a syllabus like (K-Levels, Traceability matrix, Release notes, etc.).
+
+1. Readability must not be higher than an 8ˆthˆ grade student. Measure the readability of the syllabus, goal is level for an 8th grade student to read and understand the text.
 1. Whenever possible use active voice instead of passive voice
 1. Hyphenations must be correct
 1. Avoid using compound sentences
 1. Be aware of specific words that can cause interpretation problems (e.g. when using words such as “often, always, common”)
-1. Avoid using abbreviations. If an abbreviation/acronym is used for a phrase, then it shall be defined the first time it is mentioned in the syllabus next to the phrase, and the abbreviation/acronym continues to be used throughout the remainder of the Syllabus and not the phrase.  The only exception is that the phrase can be used in Chapter titles and section headings followed by the abbreviation/acronym.  
+1. Use the Bloom’s Taxonomy when writing Learning Objectives. Refer to https://cft.vanderbilt.edu/guides-sub-pages/blooms-taxonomy/
+1. Avoid using abbreviations. If an abbreviation/acronym is used for a phrase, then it shall be defined the first time it is mentioned in the syllabus next to the phrase, and the abbreviation/acronym continues to be used throughout the remainder of the Syllabus and not the phrase. Keywords are not to be abbreviated in the keyword section, it should list only the term. The only exception is that the phrase can be used in Chapter titles and section headings followed by the abbreviation/acronym.  
+The above rule applies to all Chapters in the Syllabus starting with Chapter 0 (i.e. If an abbreviation/acronym is defined for a phrase in Chapter 0, then the abbreviation can be used in the remaining chapters).
 Abbreviations of glossary terms must be the same as in the glossary. For example, if the syllabus uses an abbreviation for the glossary term “behavior-driven development”, then it must be “BDD” like in the glossary.
-1. If there are many abbreviations/acronyms, then an abbreviation table should be created as an Appendix with the heading “Abbreviations” and all the abbreviations/acronyms should be listed in alphabetical order.
+1. If there are many abbreviations/acronyms, then an abbreviation table should be created as an Appendix with the heading “List of Abbreviations” and all the abbreviations/acronyms should be listed in alphabetical order.
 1. A word or phrase cannot be described by more than one term.  There must only be one term for each word defined.
 1. The draft version of the syllabus must include line numbering. To enable line numbering uncomment two line sof code in *Linenumbers* section in `syllabus.tex` document.
 1. The Syllabus shall refrain from using synonyms for an existing ISTQB® Glossary term. 
 1. The wording in a Syllabus should avoid using examples that may become outdated such as examples of tools.
-1. Refrain from using personal pronouns (i.e. I, you, we, they) to keep the syllabus in a formal written style. However if it is important to use personal pronouns, choose the third person plural instead of singular to ensure we adhere to gender neutral language.
+1. Refrain from using personal pronouns (i.e. I, you, we, they) to keep the syllabus in a formal written style. However, if it is important to use personal pronouns, choose the third person plural instead of singular to ensure we adhere to gender neutral language.
 1. Redundant text must be removed from the Syllabus.
 1. The wording in the Syllabus must be written in a consistent manner.
 1. All wording must be written in US English.
 1. The Syllabus shall not contain definitions for terms that are in the ISTQB® Glossary.
-1. No content shall be added without a reference to a learning objective.
+1. Every sub-section shall correspond to one learning objective.  
+No content shall be added without a reference to a learning objective except for content in introduction sections.
 1. Each Learning Objective should be atomic in nature.
 1. Guidance on text describing a learning objective shall follow the rules:
     
