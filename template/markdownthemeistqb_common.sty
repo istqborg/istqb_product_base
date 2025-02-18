@@ -1708,6 +1708,34 @@
 
 % Index and multi-row cells
 \RequirePackage{multirow}
+%% Function for indexing terms
+\tl_new:N
+  \l_istqb_index_current_term_tl
+\str_new:N
+  \l_istqb_index_current_term_str
+\cs_new:Nn
+  \istqb_index:n
+  {
+    % Strip formatting from the term.
+    \tl_set:Nn
+      \l_istqb_index_current_term_tl
+      { #1 }
+    \regex_replace_all:nnN
+      { \c[CBE]. }
+      { }
+      \l_istqb_index_current_term_tl
+    \str_set:NV
+      \l_istqb_index_current_term_str
+      \l_istqb_index_current_term_tl
+    % Index a lower-cased variant of the term.
+    \exp_args:Nx
+      \index
+      {
+        \str_lowercase:V
+          \l_istqb_index_current_term_str
+      }
+  }
+%% Renderers for index terms and multi-row cells
 \markdownSetup
   {
     bracketedSpans,
@@ -1726,12 +1754,8 @@
                   {
                     \def\next####1\markdownRendererBracketedSpanAttributeContextEnd
                       {
-                        \exp_args:Nx
-                        \index
-                          {
-                            \str_lowercase:n
-                              { ####1 }
-                          }
+                        \istqb_index:n
+                          { ####1 }
                         ####1
                       }
                     \next
