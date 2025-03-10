@@ -37,6 +37,7 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Clone repository istqb_product_base
+        if: false
         run: |
           set -ex
           rm -rf /opt/istqb_product_base
@@ -68,6 +69,7 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Clone repository istqb_product_base
+        if: false
         run: |
           set -ex
           rm -rf /opt/istqb_product_base
@@ -102,6 +104,7 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Clone repository istqb_product_base
+        if: false
         run: |
           set -ex
           rm -rf /opt/istqb_product_base
@@ -136,6 +139,7 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Clone repository istqb_product_base
+        if: false
         run: |
           set -ex
           rm -rf /opt/istqb_product_base
@@ -170,6 +174,7 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Clone repository istqb_product_base
+        if: false
         run: |
           set -ex
           rm -rf /opt/istqb_product_base
