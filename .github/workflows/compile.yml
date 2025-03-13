@@ -37,7 +37,11 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Clone repository istqb_product_base
-        if: false
+        # Only update the Docker image a) in PRs from the istqborg/istqb_product_base repo and b) in other repos that use
+        # a specific branch/ref from the istqborg/istqb_product_base repo. In all other scenarios, just use the Docker image
+        # ghcr.io/istqborg/istqb_product_base:latest directly and do not waste time trying to update it, since this is
+        # quicker and more robust, see also the discussion in <https://github.com/istqborg/istqb_product_base/issues/178>.
+        if: (github.repository == 'istqborg/istqb_product_base' && github.ref != 'refs/heads/main') || inputs.base-version
         run: |
           set -ex
           rm -rf /opt/istqb_product_base
@@ -69,7 +73,11 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Clone repository istqb_product_base
-        if: false
+        # Only update the Docker image a) in PRs from the istqborg/istqb_product_base repo and b) in other repos that use
+        # a specific branch/ref from the istqborg/istqb_product_base repo. In all other scenarios, just use the Docker image
+        # ghcr.io/istqborg/istqb_product_base:latest directly and do not waste time trying to update it, since this is
+        # quicker and more robust, see also the discussion in <https://github.com/istqborg/istqb_product_base/issues/178>.
+        if: (github.repository == 'istqborg/istqb_product_base' && github.ref != 'refs/heads/main') || inputs.base-version
         run: |
           set -ex
           rm -rf /opt/istqb_product_base
@@ -104,7 +112,11 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Clone repository istqb_product_base
-        if: false
+        # Only update the Docker image a) in PRs from the istqborg/istqb_product_base repo and b) in other repos that use
+        # a specific branch/ref from the istqborg/istqb_product_base repo. In all other scenarios, just use the Docker image
+        # ghcr.io/istqborg/istqb_product_base:latest directly and do not waste time trying to update it, since this is
+        # quicker and more robust, see also the discussion in <https://github.com/istqborg/istqb_product_base/issues/178>.
+        if: (github.repository == 'istqborg/istqb_product_base' && github.ref != 'refs/heads/main') || inputs.base-version
         run: |
           set -ex
           rm -rf /opt/istqb_product_base
@@ -139,7 +151,11 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Clone repository istqb_product_base
-        if: false
+        # Only update the Docker image a) in PRs from the istqborg/istqb_product_base repo and b) in other repos that use
+        # a specific branch/ref from the istqborg/istqb_product_base repo. In all other scenarios, just use the Docker image
+        # ghcr.io/istqborg/istqb_product_base:latest directly and do not waste time trying to update it, since this is
+        # quicker and more robust, see also the discussion in <https://github.com/istqborg/istqb_product_base/issues/178>.
+        if: (github.repository == 'istqborg/istqb_product_base' && github.ref != 'refs/heads/main') || inputs.base-version
         run: |
           set -ex
           rm -rf /opt/istqb_product_base
@@ -174,7 +190,11 @@ jobs:
         run: |
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
       - name: Clone repository istqb_product_base
-        if: false
+        # Only update the Docker image a) in PRs from the istqborg/istqb_product_base repo and b) in other repos that use
+        # a specific branch/ref from the istqborg/istqb_product_base repo. In all other scenarios, just use the Docker image
+        # ghcr.io/istqborg/istqb_product_base:latest directly and do not waste time trying to update it, since this is
+        # quicker and more robust, see also the discussion in <https://github.com/istqborg/istqb_product_base/issues/178>.
+        if: (github.repository == 'istqborg/istqb_product_base' && github.ref != 'refs/heads/main') || inputs.base-version
         run: |
           set -ex
           rm -rf /opt/istqb_product_base
