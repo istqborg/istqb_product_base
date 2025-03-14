@@ -968,7 +968,8 @@ def _convert_md_questions_to_yaml(include_extra_metadata: bool = True) -> None:
                     print(f'    k-level: {json.dumps(question["k-level"], ensure_ascii=False)}', file=f)
                     print(f'    number-of-points: {json.dumps(question["number-of-points"], ensure_ascii=False)}', file=f)
                     print(f'    question: {json.dumps(question["question"], ensure_ascii=False)}', file=f)
-                    print(f'    answers: {json.dumps(question["answers"], ensure_ascii=False)}', file=f)
+                    if 'answers' in question:
+                        print(f'    answers: {json.dumps(question["answers"], ensure_ascii=False)}', file=f)
                     if 'correct' in question:
                         print(f'    correct: {json.dumps(question["correct"], ensure_ascii=False)}', file=f)
                     print(f'    explanation: {json.dumps(question["explanation"], ensure_ascii=False)}', file=f)
