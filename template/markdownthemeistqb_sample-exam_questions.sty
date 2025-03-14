@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_sample-exam_questions}%
-  {2025-01-08}%
-  {2.0.0}%
+  {2025-03-14}%
+  {2.1.0}%
   {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Questions documents}
 
 % Import common code
@@ -110,52 +110,63 @@
               \g_istqb_question_text_prop
               { ##1 }
             % Print answers.
-            \prop_get:NnN
+            \prop_if_in:NnT
               \g_istqb_answer_keys_prop
               { ##1 }
-              \l_tmpa_clist
-            \medskip
-            \setdefaultleftmargin
-              { 1.5em }
-              { }
-              { }
-              { }
-              { }
-              { }
-            \begin { enumerate }
-            \clist_map_inline:Nn
-              \l_tmpa_clist
               {
-                \item [ ####1 ) ]
-                  \prop_item:Nn
-                    \g_istqb_answers_prop
-                    { ##1 / ####1 }
+                \prop_get:NnN
+                  \g_istqb_answer_keys_prop
+                  { ##1 }
+                  \l_tmpa_clist
+                \medskip
+                \setdefaultleftmargin
+                  { 1.5em }
+                  { }
+                  { }
+                  { }
+                  { }
+                  { }
+                \begin { enumerate }
+                \clist_map_inline:Nn
+                  \l_tmpa_clist
+                  {
+                    \item [ ####1 ) ]
+                      \prop_item:Nn
+                        \g_istqb_answers_prop
+                        { ##1 / ####1 }
+                  }
+                \end { enumerate }
               }
-            \end { enumerate }
             \medskip
             % Print the number of questions to select.
-            \prop_get:cnN
+            \prop_if_in:cnT
               { g_istqb_answer_correct
                 _keys_prop }
               { ##1 }
-              \l_tmpa_clist
-            \int_set:Nn
-              \l_tmpb_int
               {
-                \clist_count:N
+                \prop_get:cnN
+                  { g_istqb_answer_correct
+                    _keys_prop }
+                  { ##1 }
                   \l_tmpa_clist
-              }
-            \int_compare:nNnTF
-              { \l_tmpb_int }
-              =
-              { 1 }
-              {
-                \tl_use:N
-                  \g_istqb_translation_select_answers_one_tl
-              }
-              {
-                \tl_use:N
-                  \g_istqb_translation_select_answers_two_tl
+                \int_set:Nn
+                  \l_tmpb_int
+                  {
+                    \clist_count:N
+                      \l_tmpa_clist
+                  }
+                \int_compare:nNnTF
+                  { \l_tmpb_int }
+                  =
+                  { 1 }
+                  {
+                    \tl_use:N
+                      \g_istqb_translation_select_answers_one_tl
+                  }
+                  {
+                    \tl_use:N
+                      \g_istqb_translation_select_answers_two_tl
+                  }
               }
             \group_end:
           }

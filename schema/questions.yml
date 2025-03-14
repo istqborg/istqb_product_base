@@ -14,6 +14,6 @@ question:
   k-level: str()
   number-of-points: int()
   question: str()
-  answers: map(any(str(), int()), key=str())
-  correct: any(str(), list(str()))
+  answers: map(any(str(), int()), key=str(), required=False)
+  correct: any(str(), list(str()), required=False)
   explanation: str()
