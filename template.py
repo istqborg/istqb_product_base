@@ -997,7 +997,8 @@ def _convert_yaml_questions_to_md(force_overwrite: bool = False, include_extra_m
                 print(f'lo: {question["learning-objective"]}', file=f)
                 print(f'k-level: {question["k-level"]}', file=f)
                 print(f'points: {question["number-of-points"]}', file=f)
-                print(f'correct: {question["correct"]}', file=f)
+                if 'correct' in question:
+                    print(f'correct: {question["correct"]}', file=f)
                 if include_extra_metadata:
                     print(f'additional: {"true" if "additional" in question and question["additional"] else "false"}')
                 print(file=f)
