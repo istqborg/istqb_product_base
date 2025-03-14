@@ -1000,7 +1000,7 @@ def _convert_yaml_questions_to_md(force_overwrite: bool = False, include_extra_m
                 if 'correct' in question:
                     print(f'correct: {question["correct"]}', file=f)
                 if include_extra_metadata:
-                    print(f'additional: {"true" if "additional" in question and question["additional"] else "false"}')
+                    print(f'additional: {"true" if "additional" in question and question["additional"] else "false"}', file=f)
                 print(file=f)
                 print('## question', file=f)
                 print(question['question'].rstrip('\r\n'), file=f)
