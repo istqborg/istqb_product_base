@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_sample-exam_answers}%
-  {2025-01-08}%
-  {2.0.0}%
+  {2025-03-14}%
+  {2.1.0}%
   {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Answers documents}
 
 % Import common code
@@ -175,11 +175,21 @@
             \int_incr:N
               \l_tmpa_int
             % Record the correct answers.
-            \prop_get:cnN
+            \prop_if_in:cnTF
               { g_istqb_answer_correct
                 _keys_prop }
               { ##1 }
-              \l_tmpa_clist
+              {
+                \prop_get:cnN
+                  { g_istqb_answer_correct
+                    _keys_prop }
+                  { ##1 }
+                  \l_tmpa_clist
+              }
+              {
+                \clist_clear:N
+                  \l_tmpa_clist
+              }
             \tl_put_right:Ne
               \l_istqb_answer_key_table_tl
               { \clist_use:Nn
@@ -402,11 +412,21 @@
             \int_incr:N
               \l_tmpa_int
             % Record the correct answers.
-            \prop_get:cnN
+            \prop_if_in:cnTF
               { g_istqb_answer_correct
                 _keys_prop }
               { ##1 }
-              \l_tmpa_clist
+              {
+                \prop_get:cnN
+                  { g_istqb_answer_correct
+                    _keys_prop }
+                  { ##1 }
+                  \l_tmpa_clist
+              }
+              {
+                \clist_clear:N
+                  \l_tmpa_clist
+              }
             \tl_put_right:Ne
               \l_istqb_answers_table_tl
               { \clist_use:Nn
