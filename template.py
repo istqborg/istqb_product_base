@@ -997,18 +997,20 @@ def _convert_yaml_questions_to_md(force_overwrite: bool = False, include_extra_m
                 print(f'lo: {question["learning-objective"]}', file=f)
                 print(f'k-level: {question["k-level"]}', file=f)
                 print(f'points: {question["number-of-points"]}', file=f)
-                print(f'correct: {question["correct"]}', file=f)
+                if 'correct' in question:
+                    print(f'correct: {question["correct"]}', file=f)
                 if include_extra_metadata:
-                    print(f'additional: {"true" if "additional" in question and question["additional"] else "false"}')
+                    print(f'additional: {"true" if "additional" in question and question["additional"] else "false"}', file=f)
                 print(file=f)
                 print('## question', file=f)
                 print(question['question'].rstrip('\r\n'), file=f)
                 print(file=f)
-                print('## answers', file=f)
-                for answer_letter, answer in sorted(question['answers'].items()):
-                    answer = str(answer).rstrip('\r\n')
-                    print(f'{answer_letter}) {answer}', file=f)
-                print(file=f)
+                if 'answers' in question:
+                    print('## answers', file=f)
+                    for answer_letter, answer in sorted(question['answers'].items()):
+                        answer = str(answer).rstrip('\r\n')
+                        print(f'{answer_letter}) {answer}', file=f)
+                    print(file=f)
 
                 def normalize_justification(justification: str) -> str:
                     def repl(match: re.Match) -> str:
