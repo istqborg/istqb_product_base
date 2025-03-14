@@ -1005,11 +1005,12 @@ def _convert_yaml_questions_to_md(force_overwrite: bool = False, include_extra_m
                 print('## question', file=f)
                 print(question['question'].rstrip('\r\n'), file=f)
                 print(file=f)
-                print('## answers', file=f)
-                for answer_letter, answer in sorted(question['answers'].items()):
-                    answer = str(answer).rstrip('\r\n')
-                    print(f'{answer_letter}) {answer}', file=f)
-                print(file=f)
+                if 'answers' in question:
+                    print('## answers', file=f)
+                    for answer_letter, answer in sorted(question['answers'].items()):
+                        answer = str(answer).rstrip('\r\n')
+                        print(f'{answer_letter}) {answer}', file=f)
+                    print(file=f)
 
                 def normalize_justification(justification: str) -> str:
                     def repl(match: re.Match) -> str:
