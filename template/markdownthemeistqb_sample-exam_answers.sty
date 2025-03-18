@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_sample-exam_answers}%
-  {2025-03-14}%
-  {2.1.0}%
+  {2025-03-18}%
+  {2.1.1}%
   {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Answers documents}
 
 % Import common code
@@ -271,6 +271,7 @@
           { #2 }
       }
   }
+\RequirePackage { paralist }
 \cs_new:Nn
   \istqb_print_answers:n
   {
@@ -442,6 +443,13 @@
                   {
                     \c_explanation_width_dim
                   }
+                \setdefaultleftmargin
+                  { 1.5em }
+                  { }
+                  { }
+                  { }
+                  { }
+                  { }
               }
             \prop_get:cnN
               { g_istqb_question_explanation
