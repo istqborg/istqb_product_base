@@ -201,9 +201,10 @@ def _replace_variables_for_single_tex_file(input_paths: Iterable[Path], tex_inpu
 def _replace_variables_for_many_tex_files(tex_input_paths: Iterable[Path], dry_run=False):
     tex_input_paths = list(tex_input_paths)
     seen_input_paths = defaultdict(lambda: list())
+    input_paths = dict()
     for tex_input_path in tex_input_paths:
-        input_paths = list(_find_files(file_types=['markdown'], tex_input_paths=[tex_input_path]))
-        for input_path in input_paths:
+        input_paths[tex_input_path] = list(_find_files(file_types=['markdown'], tex_input_paths=[tex_input_path]))
+        for input_path in input_paths[tex_input_path]:
             # Detect ambiguous replacements of unescaped variables.
             with _replace_variables_for_single_tex_file([input_path], tex_input_path, dry_run=True) as variable_replacements:
                 variable_replacements_tuple = tuple(sorted(variable_replacements.items()))
@@ -236,7 +237,7 @@ def _replace_variables_for_many_tex_files(tex_input_paths: Iterable[Path], dry_r
         if not dry_run:
             seen_input_paths: Set[Path] = set()
             for tex_input_path in tex_input_paths:
-                for input_path in input_paths:
+                for input_path in input_paths[tex_input_path]:
                     if input_path in seen_input_paths:
                         continue
                     seen_input_paths.add(input_path)
