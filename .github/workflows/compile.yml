@@ -95,6 +95,7 @@ jobs:
           name: PDF
           path: '*.pdf'
   produce-html:
+    if: false
     name: Produce HTML documents
     needs:
       - validate
@@ -134,6 +135,7 @@ jobs:
           name: HTML
           path: html/
   produce-ebooks:
+    if: false
     name: Produce EPUB documents
     needs:
       - validate
