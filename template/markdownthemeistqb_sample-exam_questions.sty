@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_sample-exam_questions}%
-  {2025-03-14}%
-  {2.1.0}%
+  {2025-03-24}%
+  {2.1.1}%
   {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Questions documents}
 
 % Import common code
@@ -45,6 +45,15 @@
           \l_istqb_question_tl
           {
             \group_begin:
+            % Do not add top margin directly above question headings, since they don't play well with vertical boxes and
+            % are are incorrectly preserved even if the heading begins a new page.
+            %
+            % See also <https://github.com/istqborg/istqb_product_base/issues/188>.
+            \titlespacing
+              \subsection
+              { 0pt }
+              { 0pt }
+              { *2.3 }
             % Print question heading.
             \tl_set:NV
               \l_tmpa_tl
@@ -183,6 +192,19 @@
           \l_tmpa_tl
           { #1 }
           {
+            % Add a top margin above question headings, when the question is unboxed, or above the vertical box otherwise.
+            \int_compare:nTF
+              { \l_tmpa_int = 1 }
+              {
+                % Add only a small space between the section heading and the heading of the first question.
+                \vspace
+                  { 1.5 \beforetitleunit }
+              }
+              {
+                % Add regular spaces between a question and the heading of the next question.
+                \vspace
+                  { 4.0 \beforetitleunit }
+              }
             \vbox_set:NV
               \l_tmpa_box
               \l_istqb_question_tl
@@ -194,7 +216,10 @@
                 \tl_use:N
                   \l_istqb_question_tl
               }
-              { \box_use:N \l_tmpa_box }
+              {
+                \box_use:N
+                  \l_tmpa_box
+              }
             \int_incr:N
               \l_tmpa_int
             \par
