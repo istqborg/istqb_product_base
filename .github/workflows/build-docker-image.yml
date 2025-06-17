@@ -1,9 +1,9 @@
 name: Build Docker image
 on:
-  # push:
+  push:
   workflow_dispatch:
-  # schedule:
-  #   - cron: '0 0 * * TUE'
+  schedule:
+    - cron: '0 0 * * TUE'
 permissions:
   packages: write
 env:
