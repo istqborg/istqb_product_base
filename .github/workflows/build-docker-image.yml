@@ -52,10 +52,18 @@ jobs:
     steps:
       - name: Checkout Git repository istqborg/istqb_product_base
         uses: actions/checkout@v4
-      - name: Build Docker image ghcr.io/istqborg/istqb_product_base
+      - name: Build temporary Docker image ghcr.io/istqborg/istqb_product_base
         run: DOCKER_BUILDKIT=1 docker build --build-arg MARKDOWN_VERSION=3.11.3-0-ge29029b2-latest-minimal -t ghcr.io/istqborg/istqb_product_base:${{ github.run_id }}-${{ github.sha }} .
+      - name: Login to GitHub Packages
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push temporary Docker image ghcr.io/istqborg/istqb_product_base
+        run: docker push ghcr.io/istqborg/istqb_product_base:${{ github.run_id }}-${{ github.sha }}
   typeset-base-documents:
-    name: Typeset example documents from repository istqb_product_base
+    name: Typeset example documents from repository istqb_product_base using the temporary Docker image
     needs:
       - build
     runs-on: ubuntu-latest
@@ -70,7 +78,7 @@ jobs:
       - name: Compile LaTeX documents to PDF
         run: istqb-template compile-tex-to-pdf
   typeset-template-documents:
-    name: Typeset example documents from repository istqb_product_template
+    name: Typeset example documents from repository istqb_product_template using the temporary Docker image
     needs:
       - build
     runs-on: ubuntu-latest
@@ -93,9 +101,9 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Pull Docker image ghcr.io/istqborg/istqb_product_base
+      - name: Pull temporary Docker image ghcr.io/istqborg/istqb_product_base
         run: docker pull ghcr.io/istqborg/istqb_product_base:${{ github.run_id }}-${{ github.sha }}
-      - name: Tag Docker image ghcr.io/istqborg/istqb_product_base as latest
+      - name: Tag temporary Docker image ghcr.io/istqborg/istqb_product_base as latest
         run: docker tag ghcr.io/istqborg/istqb_product_base:${{ github.run_id }}-${{ github.sha }} ghcr.io/istqborg/istqb_product_base:latest
       - name: Login to GitHub Packages
         uses: docker/login-action@v3
@@ -103,5 +111,5 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push Docker image ghcr.io/istqborg/istqb_product_base
+      - name: Push latest Docker image ghcr.io/istqborg/istqb_product_base
         run: docker push ghcr.io/istqborg/istqb_product_base:latest
