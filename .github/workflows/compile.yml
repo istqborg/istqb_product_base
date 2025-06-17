@@ -85,7 +85,7 @@ jobs:
           cd /opt/istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
           pip install -r requirements.txt --break-system-packages
-          retry -t 30 -d 60 tlmgr update --self # --all
+          retry -t 30 -d 60 tlmgr update --self --all
           retry -t 30 -d 60 tlmgr install $(sort -u DEPENDS.txt)
       - name: Compile LaTeX documents to PDF
         run: istqb-template compile-tex-to-pdf
@@ -124,7 +124,7 @@ jobs:
           cd /opt/istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
           pip install -r requirements.txt --break-system-packages
-          retry -t 30 -d 60 tlmgr update --self # --all
+          retry -t 30 -d 60 tlmgr update --self --all
           retry -t 30 -d 60 tlmgr install $(sort -u DEPENDS.txt)
       - name: Compile LaTeX documents to HTML
         run: istqb-template compile-tex-to-html html/
@@ -163,7 +163,7 @@ jobs:
           cd /opt/istqb_product_base
           git checkout ${{ inputs.base-version || github.sha }}
           pip install -r requirements.txt --break-system-packages
-          retry -t 30 -d 60 tlmgr update --self # --all
+          retry -t 30 -d 60 tlmgr update --self --all
           retry -t 30 -d 60 tlmgr install $(sort -u DEPENDS.txt)
       - name: Compile LaTeX documents to EPUB
         run: istqb-template compile-tex-to-epub epub/
