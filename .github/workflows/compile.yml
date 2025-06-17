@@ -41,7 +41,7 @@ jobs:
         # a specific branch/ref from the istqborg/istqb_product_base repo. In all other scenarios, just use the Docker image
         # ghcr.io/istqborg/istqb_product_base:latest directly and do not waste time trying to update it, since this is
         # quicker and more robust, see also the discussion in <https://github.com/istqborg/istqb_product_base/issues/178>.
-        if: (github.repository == 'istqborg/istqb_product_base' && github.ref != 'refs/heads/main') || inputs.base-version
+        if: (github.repository == 'istqborg/istqb_product_base' && github.ref != 'refs/heads/main') || (inputs.base-version && inputs.base-version != 'main')
         run: |
           set -ex
           rm -rf /opt/istqb_product_base
@@ -77,7 +77,7 @@ jobs:
         # a specific branch/ref from the istqborg/istqb_product_base repo. In all other scenarios, just use the Docker image
         # ghcr.io/istqborg/istqb_product_base:latest directly and do not waste time trying to update it, since this is
         # quicker and more robust, see also the discussion in <https://github.com/istqborg/istqb_product_base/issues/178>.
-        if: (github.repository == 'istqborg/istqb_product_base' && github.ref != 'refs/heads/main') || inputs.base-version
+        if: (github.repository == 'istqborg/istqb_product_base' && github.ref != 'refs/heads/main') || (inputs.base-version && inputs.base-version != 'main')
         run: |
           set -ex
           rm -rf /opt/istqb_product_base
@@ -116,7 +116,7 @@ jobs:
         # a specific branch/ref from the istqborg/istqb_product_base repo. In all other scenarios, just use the Docker image
         # ghcr.io/istqborg/istqb_product_base:latest directly and do not waste time trying to update it, since this is
         # quicker and more robust, see also the discussion in <https://github.com/istqborg/istqb_product_base/issues/178>.
-        if: (github.repository == 'istqborg/istqb_product_base' && github.ref != 'refs/heads/main') || inputs.base-version
+        if: (github.repository == 'istqborg/istqb_product_base' && github.ref != 'refs/heads/main') || (inputs.base-version && inputs.base-version != 'main')
         run: |
           set -ex
           rm -rf /opt/istqb_product_base
@@ -155,7 +155,7 @@ jobs:
         # a specific branch/ref from the istqborg/istqb_product_base repo. In all other scenarios, just use the Docker image
         # ghcr.io/istqborg/istqb_product_base:latest directly and do not waste time trying to update it, since this is
         # quicker and more robust, see also the discussion in <https://github.com/istqborg/istqb_product_base/issues/178>.
-        if: (github.repository == 'istqborg/istqb_product_base' && github.ref != 'refs/heads/main') || inputs.base-version
+        if: (github.repository == 'istqborg/istqb_product_base' && github.ref != 'refs/heads/main') || (inputs.base-version && inputs.base-version != 'main')
         run: |
           set -ex
           rm -rf /opt/istqb_product_base
@@ -194,7 +194,7 @@ jobs:
         # a specific branch/ref from the istqborg/istqb_product_base repo. In all other scenarios, just use the Docker image
         # ghcr.io/istqborg/istqb_product_base:latest directly and do not waste time trying to update it, since this is
         # quicker and more robust, see also the discussion in <https://github.com/istqborg/istqb_product_base/issues/178>.
-        if: (github.repository == 'istqborg/istqb_product_base' && github.ref != 'refs/heads/main') || inputs.base-version
+        if: (github.repository == 'istqborg/istqb_product_base' && github.ref != 'refs/heads/main') || (inputs.base-version && inputs.base-version != 'main')
         run: |
           set -ex
           rm -rf /opt/istqb_product_base
