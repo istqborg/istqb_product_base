@@ -43,7 +43,7 @@ jobs:
       - name: Run Pytype
         run: pytype template.py
   build:
-    name: Build and publish Docker image
+    name: Build Docker image
     needs:
       - flake8
       - pytype
@@ -52,13 +52,56 @@ jobs:
     steps:
       - name: Checkout Git repository istqborg/istqb_product_base
         uses: actions/checkout@v4
-      - name: Build final image ghcr.io/istqborg/istqb_product_base:latest
-        run: DOCKER_BUILDKIT=1 docker build --build-arg MARKDOWN_VERSION=3.11.3-0-ge29029b2-latest-minimal -t ghcr.io/istqborg/istqb_product_base:latest .
+      - name: Build Docker image ghcr.io/istqborg/istqb_product_base
+        run: DOCKER_BUILDKIT=1 docker build --build-arg MARKDOWN_VERSION=3.11.3-0-ge29029b2-latest-minimal -t ghcr.io/istqborg/istqb_product_base:${{ github.run_id }}-${{ github.sha }} .
+  typeset-base-documents:
+    name: Typeset example documents from repository istqb_product_base
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    container:
+      image: ghcr.io/istqborg/istqb_product_base:${{ github.run_id }}-${{ github.sha }}
+    steps:
+      - name: Checkout Git repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Compile LaTeX documents to PDF
+        run: istqb-template compile-tex-to-pdf
+  typeset-template-documents:
+    name: Typeset example documents from repository istqb_product_template
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    container:
+      image: ghcr.io/istqborg/istqb_product_base:${{ github.run_id }}-${{ github.sha }}
+    steps:
+      - name: Checkout Git repository
+        uses: actions/checkout@v4
+        with:
+          repository: istqborg/istqb_product_template
+          fetch-depth: 0
+      - name: Compile LaTeX documents to PDF
+        run: istqb-template compile-tex-to-pdf
+  publish:
+    name: Publish Docker image
+    needs:
+      - typeset-base-documents
+      - typeset-template-documents
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Pull Docker image ghcr.io/istqborg/istqb_product_base
+        run: docker pull ghcr.io/istqborg/istqb_product_base:${{ github.run_id }}-${{ github.sha }}
+      - name: Tag Docker image ghcr.io/istqborg/istqb_product_base as latest
+        run: docker tag ghcr.io/istqborg/istqb_product_base:${{ github.run_id }}-${{ github.sha }} ghcr.io/istqborg/istqb_product_base:latest
       - name: Login to GitHub Packages
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push Docker image ghcr.io/istqborg/istqb_product_base:latest
+      - name: Push Docker image ghcr.io/istqborg/istqb_product_base
         run: docker push ghcr.io/istqborg/istqb_product_base:latest
