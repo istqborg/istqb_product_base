@@ -53,7 +53,7 @@ provided-by: [Zur Verfügung gestellt von, Zur Verfügung gestellt von]
 istqb: International Software Testing Qualifications Board
 list-delimiters: [und, ',', und]
 business-outcomes: [Kode, Beschreibung]
-contents: Inhalte
+contents: Inhaltsverzeichnis
 lists:
   table: Tabellenverzeichnis
   figure: Abbildungsverzeichnis
