@@ -17,7 +17,7 @@ float-labels:
   figure: Abbildung
   table: Tabelle
 reference-labels:
-  section: Kapitel
+  section: Abschnitt
   figure: Abbildung
   table: Tabelle
 sample-exam:
@@ -30,7 +30,7 @@ sample-exam:
   additional-answer: [Zusätzliche Antwort, Zusätzliche Antworten]
   answer-key: Lösungsschlüssel
   additional-answer-key: Zusätzlicher Lösungsschlüssel
-  correct-answer: Richtige Antwort
+  correct-answer: Korrekte Antwort
   select-answers:
     - Wählen Sie genau EINE Option.
     - Wählen Sie genau ZWEI Optionen.
