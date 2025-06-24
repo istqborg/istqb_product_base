@@ -33,6 +33,25 @@
   { multicol }
 \RequirePackage
   { supertabular }
+%% Patch the package supertabular, as suggested by @FrankMittelbach in
+%% <https://github.com/latex3/latex2e/issues/1781#issuecomment-2981256594>.
+\AddToHook
+  { cmd / x@supertabular / after }
+  {
+    \cs_set_eq:NN
+      \orig@startpbox@action
+      \@startpbox@action
+    \cs_set_eq:NN
+      \@startpbox@action
+      \@startpbox
+  }
+\AddToHook
+  { cmd / ST@restorex / after }
+  {
+    \cs_set_eq:NN
+      \@startpbox@action
+      \orig@startpbox@action
+  }
 \RequirePackage
   { array }
 \newcolumntype
