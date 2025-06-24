@@ -17,7 +17,7 @@ float-labels:
   figure: Abbildung
   table: Tabelle
 reference-labels:
-  section: Kapitel
+  section: Abschnitt
   figure: Abbildung
   table: Tabelle
 sample-exam:
@@ -30,7 +30,7 @@ sample-exam:
   additional-answer: [Zusätzliche Antwort, Zusätzliche Antworten]
   answer-key: Lösungsschlüssel
   additional-answer-key: Zusätzlicher Lösungsschlüssel
-  correct-answer: Korrekte Antwort
+  correct-answer: Richtige Antwort
   select-answers:
     - Wählen Sie genau EINE Option.
     - Wählen Sie genau ZWEI Optionen.
@@ -53,7 +53,7 @@ provided-by: [Zur Verfügung gestellt von, Zur Verfügung gestellt von]
 istqb: International Software Testing Qualifications Board
 list-delimiters: [und, ',', und]
 business-outcomes: [Kode, Beschreibung]
-contents: Inhalte
+contents: Inhaltsverzeichnis
 lists:
   table: Tabellenverzeichnis
   figure: Abbildungsverzeichnis
