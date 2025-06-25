@@ -1,8 +1,8 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesExplPackage
   {markdownthemeistqb_sample-exam_answers}%
-  {2025-03-18}%
-  {2.1.1}%
+  {2025-06-25}%
+  {2.1.2}%
   {LaTeX theme for the Markdown Package that typesets ISTQB Sample Exam Answers documents}
 
 % Import common code
@@ -33,24 +33,30 @@
   { multicol }
 \RequirePackage
   { supertabular }
-%% Patch the package supertabular, as suggested by @FrankMittelbach in
-%% <https://github.com/latex3/latex2e/issues/1781#issuecomment-2981256594>.
-\AddToHook
-  { cmd / x@supertabular / after }
+\FirstAidNeededT
+  { supertabular }
+  { sty }
+  { 2024/07/20~v4.2c~the~supertabular~environment }
   {
-    \cs_set_eq:NN
-      \orig@startpbox@action
-      \@startpbox@action
-    \cs_set_eq:NN
-      \@startpbox@action
-      \@startpbox
-  }
-\AddToHook
-  { cmd / ST@restorex / after }
-  {
-    \cs_set_eq:NN
-      \@startpbox@action
-      \orig@startpbox@action
+    %% Patch the package supertabular, as suggested by @FrankMittelbach in
+    %% <https://github.com/latex3/latex2e/issues/1781#issuecomment-2981256594>.
+    \AddToHook
+      { cmd / x@supertabular / after }
+      {
+        \cs_set_eq:NN
+          \orig@startpbox@action
+          \@startpbox@action
+        \cs_set_eq:NN
+          \@startpbox@action
+          \@startpbox
+      }
+    \AddToHook
+      { cmd / ST@restorex / after }
+      {
+        \cs_set_eq:NN
+          \@startpbox@action
+          \orig@startpbox@action
+      }
   }
 \RequirePackage
   { array }
