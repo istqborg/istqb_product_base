@@ -32,8 +32,8 @@ sample-exam:
   additional-answer-key: Zusätzlicher Lösungsschlüssel
   correct-answer: Richtige Antwort
   select-answers:
-    - Wählen Sie genau EINE Option.
-    - Wählen Sie genau ZWEI Optionen.
+    - Wählen Sie genau EINE Antwort.
+    - Wählen Sie genau ZWEI Antworten.
   point: [Punkt, Punkte]
   number-of-points: Punkte`\-`{=tex}anzahl
   explanation: Begründung

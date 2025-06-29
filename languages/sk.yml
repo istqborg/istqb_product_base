@@ -32,8 +32,8 @@ sample-exam:
   additional-answer-key: Kľúč k dodatočným odpovediam
   correct-answer: Správna odpoveď
   select-answers:
-    - Vyberte JEDNU možnosť.
-    - Vyberte DVE možnosti.
+    - Vyberte JEDNU odpoveď.
+    - Vyberte DVE odpovede.
   point:
     exceptions:
       2: body

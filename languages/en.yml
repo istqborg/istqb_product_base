@@ -32,8 +32,8 @@ sample-exam:
   additional-answer-key: Additional Answer Key
   correct-answer: Correct Answer
   select-answers:
-    - Select ONE option.
-    - Select TWO options.
+    - Select ONE answer.
+    - Select TWO answers.
   point: [Point, Points]
   number-of-points: Number of Points
   explanation: Explanation / Rationale
