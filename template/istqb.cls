@@ -116,7 +116,7 @@
     \g_istqb_title_tl
     {
       \tl_if_empty:NF \g_istqb_level_tl { ~ }
-        ~\mbox { \g_istqb_title_tl }
+        {}~\mbox { \g_istqb_title_tl }
       \tl_if_empty:NF
         \g_istqb_code_tl
         { ~\mbox { ( \g_istqb_code_tl ) } }
