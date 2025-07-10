@@ -1,5 +1,5 @@
 hyphenation: true
-appendix: Anhänge
+appendix: Anhang
 references: Referenzen
 further-reading: Weitere Literatur
 bibliography-subsections:
@@ -47,12 +47,12 @@ traceability-matrix:
   business-outcomes: Geschäftlicher Nutzen
   learning-objective:
     number: LO-Nummer
-    description: Lernziel (K-level)
+    description: Lernziel (K-Stufe)
 page: [Seite, von]
 provided-by: [Zur Verfügung gestellt von, Zur Verfügung gestellt von]
 istqb: International Software Testing Qualifications Board
 list-delimiters: [und, ',', und]
-business-outcomes: [Kode, Beschreibung]
+business-outcomes: [ID, Beschreibung]
 contents: Inhaltsverzeichnis
 lists:
   table: Tabellenverzeichnis
