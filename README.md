@@ -27,7 +27,7 @@ To typeset ISTQB documents on your computer, take the following steps:
 
    For example, here is how you would typeset the example documents to PDF in a terminal of a Linux system:
    ``` sh
-   $ docker run --rm -it -v "$PWD"/istqb_product_template/:/mnt -w /mnt ghcr.io/istqborg/istqb_product_base compile-tex-to-pdf
+   $ docker run --rm -it --platform linux/amd64 -v "$PWD"/istqb_product_template/:/mnt -w /mnt ghcr.io/istqborg/istqb_product_base compile-tex-to-pdf
    ```
    ```
    Compiled file "/mnt/accreditation-guidelines.tex" to "ISTQB-CT-TEMP-Accreditation Guidelines-v0.1-EN.pdf"
