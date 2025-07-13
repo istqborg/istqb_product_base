@@ -87,6 +87,7 @@
 \lhead{%
   \fontsize{9}{10.8}\selectfont
   \kern 0.1in
+  % Organization and schema
   \tl_if_empty:NF
     \g_istqb_organization_tl
     {
@@ -106,44 +107,34 @@
         \g_istqb_schema_tl
     }
     { \\ \leavevmode \kern 0.1in }
+  % Level
   \tl_if_empty:NF
     \g_istqb_level_tl
-    {
-      \mbox { \g_istqb_level_tl }
-      \tl_if_empty:NF
-        \g_istqb_type_tl
-        { ~ }
-    }
-  \tl_if_empty:NF
-    \g_istqb_type_tl
-    { \mbox { \g_istqb_type_tl } }
-  \bool_if:nF
-    {
-      (
-        \tl_if_empty_p:N
-          \g_istqb_level_tl &&
-        \tl_if_empty_p:N
-          \g_istqb_type_tl
-      ) ||
-      (
-        \tl_if_empty_p:N
-          \g_istqb_title_tl &&
-        \tl_if_empty_p:N
-          \g_istqb_code_tl
-      )
-    }
-    { \,--\, }
+    { \mbox { \g_istqb_level_tl } }
+  % Title (code)
   \tl_if_empty:NF
     \g_istqb_title_tl
     {
+      \tl_if_empty:NF
+        \g_istqb_level_tl
+        { ~ }
       \mbox { \g_istqb_title_tl }
       \tl_if_empty:NF
         \g_istqb_code_tl
-        { ~ }
+        { ~\mbox { ( \g_istqb_code_tl ) } }
     }
+  % Type
   \tl_if_empty:NF
-    \g_istqb_code_tl
-    { \mbox { ( \g_istqb_code_tl ) } }
+    \g_istqb_type_tl
+    {
+      \bool_if:nF
+        {
+          \tl_if_empty_p:N \g_istqb_level_tl &&
+          \tl_if_empty_p:N \g_istqb_title_tl
+        }
+        { ~ }
+      \mbox { \g_istqb_type_tl }
+    }
 }
 \rhead{%
   \includegraphics[height=\headheight]{\g_istqb_logo_tl}%
