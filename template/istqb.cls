@@ -535,9 +535,9 @@
               \seq_use:Nnnn
               \g_istqb_third_parties_seq
               {
-                { \g_istqb_list_delimiter_two }
-                { \g_istqb_list_delimiter_many }
-                { \g_istqb_list_delimiter_last }
+                { \g_istqb_list_delimiter_two_tl }
+                { \g_istqb_list_delimiter_many_tl }
+                { \g_istqb_list_delimiter_last_tl }
               }
           }
         \par \vspace { 0.3in }
@@ -585,30 +585,30 @@
 % Headings
 \ExplSyntaxOn
 \int_new:N
-  \g_istqb_previous_heading_level
+  \g_istqb_previous_heading_level_int
 \int_gset:Nn
-  \g_istqb_previous_heading_level
+  \g_istqb_previous_heading_level_int
   { 0 }
 \cs_new:Npn
   \istqbupdateheadinglevel
   #1
   {
     \int_if_zero:VF
-      \g_istqb_previous_heading_level
+      \g_istqb_previous_heading_level_int
       {
         % Encourage page breaks before sections
         \penalty -2000
         % Discourage page breaks between sections and subsections in TOC
         \int_compare:nT
-          { \g_istqb_previous_heading_level < #1 }
+          { \g_istqb_previous_heading_level_int < #1 }
           { \addtocontents { toc } { \nopagebreak } }
         % Encourage page breaks between subsections and sections in TOC
         \int_compare:nT
-          { \g_istqb_previous_heading_level > #1 }
+          { \g_istqb_previous_heading_level_int > #1 }
           { \addtocontents { toc } { \pagebreak[0] } }
       }
     \int_gset:Nn
-      \g_istqb_previous_heading_level
+      \g_istqb_previous_heading_level_int
       { #1 }
   }
 \cs_generate_variant:Nn
