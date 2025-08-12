@@ -9,6 +9,17 @@ permissions:
 env:
   DEBIAN_FRONTEND: noninteractive
 jobs:
+  explcheck:
+    name: Style check (LaTeX)
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/witiko/expltools/explcheck
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run explcheck
+        shell: bash
+        run: explcheck template/*.{tex,sty,cls}
   flake8:
     name: Style check (Python)
     runs-on: ubuntu-latest
@@ -45,6 +56,7 @@ jobs:
   build:
     name: Build Docker image
     needs:
+      - explcheck
       - flake8
       - pytype
     runs-on: ubuntu-latest
