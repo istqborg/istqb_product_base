@@ -241,9 +241,9 @@
 \AtBeginDocument
   {
     \cs_generate_variant:Nn
-      \vbox_gset:Nn
+      \vbox_set:Nn
       { NV }
-    \vbox_gset:NV
+    \vbox_set:NV
       \l_istqb_footer_box
       \g_istqb_footer_tl
     %%%% Ensure that the footer is always the 0.8in from the bottom of the page regardless of its contents.
@@ -767,8 +767,8 @@
 \tl_gset:Nn \g_istqb_prefix_tl { ?? }
 \prop_new:N \g_istqb_learning_objective_numbers_prop
 \seq_new:N \g_istqb_learning_objective_numbers_seq
-\prop_new:N \g_istqb_learning_objective_names_prop
-\prop_new:N \g_istqb_learning_objective_k_levels_prop
+\prop_new:N \g_istqb_learning_objective_names_prop  % noqa: w415
+\prop_new:N \g_istqb_learning_objective_k_levels_prop  % noqa: w415
 \tl_new:N \l_istqb_current_learning_objective_text_tl
 \regex_const:Nn \c_istqb_learning_objective_regex { ^\((K[0-9])\)\ +(.+)$ }
 \newenvironment{istqbsubobjectives}{
@@ -920,11 +920,11 @@
 \int_new:N
   \l_istqb_external_document_last_page_int
 \cs_new:Nn
-  \istqb_stucture_tables:n
+  \istqb_structure_tables:n
   {
     \pdfximage
       { #1.pdf }
-    \int_gset:Nn
+    \int_set:Nn
       \l_istqb_external_document_last_page_int
       { \the\pdflastximagepages }
     % Overview
@@ -979,11 +979,11 @@
       \l_tmpa_tl
       \l_istqb_external_document_basename_tl
       \l_tmpb_tl
-    \istqb_stucture_tables:V
+    \istqb_structure_tables:V
       \l_istqb_external_document_basename_tl
   }
 \cs_generate_variant:Nn
-  \istqb_stucture_tables:n
+  \istqb_structure_tables:n
   { V }
 \ExplSyntaxOff
 

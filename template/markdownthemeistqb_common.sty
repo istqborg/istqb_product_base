@@ -52,7 +52,7 @@
   }
 \tl_new:N
   \l_istqb_language_position_tl
-\tl_gset:Nn
+\tl_set:Nn
   \l_istqb_language_position_tl
   { istqb / language }
 \seq_new:N
@@ -1070,7 +1070,7 @@
   \markdownRendererInterblockSeparator
 
 % Headings
-\seq_new:N \l_istqb_header_identifiers_seq
+\seq_new:N \l_istqb_header_identifiers_seq  % noqa: w415
 \tl_new:N \l_istqb_business_outcomes_table_tl
 \seq_new:N \g_istqb_business_outcomes_numbers_seq
 \prop_new:N \g_istqb_business_outcomes_names_prop
