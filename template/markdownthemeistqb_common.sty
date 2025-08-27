@@ -1208,6 +1208,58 @@
                       }
                   }
               },
+              %% Hands-on objectives
+              attributeClassName += {
+                \tl_if_eq:nnT
+                  { ##1 }
+                  { hands-on-objective }
+                  {
+                    \group_begin:
+                    \markdownSetup
+                      {
+                        renderers = {
+                          headingFour = {
+                            \int_compare:nNnTF
+                              { \g_istqb_previous_heading_level_int }
+                              =
+                              { 1 }
+                              {
+                                \tl_set:Nx
+                                  \l_tmpa_tl
+                                  { \thesection }
+                              }
+                              {
+                                \tl_set:Nx
+                                  \l_tmpa_tl
+                                  { \thesubsection }
+                              }
+                            \int_gincr:N
+                              \g_istqb_previous_hands_on_objective_number_int
+                            \begin
+                              { istqb hands on objective section }
+                              [
+                                frametitle =
+                                  {
+                                    Hands-On~Objective~HO-
+                                    \tl_use:N
+                                      \l_tmpa_tl
+                                    .
+                                    \int_use:N
+                                      \g_istqb_previous_hands_on_objective_number_int
+                                    {~}
+                                    ####1
+                                  }
+                              ]
+                          },
+                          (sectionEnd|thematicBreak) = {
+                            \end
+                              { istqb hands on objective section }
+                            \group_end:
+                          },
+                        },
+                      }
+                  }
+              },
               %% Learning objectives
               attributeClassName += {
                 \tl_if_eq:nnT

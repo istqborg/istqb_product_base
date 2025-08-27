@@ -589,6 +589,11 @@
 \int_gset:Nn
   \g_istqb_previous_heading_level_int
   { 0 }
+\int_new:N  % noqa: w415
+  \g_istqb_previous_hands_on_objective_number_int
+\int_gset:Nn
+  \g_istqb_previous_hands_on_objective_number_int
+  { 0 }
 \cs_new:Npn
   \istqbupdateheadinglevel
   #1
@@ -610,6 +615,9 @@
     \int_gset:Nn
       \g_istqb_previous_heading_level_int
       { #1 }
+    \int_gset:Nn
+      \g_istqb_previous_hands_on_objective_number_int
+      { 0 }
   }
 \cs_generate_variant:Nn
   \int_if_zero:nF
@@ -717,6 +725,18 @@
   \subsubsection*{#1}%
   \addcontentsline{toc}{subsubsection}{#1}%
 }
+
+%% Hands-on objectives
+\RequirePackage{mdframed}
+\newmdenv[%
+  skipabove = 10pt,
+  skipbelow = 5pt,
+  frametitlebelowskip = 10pt,
+  innerleftmargin = 5pt,
+  innerrightmargin = 5pt,
+  innertopmargin = 0pt,
+  innerbottommargin = 5pt,
+]{istqbhandsonobjectivesection}
 
 %% Learning objectives
 \RequirePackage{longtable}

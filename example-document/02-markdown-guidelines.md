@@ -270,6 +270,28 @@ Then, you can use your variables by writing `\${metadata.variables.foo}`. This w
 
 Sometimes, you may want to write something that looks like a metadata field or like a variable. You can achieve this by writing a backslash (`\`) before the dollar sign (`$`). For example, you can write `\\\${metadata.variables.bar}`. This will produce the following output: \${metadata.variables.bar}.
 
+## Hands-on objectives
+
+You can write hands-on objectives as follows:
+
+``` md
+#### (H1): Practice Tokenization and Token Count Evaluation {.hands-on-objective}
+
+This is the text of the hands-on objective.
+
+---
+```
+
+This will produce the following output:
+
+#### (H1): Practice Tokenization and Token Count Evaluation {.hands-on-objective}
+
+This is the text of the hands-on objective.
+
+---
+
+The horizontal line (`---`) is optional if another section starts just after the hands-on objective.
+
 ## Sections {.landscape}
 
 You can write the heading of a second-level section as follows:
