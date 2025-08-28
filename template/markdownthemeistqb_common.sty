@@ -1219,19 +1219,9 @@
                       {
                         renderers = {
                           headingFour = {
-                            \int_case:nn
+                            \int_case:nnF
                               { \g_istqb_previous_heading_level_int }
                               {
-                                { 0 } {
-                                  \tl_set:Nx
-                                    \l_tmpa_tl
-                                    { \thesection }
-                                }
-                                { 1 } {
-                                  \tl_set:Nx
-                                    \l_tmpa_tl
-                                    { \thesection }
-                                }
                                 { 2 } {
                                   \tl_set:Nx
                                     \l_tmpa_tl
@@ -1242,6 +1232,13 @@
                                     \l_tmpa_tl
                                     { \thesubsubsection }
                                 }
+                              }
+                              {
+                                \msg_error:nnnV
+                                  { istqb }
+                                  { incorrect-heading-objective-section-level }
+                                  { ####1 }
+                                  \g_istqb_previous_heading_level_int
                               }
                             \begin
                               { istqb hands on objective section }
@@ -1408,6 +1405,12 @@
       },
       headerAttributeContextEnd = {},
     },
+  }
+\msg_new:nnn
+  { istqb }
+  { incorrect-heading-objective-section-level }
+  {
+    Hands-on~objective~"#1"~appeared~in~section~level~#2~but~either~2~(section,~X.Y)~or~3~(subsection,~X.Y.Z)~was~expected.
   }
 
 % Tables
