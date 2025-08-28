@@ -1219,22 +1219,30 @@
                       {
                         renderers = {
                           headingFour = {
-                            \int_compare:nNnTF
+                            \int_case:nn
                               { \g_istqb_previous_heading_level_int }
-                              =
-                              { 1 }
                               {
-                                \tl_set:Nx
-                                  \l_tmpa_tl
-                                  { \thesection }
+                                { 0 } {
+                                  \tl_set:Nx
+                                    \l_tmpa_tl
+                                    { \thesection }
+                                }
+                                { 1 } {
+                                  \tl_set:Nx
+                                    \l_tmpa_tl
+                                    { \thesection }
+                                }
+                                { 2 } {
+                                  \tl_set:Nx
+                                    \l_tmpa_tl
+                                    { \thesubsection }
+                                }
+                                { 3 } {
+                                  \tl_set:Nx
+                                    \l_tmpa_tl
+                                    { \thesubsubsection }
+                                }
                               }
-                              {
-                                \tl_set:Nx
-                                  \l_tmpa_tl
-                                  { \thesubsection }
-                              }
-                            \int_gincr:N
-                              \g_istqb_previous_hands_on_objective_number_int
                             \begin
                               { istqb hands on objective section }
                               [
@@ -1243,9 +1251,6 @@
                                     Hands-On~Objective~HO-
                                     \tl_use:N
                                       \l_tmpa_tl
-                                    .
-                                    \int_use:N
-                                      \g_istqb_previous_hands_on_objective_number_int
                                     {~}
                                     ####1
                                   }
