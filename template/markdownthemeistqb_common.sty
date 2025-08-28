@@ -1074,6 +1074,7 @@
 \tl_new:N \l_istqb_business_outcomes_table_tl
 \seq_new:N \g_istqb_business_outcomes_numbers_seq
 \prop_new:N \g_istqb_business_outcomes_names_prop
+\prop_new:N \g_istqb_hands_on_objectives_prop
 \markdownSetup
   {
     headerAttributes,
@@ -1208,7 +1209,7 @@
                       }
                   }
               },
-              %% Hands-on objectives
+              %% Hands-on objective sections
               attributeClassName += {
                 \tl_if_eq:nnT
                   { ##1 }
@@ -1219,18 +1220,37 @@
                       {
                         renderers = {
                           headingFour = {
+                            \tl_set:Nn
+                              \l_tmpa_tl
+                              { }
                             \int_case:nnF
                               { \g_istqb_previous_heading_level_int }
                               {
                                 { 2 } {
-                                  \tl_set:Nx
+                                  \tl_put_right:Nx
                                     \l_tmpa_tl
                                     { \thesubsection }
+                                  \tl_set:Nx
+                                    \l_tmpb_tl
+                                    {
+                                      \thesubsection
+                                      { ~ }
+                                      \tl_use:N
+                                        \g_istqb_current_section_name_tl
+                                    }
                                 }
                                 { 3 } {
-                                  \tl_set:Nx
+                                  \tl_put_right:Nx
                                     \l_tmpa_tl
                                     { \thesubsubsection }
+                                  \tl_set:Nx
+                                    \l_tmpb_tl
+                                    {
+                                      \thesubsubsection
+                                      { ~ }
+                                      \tl_use:N
+                                        \g_istqb_current_subsection_name_tl
+                                    }
                                 }
                               }
                               {
@@ -1240,6 +1260,30 @@
                                   { ####1 }
                                   \g_istqb_previous_heading_level_int
                               }
+                            \tl_put_right:Nn
+                              \l_tmpa_tl
+                              {
+                                { ~ }
+                                ####1
+                              }
+                            \iow_now:ce
+                              { @auxout }
+                              {
+                                \token_to_str:N
+                                  \istqbregisterhandsonobjective
+                                  { \thesection }
+                                  {
+                                    \tl_use:N
+                                      \l_tmpb_tl
+                                  }
+                                  {
+                                    \tl_use:N
+                                      \g_istqb_prefix_tl
+                                    -
+                                    \tl_use:N
+                                      \l_tmpa_tl
+                                  }
+                              }
                             \begin
                               { istqb hands on objective section }
                               [
@@ -1248,8 +1292,6 @@
                                     Hands-On~Objective~HO-
                                     \tl_use:N
                                       \l_tmpa_tl
-                                    {~}
-                                    ####1
                                   }
                               ]
                           },
@@ -1309,6 +1351,8 @@
                                   olEnd = {
                                     \end { istqb objectives }
                                     \group_end:
+                                    \istqb_typeset_hands_on_objectives:x
+                                      { \thesection }
                                   },
                                 }
                               }
@@ -1412,6 +1456,50 @@
   {
     Hands-on~objective~"#1"~appeared~in~section~level~#2~but~either~2~(section,~X.Y)~or~3~(subsection,~X.Y.Z)~was~expected.
   }
+
+%% Lists of hands-on objectives at the beginnings of chapters
+\cs_new:Npn
+  \istqbregisterhandsonobjective
+  #1#2#3
+  {
+    \prop_get:NnNF
+      \g_istqb_hands_on_objectives_prop
+      { #1 }
+      \l_tmpa_tl
+      {
+        \tl_set:Nn
+          \l_tmpa_tl
+          { \par }
+      }
+    \tl_put_right:Nn
+      \l_tmpa_tl
+      {
+        \textbf{#2} \par
+        #3 \par
+      }
+    \prop_gput:NnV
+      \g_istqb_hands_on_objectives_prop
+      { #1 }
+      \l_tmpa_tl
+  }
+\cs_new:Nn
+  \istqb_typeset_hands_on_objectives:n
+  {
+    \prop_get:NnNT
+      \g_istqb_hands_on_objectives_prop
+      { #1 }
+      \l_tmpa_tl
+      {
+        \markdownRendererHeadingFour
+          { Hands-On~Objectives~for~Chapter~#1: }
+        \tl_use:N
+          \l_tmpa_tl
+        \par \kern 0.3in
+      }
+  }
+\cs_generate_variant:Nn
+  \istqb_typeset_hands_on_objectives:n
+  { x }
 
 % Tables
 \prop_new:N \g_istqb_multi_row_prop

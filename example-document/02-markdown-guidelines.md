@@ -72,7 +72,7 @@ This will produce the following output:
 8. Improve the efficiency of the test process with the use of tools
 9. Specify the requirements for test environments and test data
 
-## Keywords and learning objectives
+## Keywords and learning objectives {#learning-objectives}
 
 You can write keywords and learning objectives at beginnings of chapters as follows:
 
@@ -100,7 +100,7 @@ This will produce the following output:
 
 coverage, debugging, defect, error, failure, quality, quality assurance
 
-#### Learning Objectives for Chapter 1: {.learning-objectives}
+#### Learning Objectives for Chapter 2: {.learning-objectives}
 
 1. Subchapter x.1 name
     1. (K1) First Learning Objective for Subchapter x.1, so it is x.1.1
@@ -112,7 +112,10 @@ coverage, debugging, defect, error, failure, quality, quality assurance
 3. Subchapter x.3 name
     1. (K4) First Learning Objective for Subchapter x.3, so it is x.3.1
 
-Notice that the prefix EXMPL- was automatically added to the learning objectives.
+Notice that a list of hands-on objectives was automatically generated below the learning objectives,
+see also <#section:hands-on-objectives>.
+
+Notice also that the prefix EXMPL- was automatically added to the learning and hands-on objectives.
 This prefix is specified in file `example-document/metadata.yml` as `prefix: EXMPL`.
 
 ## Paragraphs
@@ -270,7 +273,7 @@ Then, you can use your variables by writing `\${metadata.variables.foo}`. This w
 
 Sometimes, you may want to write something that looks like a metadata field or like a variable. You can achieve this by writing a backslash (`\`) before the dollar sign (`$`). For example, you can write `\\\${metadata.variables.bar}`. This will produce the following output: \${metadata.variables.bar}.
 
-## Hands-on objectives
+## Hands-on objectives {#hands-on-objectives}
 
 You can write hands-on objectives as follows:
 
@@ -289,6 +292,8 @@ This will produce the following output:
 This is the text of the hands-on objective.
 
 ---
+
+Furthermore, the hands-on objective is also added to a list below the learning objectives for the current chapter, see also <#section:learning-objectives>.
 
 The horizontal line (`---`) is optional if another section starts just after the hands-on objective.
 

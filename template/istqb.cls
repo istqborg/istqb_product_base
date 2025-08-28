@@ -685,6 +685,8 @@
 %%% Document commands
 \ExplSyntaxOn
 \tl_new:N \g_istqb_current_chapter_name_tl
+\tl_new:N \g_istqb_current_section_name_tl  % noqa: w415
+\tl_new:N \g_istqb_current_subsection_name_tl  % noqa: w415
 \newcommand\istqbsection[1]{
   \istqbupdateheadinglevel{1}
   \section{#1}
@@ -692,15 +694,21 @@
     \g_istqb_current_chapter_name_tl
     { #1 }
 }
+\newcommand\istqbsubsection[1]{
+  \istqbupdateheadinglevel{2}
+  \subsection{#1}
+  \tl_gset:Nn
+    \g_istqb_current_section_name_tl
+    { #1 }
+}
+\newcommand\istqbsubsubsection[1]{
+  \istqbupdateheadinglevel{3}
+  \subsubsection{#1}
+  \tl_gset:Nn
+    \g_istqb_current_subsection_name_tl
+    { #1 }
+}
 \ExplSyntaxOff
-\newcommand\istqbsubsection[1]{%
-  \istqbupdateheadinglevel{2}%
-  \subsection{#1}%
-}
-\newcommand\istqbsubsubsection[1]{%
-  \istqbupdateheadinglevel{3}%
-  \subsubsection{#1}%
-}
 \newcommand\istqbunnumberedsection[1]{%
   \istqbupdateheadinglevel{1}%
   \section*{#1}%
