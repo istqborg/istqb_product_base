@@ -723,11 +723,12 @@
 \newmdenv[%
   skipabove = 10pt,
   skipbelow = 5pt,
+  frametitleaboveskip = 10pt,
   frametitlebelowskip = 10pt,
   innerleftmargin = 5pt,
   innerrightmargin = 5pt,
   innertopmargin = 0pt,
-  innerbottommargin = 5pt,
+  innerbottommargin = 10pt,
 ]{istqbhandsonobjectivesection}
 
 %% Learning objectives
