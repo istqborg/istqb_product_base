@@ -1075,6 +1075,7 @@
 \seq_new:N \g_istqb_business_outcomes_numbers_seq
 \prop_new:N \g_istqb_business_outcomes_names_prop
 \prop_new:N \g_istqb_hands_on_objectives_prop
+\tl_new:N \l_istqb_hands_on_objective_name_tl
 \markdownSetup
   {
     headerAttributes,
@@ -1233,8 +1234,6 @@
                                   \tl_set:Nx
                                     \l_tmpb_tl
                                     {
-                                      \thesubsection
-                                      { ~ }
                                       \tl_use:N
                                         \g_istqb_current_section_name_tl
                                     }
@@ -1246,8 +1245,6 @@
                                   \tl_set:Nx
                                     \l_tmpb_tl
                                     {
-                                      \thesubsubsection
-                                      { ~ }
                                       \tl_use:N
                                         \g_istqb_current_subsection_name_tl
                                     }
@@ -1260,12 +1257,13 @@
                                   { ####1 }
                                   \g_istqb_previous_heading_level_int
                               }
-                            \tl_put_right:Nn
-                              \l_tmpa_tl
-                              {
-                                { ~ }
-                                ####1
-                              }
+                            \tl_set:Nn
+                              \l_istqb_hands_on_objective_name_tl
+                              { ####1 }
+                            \regex_replace_once:NnN
+                              \c_istqb_hands_on_objective_regex
+                              { (\1)\ \2 }
+                              \l_istqb_hands_on_objective_name_tl
                             \iow_now:ce
                               { @auxout }
                               {
@@ -1274,14 +1272,15 @@
                                   { \thesection }
                                   {
                                     \tl_use:N
+                                      \l_tmpa_tl
+                                  }
+                                  {
+                                    \tl_use:N
                                       \l_tmpb_tl
                                   }
                                   {
                                     \tl_use:N
-                                      \g_istqb_prefix_tl
-                                    -
-                                    \tl_use:N
-                                      \l_tmpa_tl
+                                      \l_istqb_hands_on_objective_name_tl
                                   }
                               }
                             \begin
@@ -1292,6 +1291,8 @@
                                     Hands-On~Objective~HO-
                                     \tl_use:N
                                       \l_tmpa_tl
+                                    { ~ }
+                                    ####1
                                   }
                               ]
                           },
@@ -1335,12 +1336,15 @@
                                             \next
                                           },
                                           olEnd = {
-                                            \end { istqb learning subobjectives }
+                                            \use:c { end istqb learning subobjectives }
+                                            \use:c { end istqb subobjectives }
                                             \group_end:
+                                            \istqb_negative_skip_after_last_subobjective:
                                           },
                                         }
                                       }
-                                    \begin { istqb learning subobjectives }
+                                    \use:c { istqb subobjectives }
+                                    \use:c { istqb learning subobjectives }
                                   },
                                   olItemWithNumber = {
                                     \def\next################1\markdownRendererInterblockSeparator
@@ -1353,10 +1357,11 @@
                                     \next
                                   },
                                   olEnd = {
-                                    \end { istqb learning objectives }
-                                    \group_end:
+                                    \use:c { end istqb learning objectives }
+                                    \use:c { end istqb objectives }
                                     \istqb_typeset_hands_on_objectives:x
                                       { \thesection }
+                                    \group_end:
                                   },
                                 }
                               }
@@ -1367,7 +1372,8 @@
                           },
                         }
                       }
-                    \begin { istqb learning objectives }
+                    \use:c { istqb objectives }
+                    \use:c { istqb learning objectives }
                   }
               },
               %% Business outcomes
@@ -1464,7 +1470,7 @@
 %% Lists of hands-on objectives at the beginnings of chapters
 \cs_new:Npn
   \istqbregisterhandsonobjective
-  #1#2#3
+  #1#2#3#4
   {
     \prop_get:NnNF
       \g_istqb_hands_on_objectives_prop
@@ -1473,13 +1479,28 @@
       {
         \tl_set:Nn
           \l_tmpa_tl
-          { \par }
+          { }
       }
     \tl_put_right:Nn
       \l_tmpa_tl
       {
-        \textbf{#2} \par
-        #3 \par
+        \use:c
+          { istqb objective }
+          { #2 }
+          { #3 }
+        \begin
+          { istqb subobjectives }
+        \use:c
+          { istqb subobjective }
+          {
+            \tl_use:N
+              \g_istqb_prefix_tl
+            -
+            #2
+          }
+          { #4 }
+        \end
+          { istqb subobjectives }
       }
     \prop_gput:NnV
       \g_istqb_hands_on_objectives_prop
@@ -1496,9 +1517,12 @@
       {
         \markdownRendererHeadingFour
           { Hands-On~Objectives: }
+        \begin
+          { istqb objectives }
         \tl_use:N
           \l_tmpa_tl
-        \par \kern 0.3in
+        \end
+          { istqb objectives }
       }
   }
 \cs_generate_variant:Nn

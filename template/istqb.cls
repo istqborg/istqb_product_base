@@ -791,6 +791,11 @@
   {
     \end
       { longtable }
+    \istqb_negative_skip_after_last_subobjective:
+  }
+\cs_new:Nn
+  \istqb_negative_skip_after_last_subobjective:
+  {
     \par
     \kern -0.2in
   }
@@ -826,8 +831,6 @@
 \newenvironment
   { istqb learning objectives }
   {
-    \use:c
-      { istqb objectives }
     \seq_gput_right:Nx
       \g_istqb_learning_objective_chapter_numbers_seq
       { \thesection }
@@ -878,8 +881,6 @@
     \setcounter
       { istqb learning objective }
       { 0 }
-    \use:c
-      { end istqb objectives }
   }
 \cs_generate_variant:Nn
   \prop_gput:Nnn
@@ -891,12 +892,11 @@
 \prop_new:N \g_istqb_learning_objective_names_prop  % noqa: w415
 \prop_new:N \g_istqb_learning_objective_k_levels_prop  % noqa: w415
 \tl_new:N \l_istqb_current_learning_objective_text_tl
-\regex_const:Nn \c_istqb_learning_objective_regex { ^\((K[0-9])\)\ +(.+)$ }
+\regex_const:Nn \c_istqb_learning_objective_regex { ^\((K[0-9])\):?\ +(.+)$ }
+\regex_const:Nn \c_istqb_hands_on_objective_regex { ^\((H[0-9])\):?\ +(.+)$ }  % noqa: w415
 \newenvironment
   { istqb learning subobjectives }
   {
-    \use:c
-      { istqb subobjectives }
     \seq_gclear:N
       \g_istqb_learning_objective_numbers_seq
     \cs_gset:cpn
@@ -955,8 +955,6 @@
       }
   }
   {
-    \use:c
-      { end istqb subobjectives }
     \clist_set_from_seq:NN
       \l_tmpa_clist
       \g_istqb_learning_objective_numbers_seq
