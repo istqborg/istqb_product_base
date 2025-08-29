@@ -3,6 +3,7 @@ hyphenation: bool()
 appendix: str()
 references: str()
 further-reading: str()
+hands-on-objective: [str(), str()]
 bibliography-subsections:
   standards: str()
   documents: str()

@@ -181,6 +181,10 @@
   \g_istqb_language_hyphenation_bool
 \tl_new:N
   \g_istqb_translation_contents_name_tl
+\tl_new:N
+  \g_istqb_hands_on_objective_singular_tl
+\tl_new:N
+  \g_istqb_hands_on_objective_plural_tl
 \keys_define:nn
   { istqb / language }
   {
@@ -189,6 +193,8 @@
     appendix .tl_gset:N = \istqbappendixname,
     references .tl_gset:N = \istqbrefname,
     further-reading .tl_gset:N = \istqbfurtherreadingname,
+    hands-on-objective / 1 .tl_gset:N = \g_istqb_hands_on_objective_singular_tl,
+    hands-on-objective / 2 .tl_gset:N = \g_istqb_hands_on_objective_plural_tl,
     istqb .tl_gset:N = \istqborgname,
     contents .tl_gset:N = \g_istqb_translation_contents_name_tl,
   }
@@ -1288,7 +1294,10 @@
                               [
                                 frametitle =
                                   {
-                                    Hands-On~Objective~HO-
+                                    \tl_use:N
+                                      \g_istqb_hands_on_objective_singular_tl
+                                    { ~ }
+                                    HO-
                                     \tl_use:N
                                       \l_tmpa_tl
                                     { ~ }
@@ -1516,7 +1525,11 @@
       \l_tmpa_tl
       {
         \markdownRendererHeadingFour
-          { Hands-On~Objectives: }
+          {
+            \tl_use:N
+              \g_istqb_hands_on_objective_plural_tl
+            :
+          }
         \begin
           { istqb objectives }
         \tl_use:N

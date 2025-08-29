@@ -2,6 +2,7 @@ hyphenation: false
 appendix: Appendix
 references: References
 further-reading: Further Reading
+hands-on-objective: [Hands-On Objective, Hands-On Objectives]
 bibliography-subsections:
   standards: Standards
   documents: ISTQB® Documents
