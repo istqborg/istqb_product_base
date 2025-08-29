@@ -1327,29 +1327,33 @@
                                           olItemWithNumber = {
                                             \def\next################################1\markdownRendererOlItemEnd
                                               {
-                                                \istqbsubobjective { ################################1 }
+                                                \use:c
+                                                  { istqb learning subobjective }
+                                                  { ################################1 }
                                                 \markdownRendererOlItemEnd
                                               }
                                             \next
                                           },
                                           olEnd = {
-                                            \end { istqb subobjectives }
+                                            \end { istqb learning subobjectives }
                                             \group_end:
                                           },
                                         }
                                       }
-                                    \begin { istqb subobjectives }
+                                    \begin { istqb learning subobjectives }
                                   },
                                   olItemWithNumber = {
                                     \def\next################1\markdownRendererInterblockSeparator
                                       {
-                                        \istqbobjective { ################1 }
+                                        \use:c
+                                          { istqb learning objective }
+                                          { ################1 }
                                         \markdownRendererInterblockSeparator
                                       }
                                     \next
                                   },
                                   olEnd = {
-                                    \end { istqb objectives }
+                                    \end { istqb learning objectives }
                                     \group_end:
                                     \istqb_typeset_hands_on_objectives:x
                                       { \thesection }
@@ -1363,7 +1367,7 @@
                           },
                         }
                       }
-                    \begin { istqb objectives }
+                    \begin { istqb learning objectives }
                   }
               },
               %% Business outcomes
