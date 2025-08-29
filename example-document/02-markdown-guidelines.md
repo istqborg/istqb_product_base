@@ -81,7 +81,7 @@ You can write keywords and learning objectives at beginnings of chapters as foll
 
 coverage, debugging, defect, error, failure, quality, quality assurance
 
-#### Learning Objectives for Chapter 1: {.learning-objectives}
+#### Learning Objectives: {.learning-objectives}
 
 1. Subchapter x.1 name
     1. (K1) First Learning Objective for Subchapter x.1, so it is x.1.1
@@ -100,7 +100,7 @@ This will produce the following output:
 
 coverage, debugging, defect, error, failure, quality, quality assurance
 
-#### Learning Objectives for Chapter 2: {.learning-objectives}
+#### Learning Objectives: {.learning-objectives}
 
 1. Subchapter x.1 name
     1. (K1) First Learning Objective for Subchapter x.1, so it is x.1.1
