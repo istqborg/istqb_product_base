@@ -181,6 +181,10 @@
   \g_istqb_language_hyphenation_bool
 \tl_new:N
   \g_istqb_translation_contents_name_tl
+\tl_new:N
+  \g_istqb_hands_on_objective_singular_tl
+\tl_new:N
+  \g_istqb_hands_on_objective_plural_tl
 \keys_define:nn
   { istqb / language }
   {
@@ -189,6 +193,8 @@
     appendix .tl_gset:N = \istqbappendixname,
     references .tl_gset:N = \istqbrefname,
     further-reading .tl_gset:N = \istqbfurtherreadingname,
+    hands-on-objective / 1 .tl_gset:N = \g_istqb_hands_on_objective_singular_tl,
+    hands-on-objective / 2 .tl_gset:N = \g_istqb_hands_on_objective_plural_tl,
     istqb .tl_gset:N = \istqborgname,
     contents .tl_gset:N = \g_istqb_translation_contents_name_tl,
   }
@@ -1074,6 +1080,8 @@
 \tl_new:N \l_istqb_business_outcomes_table_tl
 \seq_new:N \g_istqb_business_outcomes_numbers_seq
 \prop_new:N \g_istqb_business_outcomes_names_prop
+\prop_new:N \g_istqb_hands_on_objectives_prop
+\tl_new:N \l_istqb_hands_on_objective_name_tl
 \markdownSetup
   {
     headerAttributes,
@@ -1208,6 +1216,104 @@
                       }
                   }
               },
+              %% Hands-on objective sections
+              attributeClassName += {
+                \tl_if_eq:nnT
+                  { ##1 }
+                  { hands-on-objective }
+                  {
+                    \group_begin:
+                    \markdownSetup
+                      {
+                        renderers = {
+                          headingFour = {
+                            \tl_set:Nn
+                              \l_tmpa_tl
+                              { }
+                            \int_case:nnF
+                              { \g_istqb_previous_heading_level_int }
+                              {
+                                { 2 } {
+                                  \tl_put_right:Nx
+                                    \l_tmpa_tl
+                                    { \thesubsection }
+                                  \tl_set:Nx
+                                    \l_tmpb_tl
+                                    {
+                                      \tl_use:N
+                                        \g_istqb_current_section_name_tl
+                                    }
+                                }
+                                { 3 } {
+                                  \tl_put_right:Nx
+                                    \l_tmpa_tl
+                                    { \thesubsubsection }
+                                  \tl_set:Nx
+                                    \l_tmpb_tl
+                                    {
+                                      \tl_use:N
+                                        \g_istqb_current_subsection_name_tl
+                                    }
+                                }
+                              }
+                              {
+                                \msg_error:nnnV
+                                  { istqb }
+                                  { incorrect-heading-objective-section-level }
+                                  { ####1 }
+                                  \g_istqb_previous_heading_level_int
+                              }
+                            \tl_set:Nn
+                              \l_istqb_hands_on_objective_name_tl
+                              { ####1 }
+                            \regex_replace_once:NnN
+                              \c_istqb_hands_on_objective_regex
+                              { (\1)\ \2 }
+                              \l_istqb_hands_on_objective_name_tl
+                            \iow_now:ce
+                              { @auxout }
+                              {
+                                \token_to_str:N
+                                  \istqbregisterhandsonobjective
+                                  { \thesection }
+                                  {
+                                    \tl_use:N
+                                      \l_tmpa_tl
+                                  }
+                                  {
+                                    \tl_use:N
+                                      \l_tmpb_tl
+                                  }
+                                  {
+                                    \tl_use:N
+                                      \l_istqb_hands_on_objective_name_tl
+                                  }
+                              }
+                            \begin
+                              { istqb hands on objective section }
+                              [
+                                frametitle =
+                                  {
+                                    \tl_use:N
+                                      \g_istqb_hands_on_objective_singular_tl
+                                    { ~ }
+                                    HO-
+                                    \tl_use:N
+                                      \l_tmpa_tl
+                                    { ~ }
+                                    ####1
+                                  }
+                              ]
+                          },
+                          (sectionEnd|thematicBreak) = {
+                            \end
+                              { istqb hands on objective section }
+                            \group_end:
+                          },
+                        },
+                      }
+                  }
+              },
               %% Learning objectives
               attributeClassName += {
                 \tl_if_eq:nnT
@@ -1231,29 +1337,39 @@
                                           olItemWithNumber = {
                                             \def\next################################1\markdownRendererOlItemEnd
                                               {
-                                                \istqbsubobjective { ################################1 }
+                                                \use:c
+                                                  { istqb learning subobjective }
+                                                  { ################################1 }
                                                 \markdownRendererOlItemEnd
                                               }
                                             \next
                                           },
                                           olEnd = {
-                                            \end { istqb subobjectives }
+                                            \use:c { end istqb learning subobjectives }
+                                            \use:c { end istqb subobjectives }
                                             \group_end:
+                                            \istqb_negative_skip_after_last_subobjective:
                                           },
                                         }
                                       }
-                                    \begin { istqb subobjectives }
+                                    \use:c { istqb subobjectives }
+                                    \use:c { istqb learning subobjectives }
                                   },
                                   olItemWithNumber = {
                                     \def\next################1\markdownRendererInterblockSeparator
                                       {
-                                        \istqbobjective { ################1 }
+                                        \use:c
+                                          { istqb learning objective }
+                                          { ################1 }
                                         \markdownRendererInterblockSeparator
                                       }
                                     \next
                                   },
                                   olEnd = {
-                                    \end { istqb objectives }
+                                    \use:c { end istqb learning objectives }
+                                    \use:c { end istqb objectives }
+                                    \istqb_typeset_hands_on_objectives:x
+                                      { \thesection }
                                     \group_end:
                                   },
                                 }
@@ -1265,7 +1381,8 @@
                           },
                         }
                       }
-                    \begin { istqb objectives }
+                    \use:c { istqb objectives }
+                    \use:c { istqb learning objectives }
                   }
               },
               %% Business outcomes
@@ -1352,6 +1469,78 @@
       headerAttributeContextEnd = {},
     },
   }
+\msg_new:nnn
+  { istqb }
+  { incorrect-heading-objective-section-level }
+  {
+    Hands-on~objective~"#1"~appeared~in~section~level~#2~but~either~2~(section,~X.Y)~or~3~(subsection,~X.Y.Z)~was~expected.
+  }
+
+%% Lists of hands-on objectives at the beginnings of chapters
+\cs_new:Npn
+  \istqbregisterhandsonobjective
+  #1#2#3#4
+  {
+    \prop_get:NnNF
+      \g_istqb_hands_on_objectives_prop
+      { #1 }
+      \l_tmpa_tl
+      {
+        \tl_set:Nn
+          \l_tmpa_tl
+          { }
+      }
+    \tl_put_right:Nn
+      \l_tmpa_tl
+      {
+        \use:c
+          { istqb objective }
+          { #2 }
+          { #3 }
+        \begin
+          { istqb subobjectives }
+        \use:c
+          { istqb subobjective }
+          {
+            \tl_use:N
+              \g_istqb_prefix_tl
+            -
+            #2
+          }
+          { #4 }
+        \end
+          { istqb subobjectives }
+      }
+    \prop_gput:NnV
+      \g_istqb_hands_on_objectives_prop
+      { #1 }
+      \l_tmpa_tl
+  }
+\cs_new:Nn
+  \istqb_typeset_hands_on_objectives:n
+  {
+    \prop_get:NnNT
+      \g_istqb_hands_on_objectives_prop
+      { #1 }
+      \l_tmpa_tl
+      {
+        \markdownRendererHeadingFour
+          {
+            \tl_use:N
+              \g_istqb_hands_on_objective_plural_tl
+            :
+          }
+        \begin
+          { istqb objectives }
+        \tl_use:N
+          \l_tmpa_tl
+        \end
+          { istqb objectives }
+      }
+  }
+\cs_generate_variant:Nn
+  \istqb_typeset_hands_on_objectives:n
+  { x }
 
 % Tables
 \prop_new:N \g_istqb_multi_row_prop

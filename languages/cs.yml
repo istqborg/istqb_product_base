@@ -2,6 +2,7 @@ hyphenation: false
 appendix: Příloha
 references: Reference
 further-reading: Další zdroje
+hands-on-objective: [Praktický cíl, Praktické cíle]
 bibliography-subsections:
   standards: Standardy
   documents: ISTQB® dokumenty

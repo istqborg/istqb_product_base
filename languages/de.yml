@@ -2,6 +2,7 @@ hyphenation: true
 appendix: Anhang
 references: Referenzen
 further-reading: Weitere Literatur
+hands-on-objective: [Praktische Kompetenzstufe, Praktische Kompetenzstufen]
 bibliography-subsections:
   standards: Normen
   documents: ISTQB® Dokumente
