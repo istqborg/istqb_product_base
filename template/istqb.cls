@@ -685,8 +685,8 @@
 %%% Document commands
 \ExplSyntaxOn
 \tl_new:N \g_istqb_current_chapter_name_tl
-\tl_new:N \g_istqb_current_section_name_tl  % noqa: w415
-\tl_new:N \g_istqb_current_subsection_name_tl  % noqa: w415
+\tl_new:N \g_istqb_current_section_name_tl
+\tl_new:N \g_istqb_current_subsection_name_tl
 \newcommand\istqbsection[1]{
   \istqbupdateheadinglevel{1}
   \section{#1}
@@ -889,11 +889,11 @@
 \tl_gset:Nn \g_istqb_prefix_tl { ?? }
 \prop_new:N \g_istqb_learning_objective_numbers_prop
 \seq_new:N \g_istqb_learning_objective_numbers_seq
-\prop_new:N \g_istqb_learning_objective_names_prop  % noqa: w415
-\prop_new:N \g_istqb_learning_objective_k_levels_prop  % noqa: w415
+\prop_new:N \g_istqb_learning_objective_names_prop
+\prop_new:N \g_istqb_learning_objective_k_levels_prop
 \tl_new:N \l_istqb_current_learning_objective_text_tl
 \regex_const:Nn \c_istqb_learning_objective_regex { ^\((K[0-9])\):?\ +(.+)$ }
-\regex_const:Nn \c_istqb_hands_on_objective_regex { ^\((H[0-9])\):?\ +(.+)$ }  % noqa: w415
+\regex_const:Nn \c_istqb_hands_on_objective_regex { ^\((H[0-9])\):?\ +(.+)$ }
 \newenvironment
   { istqb learning subobjectives }
   {
