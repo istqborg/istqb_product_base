@@ -993,7 +993,7 @@ def _convert_yaml_questions_to_md(force_overwrite: bool = False) -> None:
             question_number, question = question_item
             # Always sort additional questions the last in the Markdown output.
             is_additional = question.get('additional', False)
-            return (0 if is_additional else 1, question_number)
+            return (1 if is_additional else 0, question_number)
 
         with output_path.open('wt') as f:
             for question_index, (question_number, question) in enumerate(sorted(input_yaml['questions'].items(), key=question_sort_key)):
