@@ -989,8 +989,14 @@ def _convert_yaml_questions_to_md(force_overwrite: bool = False) -> None:
             input_yaml_text = f.read()
         input_yaml = yaml.safe_load(input_yaml_text)
 
+        def question_sort_key(question_item: Tuple[int, Dict]):
+            question_number, question = question_item
+            # Always sort additional questions the last in the Markdown output.
+            is_additional = question.get('additional', False)
+            return (0 if is_additional else 1, question_number)
+
         with output_path.open('wt') as f:
-            for question_index, (question_number, question) in enumerate(sorted(input_yaml['questions'].items())):
+            for question_index, (question_number, question) in enumerate(sorted(input_yaml['questions'].items(), key=question_sort_key)):
                 if question_index > 0:
                     print(file=f)
                 print('# metadata', file=f)
