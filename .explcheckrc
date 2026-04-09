@@ -3,3 +3,4 @@ ignored_issues = ["s204"]
 max_line_length = 140
 imported_prefixes = ["istqb", "markdown"]
 warnings_are_errors = true
+verbose = true
