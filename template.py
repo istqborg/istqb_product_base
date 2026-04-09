@@ -946,7 +946,7 @@ def _cluster_files(input_paths: Iterable[Path]) -> Iterable[Tuple[Path, List[Pat
         yield parent_directory, input_paths
 
 
-def _convert_md_questions_to_yaml(include_extra_metadata: bool = True) -> None:
+def _convert_md_questions_to_yaml() -> None:
     for parent_directory, input_paths in _cluster_files(_find_files(['questions-markdown'])):
         output_path = parent_directory / 'questions.yml'
         if output_path.exists():
@@ -974,12 +974,11 @@ def _convert_md_questions_to_yaml(include_extra_metadata: bool = True) -> None:
                     if 'correct' in question:
                         print(f'    correct: {json.dumps(question["correct"], ensure_ascii=False)}', file=f)
                     print(f'    explanation: {json.dumps(question["explanation"], ensure_ascii=False)}', file=f)
-                    if include_extra_metadata:
-                        print(f'    additional: {"true" if "additional" in question and question["additional"] else "false"}', file=f)
+                    print(f'    additional: {"true" if "additional" in question and question["additional"] else "false"}', file=f)
                 LOGGER.info('Converted files %s to "%s"', formatted_input_paths, output_path)
 
 
-def _convert_yaml_questions_to_md(force_overwrite: bool = False, include_extra_metadata: bool = True) -> None:
+def _convert_yaml_questions_to_md(force_overwrite: bool = False) -> None:
     for input_path in _find_files(['questions-yaml']):
         output_path = input_path.with_suffix('.md')
         if not force_overwrite and output_path.exists() and input_path.stat().st_mtime <= output_path.stat().st_mtime:
@@ -1000,8 +999,7 @@ def _convert_yaml_questions_to_md(force_overwrite: bool = False, include_extra_m
                 print(f'points: {question["number-of-points"]}', file=f)
                 if 'correct' in question:
                     print(f'correct: {question["correct"]}', file=f)
-                if include_extra_metadata:
-                    print(f'additional: {"true" if "additional" in question and question["additional"] else "false"}', file=f)
+                print(f'additional: {"true" if "additional" in question and question["additional"] else "false"}', file=f)
                 print(file=f)
                 print('## question', file=f)
                 print(question['question'].rstrip('\r\n'), file=f)
@@ -1363,9 +1361,7 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, input_paths: Op
 
             _validate_files(file_types=['all'], silent=True)
             if compile_fn == _compile_tex_file_to_docx:
-                # Exclude extra metadata such as "additional" from DOCX output.
-                # See also <https://github.com/istqborg/istqb_product_base/issues/160#issue-2762703757>.
-                _convert_yaml_questions_to_md(force_overwrite=True, include_extra_metadata=False)
+                _convert_yaml_questions_to_md(force_overwrite=True)
             _fixup_line_endings()
             _convert_eps_files_to_pdf()
             _convert_xlsx_files_to_pdf()
