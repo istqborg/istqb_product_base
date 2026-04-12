@@ -63,6 +63,7 @@ BUILTIN_IDENTIFIERS = {'section:references', 'section:further-reading'}
 
 MARKDOWNINPUT_REGEXP = re.compile(r'\\markdownInput(\[.*?\])?{(?P<filename>.*?)}', re.DOTALL)
 ADDBIBRESOURCE_REGEXP = re.compile(r'\\addbibresource{(?P<filename>.*?)}', re.DOTALL)
+DOCUMENT_BODY_REGEXP = re.compile(r'^\s*%\s*Document (Text|Content)\s*$', re.MULTILINE)
 
 ATTRIBUTES_REGEXPS = {
     'section': re.compile(
@@ -937,6 +938,16 @@ def _read_md_questions(input_files: Iterable[Path]) -> Iterable[Tuple[int, Dict]
             question_number += 1
 
 
+def _get_sample_exam_markdown_paths(input_path: Path) -> List[Path]:
+    _convert_yaml_questions_to_md()
+    question_yaml_input_paths = [
+        nested_path
+        for nested_path in _get_flat_references_from_tex_files(tex_input_paths=[input_path], include_sources=False)
+        if QUESTIONS_YAML_REGEXP.fullmatch(nested_path.name)
+    ]
+    return [question_yaml_input_path.with_suffix('.md') for question_yaml_input_path in question_yaml_input_paths]
+
+
 def _cluster_files(input_paths: Iterable[Path]) -> Iterable[Tuple[Path, List[Path]]]:
     clusters = defaultdict(lambda: list())
     for input_path in input_paths:
@@ -1078,6 +1089,15 @@ def _get_metadata_path(input_path: Path, action: str) -> Optional[Path]:
     return metadata_path
 
 
+def _get_metadata_yaml(input_path: Path, action: str) -> Optional[Dict[str, Any]]:
+    metadata_path = _get_metadata_path(input_path, action)
+    if metadata_path is None:
+        return None
+    with metadata_path.open('rt') as f:
+        metadata_yaml_text = f.read()
+    return yaml.safe_load(metadata_yaml_text)
+
+
 def _should_compile_tex_file_to_pdf(input_path: Path) -> bool:
     if (input_path.parent / input_path.stem / 'NO_PDF').exists():
         return False
@@ -1205,6 +1225,110 @@ def _get_project_name(input_path: Path) -> str:
     language = metadata_yaml.get('language', 'en').upper().strip()
     project_name = f'{organization}-{code}-{document_type}-{version}-{language}'
     return project_name
+
+
+def _get_markdown_document_type(input_path: Path) -> Optional[str]:
+    if _is_sample_exam_questions(input_path):
+        return 'sample exam'
+    metadata_yaml = _get_metadata_yaml(input_path, 'determine whether it should be compiled to Markdown; will not compile')
+    if metadata_yaml is None:
+        return None
+    raw_document_type = str(metadata_yaml.get('type', '')).strip().lower()
+    normalized_document_types = {
+        'syllabus': 'syllabus',
+        'sylabus': 'syllabus',
+        'accreditation guidelines': 'accreditation guidelines',
+    }
+    return normalized_document_types.get(raw_document_type)
+
+
+def _get_document_body_markdown_paths(input_path: Path) -> List[Path]:
+    lines = input_path.read_text().splitlines()
+    in_document_body = False
+    paths: List[Path] = []
+    stop_markers = (
+        '% Appendices',
+        '% Bibliography',
+        '% Closing sections',
+        '% List of Tables',
+        '% List of Figures',
+        '% Index',
+    )
+    for line in lines:
+        stripped = line.strip()
+        if not in_document_body:
+            if DOCUMENT_BODY_REGEXP.fullmatch(stripped):
+                in_document_body = True
+            continue
+        if any(stripped.startswith(marker) for marker in stop_markers):
+            break
+        match = MARKDOWNINPUT_REGEXP.search(stripped)
+        if not match:
+            continue
+        referenced_path = Path(match.group('filename'))
+        if referenced_path.suffix.lower() != '.md':
+            continue
+        if not referenced_path.is_absolute():
+            referenced_path = (input_path.parent / referenced_path).resolve()
+        paths.append(referenced_path)
+    return paths
+
+
+def _get_markdown_output_name(input_path: Path) -> str:
+    metadata_yaml = _get_metadata_yaml(input_path, 'determine the Markdown output name')
+    if metadata_yaml is None:
+        return f'{input_path.stem}.md'
+    document_type = _get_markdown_document_type(input_path)
+    if document_type is None:
+        return f'{input_path.stem}.md'
+    code = str(metadata_yaml.get('code', input_path.stem)).strip().lower()
+    language = str(metadata_yaml.get('language', 'en')).strip().lower()
+    suffix_by_document_type = {
+        'syllabus': '-syllabus',
+        'accreditation guidelines': '-accreditation-guidelines',
+        'sample exam': '-sample-exam',
+    }
+    suffix = suffix_by_document_type[document_type]
+    if document_type == 'sample exam':
+        type_text = str(metadata_yaml.get('type', '')).strip().lower()
+        variant_match = re.fullmatch(r'sample exam(?:\s+(.*))?', type_text)
+        if variant_match is not None:
+            variant = variant_match.group(1)
+            if variant:
+                variant_slug = re.sub(r'[^a-z0-9]+', '-', variant).strip('-')
+                if variant_slug:
+                    suffix = f'{suffix}-{variant_slug}'
+    if language and language != 'en':
+        suffix = f'{suffix}-{language}'
+    return f'{code}{suffix}.md'
+
+
+def _compile_tex_file_to_markdown(input_path: Path, output_directory: Path) -> Optional[Path]:
+    document_type = _get_markdown_document_type(input_path)
+    if document_type is None:
+        return None
+    output_path = output_directory / _get_markdown_output_name(input_path)
+    if document_type == 'sample exam':
+        markdown_input_paths = _get_sample_exam_markdown_paths(input_path)
+        if not markdown_input_paths:
+            return None
+        if len(markdown_input_paths) == 1:
+            output_path.write_text(markdown_input_paths[0].read_text())
+            return output_path
+        markdown_texts = []
+        for markdown_input_path in markdown_input_paths:
+            with markdown_input_path.open('rt') as f:
+                markdown_texts.append(f.read().rstrip())
+    else:
+        markdown_input_paths = _get_document_body_markdown_paths(input_path)
+        if not markdown_input_paths:
+            return None
+        markdown_texts = []
+        for markdown_input_path in markdown_input_paths:
+            with markdown_input_path.open('rt') as f:
+                markdown_texts.append(f.read().rstrip())
+    output_path.write_text('\n\n'.join(markdown_texts) + '\n')
+    return output_path
 
 
 def _validate_log_file(input_path: Path) -> None:
@@ -1407,6 +1531,11 @@ def _compile_tex_files_to_docx(output_directory: Path, input_paths: Optional[Ite
     _compile_tex_files(_compile_tex_file_to_docx, output_directory, input_paths=input_paths)
 
 
+def _compile_tex_files_to_markdown(output_directory: Path, input_paths: Optional[Iterable[Path]]) -> None:
+    output_directory.mkdir(parents=True, exist_ok=True)
+    _compile_tex_files(_compile_tex_file_to_markdown, output_directory, input_paths=input_paths)
+
+
 def find_files(args: Namespace) -> None:
     file_types = [args.filetype]
     tex_input_paths = [Path(vars(args)['from'])] if vars(args)['from'] is not None else None
@@ -1461,6 +1590,11 @@ def compile_tex_files_to_epub(args: Namespace) -> None:
 def compile_tex_files_to_docx(args: Namespace) -> None:
     input_paths = sorted(map(Path, args.filenames)) if args.filenames else None
     _compile_tex_files_to_docx(Path(args.outputdir), input_paths)
+
+
+def compile_tex_files_to_markdown(args: Namespace) -> None:
+    input_paths = sorted(map(Path, args.filenames)) if args.filenames else None
+    _compile_tex_files_to_markdown(Path(args.outputdir), input_paths)
 
 
 def main():
@@ -1557,6 +1691,14 @@ def main():
     parser_compile_tex_files_to_docx.add_argument('outputdir')
     parser_compile_tex_files_to_docx.add_argument('filenames', nargs='*')
     parser_compile_tex_files_to_docx.set_defaults(func=compile_tex_files_to_docx)
+
+    parser_compile_tex_files_to_markdown = subparsers.add_parser(
+        'compile-tex-to-markdown',
+        help='Compile selected TeX files in this repository to combined Markdown',
+    )
+    parser_compile_tex_files_to_markdown.add_argument('outputdir')
+    parser_compile_tex_files_to_markdown.add_argument('filenames', nargs='*')
+    parser_compile_tex_files_to_markdown.set_defaults(func=compile_tex_files_to_markdown)
 
     args = parser.parse_args()
     if 'func' not in args:

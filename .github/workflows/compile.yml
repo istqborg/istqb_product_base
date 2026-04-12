@@ -209,6 +209,43 @@ jobs:
         with:
           name: DOCX
           path: docx/
+  produce-md:
+    name: Produce MD documents
+    needs:
+      - validate
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/istqborg/istqb_product_base:latest
+    steps:
+      - name: Checkout Git repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set safe Git directory
+        # This should have been done by the previous step.
+        # See also: <https://github.com/actions/checkout/issues/915>.
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+      - name: Clone repository istqb_product_base
+        # Only update the Docker image a) in PRs from the istqborg/istqb_product_base repo and b) in other repos that use
+        # a specific branch/ref from the istqborg/istqb_product_base repo. In all other scenarios, just use the Docker image
+        # ghcr.io/istqborg/istqb_product_base:latest directly and do not waste time trying to update it, since this is
+        # quicker and more robust, see also the discussion in <https://github.com/istqborg/istqb_product_base/issues/178>.
+        if: (github.repository == 'istqborg/istqb_product_base' && github.ref != 'refs/heads/main') || (inputs.base-version && inputs.base-version != 'main')
+        run: |
+          set -ex
+          rm -rf /opt/istqb_product_base
+          git clone https://github.com/istqborg/istqb_product_base.git /opt/istqb_product_base
+          cd /opt/istqb_product_base
+          git checkout ${{ inputs.base-version || github.sha }}
+          pip install -r requirements.txt --break-system-packages
+      - name: Compile Markdown documents
+        run: istqb-template compile-tex-to-markdown md/
+      - name: Upload Markdown documents
+        uses: actions/upload-artifact@v4
+        with:
+          name: MD
+          path: md/
   prerelease:
     name: Create a prerelease
     if: github.ref == 'refs/heads/main' && inputs.skip-prerelease == false

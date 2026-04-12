@@ -38,18 +38,18 @@ To typeset ISTQB documents on your computer, take the following steps:
    Compiled file "/mnt/syllabus.tex" to "ISTQB-CT-TEMP-Syllabus-v0.1-EN.pdf"
    ```
 
-   Besides typesetting documents to PDF with the `compile-tex-to-pdf` command, you can also convert them to HTML, EPUB, and DOCX, among other things. Here is how you would list the available commands in a terminal of a Linux system:
+   Besides typesetting documents to PDF with the `compile-tex-to-pdf` command, you can also convert them to HTML, EPUB, DOCX, and combined Markdown, among other things. Here is how you would list the available commands in a terminal of a Linux system:
    ``` sh
    $ docker run --rm -it ghcr.io/istqborg/istqb_product_base --help
    ```
    ```
    usage: template.py [-h]
-                   {find-files,fixup-languages,fixup-line-endings,validate-files,convert-eps-to-pdf,convert-xlsx-to-pdf,convert-md-questions-to-yaml,convert-yaml-questions-to-md,compile-tex-to-pdf,compile-tex-to-html,compile-tex-to-epub,compile-tex-to-docx} ...
+                   {find-files,fixup-languages,fixup-line-endings,validate-files,convert-eps-to-pdf,convert-xlsx-to-pdf,convert-md-questions-to-yaml,convert-yaml-questions-to-md,compile-tex-to-pdf,compile-tex-to-html,compile-tex-to-epub,compile-tex-to-docx,compile-tex-to-markdown} ...
 
    Process ISTQB documents written with the LaTeX+Markdown template
 
    positional arguments:
-     {find-files,fixup-languages,fixup-line-endings,validate-files,convert-eps-to-pdf,convert-xlsx-to-pdf,convert-md-questions-to-yaml,convert-yaml-questions-to-md,compile-tex-to-pdf,compile-tex-to-html,compile-tex-to-epub,compile-tex-to-docx}
+     {find-files,fixup-languages,fixup-line-endings,validate-files,convert-eps-to-pdf,convert-xlsx-to-pdf,convert-md-questions-to-yaml,convert-yaml-questions-to-md,compile-tex-to-pdf,compile-tex-to-html,compile-tex-to-epub,compile-tex-to-docx,compile-tex-to-markdown}
        find-files          Produce a newline-separated list of different types of files in this repository
        fixup-languages     Determine and add `babel-language` to language definitions if missing
        fixup-line-endings  Convert all text files to Unix-style line endings
@@ -68,6 +68,8 @@ To typeset ISTQB documents on your computer, take the following steps:
                            Compile all TeX files in this repository to EPUB
        compile-tex-to-docx
                            Compile all TeX files in this repository to DOCX
+       compile-tex-to-markdown
+                           Compile selected TeX files in this repository to combined Markdown
 
    options:
      -h, --help            show this help message and exit
