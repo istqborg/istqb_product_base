@@ -254,6 +254,7 @@ jobs:
       - produce-html
       - produce-ebooks
       - produce-docx
+      - produce-md
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts

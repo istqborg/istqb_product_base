@@ -117,6 +117,8 @@ PDFTEX_UNPRINTED_REFERENCES = (
     r'pdfTeX warning \(dest\): name\{cite\.[0-9]+@(?P<cite_key>[^}]*)\} has been referenced but does not exist, replaced by a fixed one'
 )
 PDFTEX_UNPRINTED_REFERENCES = re.compile(PDFTEX_UNPRINTED_REFERENCES.replace(' ', r'\s+'))
+MARKDOWN_HEADING_REGEXP = re.compile(r'^(?P<hashes>#{1,6})\s+(?P<title>.*?)(?P<attrs>\s+\{[^{}]*\})?\s*$')
+MARKDOWN_LIST_ITEM_REGEXP = re.compile(r'^(?P<indent>\s*)(?:[-*+]|\d+[.)])\s+(?P<text>.+?)\s*$')
 
 
 FileLocation = Tuple[Path, int]
@@ -1303,6 +1305,111 @@ def _get_markdown_output_name(input_path: Path) -> str:
     return f'{code}{suffix}.md'
 
 
+def _is_unnumbered_markdown_heading(attributes: Optional[str]) -> bool:
+    if not attributes:
+        return False
+    return '-}' in attributes or '.unnumbered' in attributes
+
+
+def _is_learning_objectives_heading(attributes: Optional[str]) -> bool:
+    return bool(attributes and '.learning-objectives' in attributes)
+
+
+def _title_has_number_prefix(title: str, number: str) -> bool:
+    number_prefix = re.escape(number)
+    return bool(re.match(rf'^{number_prefix}(?=\s|$|[–-])', title))
+
+
+def _rewrite_learning_objectives_block(lines: List[str], chapter_number: int) -> List[str]:
+    rewritten_lines = []
+    subchapter_number = 0
+    learning_objective_number = 0
+    top_level_indent: Optional[int] = None
+
+    for line in lines:
+        list_item_match = MARKDOWN_LIST_ITEM_REGEXP.fullmatch(line)
+        if list_item_match is None:
+            rewritten_lines.append(line)
+            continue
+
+        indent = list_item_match.group('indent')
+        text = list_item_match.group('text')
+        indent_length = len(indent)
+        if top_level_indent is None:
+            top_level_indent = indent_length
+
+        if indent_length == top_level_indent:
+            subchapter_number += 1
+            learning_objective_number = 0
+            rewritten_lines.append(f'- {chapter_number}.{subchapter_number} {text}')
+        else:
+            learning_objective_number += 1
+            rewritten_lines.append(f'   - {chapter_number}.{subchapter_number}.{learning_objective_number} {text}')
+
+    return rewritten_lines
+
+
+def _rewrite_syllabus_markdown(markdown_text: str) -> str:
+    lines = markdown_text.splitlines()
+    rewritten_lines = []
+
+    chapter_number = -1
+    subchapter_number = 0
+    subsubchapter_number = 0
+
+    line_number = 0
+    while line_number < len(lines):
+        line = lines[line_number]
+        heading_match = MARKDOWN_HEADING_REGEXP.fullmatch(line)
+        if heading_match is None:
+            rewritten_lines.append(line)
+            line_number += 1
+            continue
+
+        hashes = heading_match.group('hashes')
+        title = heading_match.group('title')
+        attributes = heading_match.group('attrs') or ''
+        level = len(hashes)
+
+        formatted_title = title
+        if level == 1:
+            subchapter_number = 0
+            subsubchapter_number = 0
+            if not _is_unnumbered_markdown_heading(attributes):
+                chapter_number += 1
+                heading_number = str(chapter_number)
+                if not _title_has_number_prefix(title, heading_number):
+                    formatted_title = f'{heading_number} {title}'
+        elif level == 2 and chapter_number >= 0 and not _is_unnumbered_markdown_heading(attributes):
+            subchapter_number += 1
+            subsubchapter_number = 0
+            heading_number = f'{chapter_number}.{subchapter_number}'
+            if not _title_has_number_prefix(title, heading_number):
+                formatted_title = f'{heading_number} {title}'
+        elif level == 3 and chapter_number >= 0 and subchapter_number > 0 and not _is_unnumbered_markdown_heading(attributes):
+            subsubchapter_number += 1
+            heading_number = f'{chapter_number}.{subchapter_number}.{subsubchapter_number}'
+            if not _title_has_number_prefix(title, heading_number):
+                formatted_title = f'{heading_number} {title}'
+
+        rewritten_lines.append(f'{hashes} {formatted_title}{attributes}')
+        line_number += 1
+
+        if not _is_learning_objectives_heading(attributes) or chapter_number < 0:
+            continue
+
+        learning_objectives_lines = []
+        while line_number < len(lines):
+            nested_line = lines[line_number]
+            if MARKDOWN_HEADING_REGEXP.fullmatch(nested_line):
+                break
+            learning_objectives_lines.append(nested_line)
+            line_number += 1
+        rewritten_lines.extend(_rewrite_learning_objectives_block(learning_objectives_lines, chapter_number))
+
+    return '\n'.join(rewritten_lines).rstrip() + '\n'
+
+
 def _compile_tex_file_to_markdown(input_path: Path, output_directory: Path) -> Optional[Path]:
     document_type = _get_markdown_document_type(input_path)
     if document_type is None:
@@ -1327,7 +1434,10 @@ def _compile_tex_file_to_markdown(input_path: Path, output_directory: Path) -> O
         for markdown_input_path in markdown_input_paths:
             with markdown_input_path.open('rt') as f:
                 markdown_texts.append(f.read().rstrip())
-    output_path.write_text('\n\n'.join(markdown_texts) + '\n')
+    markdown_text = '\n\n'.join(markdown_texts) + '\n'
+    if document_type == 'syllabus':
+        markdown_text = _rewrite_syllabus_markdown(markdown_text)
+    output_path.write_text(markdown_text)
     return output_path
 
 
