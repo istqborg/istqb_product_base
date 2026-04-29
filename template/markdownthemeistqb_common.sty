@@ -1185,7 +1185,7 @@
                         \ifnum \markdownLaTeXRowCounter > \markdownLaTeXRowTotal \relax
                           \addto@hook
                             \markdownLaTeXTable
-                            { \end { istqbrevisionhistory } }
+                            { \end { istqb revision history } }
                           \the \markdownLaTeXTable
                           \expandafter \@gobble
                         \fi \markdownLaTeXRenderTableRow
@@ -1206,7 +1206,7 @@
                             \markdownLaTeXTableAlignment = { }
                             \addto@hook
                               \markdownLaTeXTable
-                              { \begin { istqbrevisionhistory } }
+                              { \begin { istqb revision history } }
                             \markdownLaTeXRowCounter = 0
                             \markdownLaTeXRowTotal = ####2
                             \markdownLaTeXColumnTotal = ####3
@@ -1401,7 +1401,7 @@
                             \tl_set:Nn
                               \l_istqb_business_outcomes_table_tl
                               {
-                                \begin { istqbtable } { |l|X| }
+                                \begin { istqb table } { |l|X| }
                                 \istqbbusinessoutcomecode &
                                 \istqbbusinessoutcomedescription \\ \hline
                               }
@@ -1431,7 +1431,7 @@
                                     \tl_put_right:Nn
                                       \l_istqb_business_outcomes_table_tl
                                       {
-                                        \end { istqbtable }
+                                        \end { istqb table }
                                       }
                                     \tl_use:N
                                       \l_istqb_business_outcomes_table_tl
@@ -1670,13 +1670,13 @@
         \markdownLaTeXTable = { }
         \markdownLaTeXTableAlignment = { | }
         \markdownLaTeXTableEnd = {
-          \end { istqbtable }
+          \end { istqb table }
           \bool_gset_false:N
             \g_istqb_intable_bool
         }
         \addto@hook
           \markdownLaTeXTable
-          { \begin { istqbtable } }
+          { \begin { istqb table } }
         \tl_if_empty:nF
           { #1 }
           {

@@ -1001,12 +1001,12 @@
 \RequirePackage{tabularray}
 \ExplSyntaxOn
 \NewTblrEnviron
-  { istqbtable }
+  { istqb table }
 \SetTblrOuter
-  [ istqbtable ]
+  [ istqb table ]
   { long }
 \SetTblrInner
-  [ istqbtable ]
+  [ istqb table ]
   {
     rowhead = 1,
     row { 1 } = { istqb gray table header },
