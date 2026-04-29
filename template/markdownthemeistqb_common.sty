@@ -1674,39 +1674,16 @@
           \bool_gset_false:N
             \g_istqb_intable_bool
         }
+        \addto@hook
+          \markdownLaTeXTable
+          { \begin { istqbtable } }
         \tl_if_empty:nF
           { #1 }
           {
             \addto@hook
               \markdownLaTeXTable
-              {
-                \begin { table }
-                \centering
-              }
-            \addto@hook
-              \markdownLaTeXTableEnd
-              {
-                \caption { #1 }
-              }
-            \tl_if_empty:NF
-              \l_istqb_table_identifier_tl
-              {
-                \addto@hook
-                  \markdownLaTeXTableEnd
-                  {
-                    \label
-                      { \l_istqb_table_identifier_tl }
-                  }
-              }
-            \addto@hook
-              \markdownLaTeXTableEnd
-              {
-                \end { table }
-              }
+              { [ caption = { #1 } ] }
           }
-        \addto@hook
-          \markdownLaTeXTable
-          { \begin { istqbtable } }
         \markdownLaTeXRowCounter = 0
         \markdownLaTeXRowTotal = #2
         \markdownLaTeXColumnTotal = #3

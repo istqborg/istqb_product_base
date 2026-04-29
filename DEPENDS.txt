@@ -24,7 +24,6 @@ multirow
 mwe
 needspace
 newunicodechar
-nicematrix
 ninecolors
 supertabular
 tabularray

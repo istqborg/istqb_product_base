@@ -994,40 +994,24 @@
 \RequirePackage{hyperref}
 
 % Tables
-\RequirePackage{nicematrix, tabularx}
-\RequirePackage{xcolor, colortbl}
+\RequirePackage{xcolor}
 \definecolor{istqbgraytableheader}{HTML}{D9D9D9}
 \definecolor{istqbbluetableheader}{HTML}{B5C5E5}
 \definecolor{istqbgreentableheader}{HTML}{C5E0B3}
+\RequirePackage{tabularray}
 \ExplSyntaxOn
-\newenvironment
+\NewTblrEnviron
   { istqbtable }
-  [ 1 ]
+\SetTblrOuter
+  [ istqbtable ]
+  { long }
+\SetTblrInner
+  [ istqbtable ]
   {
-    \renewcommand { \arraystretch }{ 1.25 }  % Set vertical cell margins
-    \setlength \tabcolsep { 3pt }  % Set horizontal cell margins
-    \str_if_in:nnTF
-      { #1 }
-      { X }
-      {
-        \cs_set:Npn
-          \endistqbtable
-          { \end { NiceTabularX } }
-        \begin { NiceTabularX } \linewidth { #1 } \hline
-      }
-      {
-        \cs_set:Npn
-          \endistqbtable
-          {
-            \end { NiceTabular }
-            \par
-          }
-        \centering
-        \begin { NiceTabular } { #1 } \hline
-      }
-    \RowStyle [ nb-rows=1, rowcolor=istqbgraytableheader ] { }  % Color table head
+    rowhead = 1,
+    row { 1 } = { istqb gray table header },
+    hlines,
   }
-  { }
 \ExplSyntaxOff
 
 %% Revision History
