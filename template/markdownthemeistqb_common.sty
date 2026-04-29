@@ -737,11 +737,11 @@
       jekyllDataEnd += {
         \group_begin:
         % Set how the table looks.
-        \DefTblrTemplate { contfoot-text } { default } { }
-        \DefTblrTemplate { conthead-text } { default } { }
-        \DefTblrTemplate { caption } { default } { }
-        \DefTblrTemplate { conthead } { default } { }
-        \DefTblrTemplate { capcont } { default } { }
+        \DeclareTblrTemplate { contfoot-text } { default } { }
+        \DeclareTblrTemplate { conthead-text } { default } { }
+        \DeclareTblrTemplate { caption } { default } { }
+        \DeclareTblrTemplate { conthead } { default } { }
+        \DeclareTblrTemplate { capcont } { default } { }
         % Construct the table parameters.
         \tl_put_right:Nn
           \l_istqb_traceability_matrix_parameters_tl
