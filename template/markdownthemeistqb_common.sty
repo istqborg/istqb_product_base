@@ -736,12 +736,6 @@
     renderers = {
       jekyllDataEnd += {
         \group_begin:
-        % Set how the table looks.
-        \DeclareTblrTemplate { contfoot-text } { default } { }
-        \DeclareTblrTemplate { conthead-text } { default } { }
-        \DeclareTblrTemplate { caption } { default } { }
-        \DeclareTblrTemplate { conthead } { default } { }
-        \DeclareTblrTemplate { capcont } { default } { }
         % Construct the table parameters.
         \tl_put_right:Nn
           \l_istqb_traceability_matrix_parameters_tl
@@ -1615,6 +1609,19 @@
           \bool_gset_false:N
             \g_istqb_intable_bool
         }
+        \tl_if_empty:nF
+          { #1 }
+          {
+            \addto@hook
+              \markdownLaTeXTable
+              {
+                \group_begin:
+                \SetTblrTemplate { caption } { normal }
+              }
+            \addto@hook
+              \markdownLaTeXTableEnd
+              { \group_end: }
+          }
         \addto@hook
           \markdownLaTeXTable
           { \begin { istqb table } }

@@ -1000,6 +1000,11 @@
 \definecolor{istqbgreentableheader}{HTML}{C5E0B3}
 \RequirePackage{tabularray}
 \ExplSyntaxOn
+\DeclareTblrTemplate { contfoot } { default } { }
+\DeclareTblrTemplate { conthead } { default } { }
+\DeclareTblrTemplate { caption } { default } { }
+\DeclareTblrTemplate { conthead } { default } { }
+\DeclareTblrTemplate { capcont } { default } { }
 \NewTblrEnviron
   { istqb table }
 \SetTblrOuter
