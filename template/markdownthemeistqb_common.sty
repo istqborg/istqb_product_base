@@ -1577,67 +1577,8 @@
       \expandafter \@gobble
     \fi \markdownLaTeXReadAlignments
   }
-\def \markdownLaTeXRenderTableCell #1
-  {
-    \advance \markdownLaTeXColumnCounter by 1 \relax
-    \tl_set:Nn
-      \l_tmpa_tl
-      { \markdownLaTeXRowCounter = }
-    \tl_put_right:Nx
-      \l_tmpa_tl
-      { \the \markdownLaTeXRowCounter }
-    \tl_put_right:Nn
-      \l_tmpa_tl
-      { \relax }
-    \tl_put_right:Nn
-      \l_tmpa_tl
-      { \markdownLaTeXColumnCounter = }
-    \tl_put_right:Nx
-      \l_tmpa_tl
-      { \the \markdownLaTeXColumnCounter }
-    \tl_put_right:Nn
-      \l_tmpa_tl
-      { \relax }
-    \exp_args:NNV
-      \addto@hook
-      \markdownLaTeXTable
-      \l_tmpa_tl
-    \ifnum \markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal \relax
-      \addto@hook
-        \markdownLaTeXTable
-        { #1 & }
-    \else
-      \addto@hook
-        \markdownLaTeXTable
-        {
-          #1
-          \tl_set:Nn
-            \l_tmpa_tl
-            { \\ }
-          \int_step_inline:nn
-            { \the \markdownLaTeXColumnTotal }
-            {
-              \tl_set:Nx
-                \l_tmpb_tl
-                { \the \markdownLaTeXRowCounter }
-              \tl_put_right:Nn
-                \l_tmpb_tl
-                { ,##1 }
-              \prop_if_in:NVF
-                \g_istqb_multi_row_prop
-                \l_tmpb_tl
-                {
-                  \tl_put_right:Nn
-                    \l_tmpa_tl
-                    { \cline { ##1 - ##1 } }
-                }
-            }
-          \tl_use:N
-            \l_tmpa_tl
-        }
-      \expandafter \@gobble
-    \fi \markdownLaTeXRenderTableCell
-  }
+% TODO: Reintroduce support for multi-row cells in a way that is compatible with
+% the `tabularray` package.
 \bool_new:N \g_istqb_intable_bool
 \tl_new:N \l_istqb_table_identifier_tl
 \markdownSetup
