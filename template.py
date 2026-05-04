@@ -1338,16 +1338,16 @@ def _should_compile_tex_file(input_path: Path) -> bool:
 def _compile_tex_files(compile_fn: 'CompilationFunction', *args, input_paths: Optional[Iterable[Path]] = None, **kwargs) -> None:
     if input_paths is None:
         input_paths = list(_find_files(file_types=['tex']))
+        if not _should_do_full_compile():
+            removed_indexes = []
+            for input_path_index, input_path in enumerate(input_paths):
+                if not _should_compile_tex_file(input_path):
+                    removed_indexes.append(input_path_index)
+                    LOGGER.info('Skipped the compilation of file "%s" because it has not changed in this branch', input_path)
+            for removed_index in reversed(removed_indexes):
+                del input_paths[removed_index]
     else:
         input_paths = list(input_paths)
-    if not _should_do_full_compile():
-        removed_indexes = []
-        for input_path_index, input_path in enumerate(input_paths):
-            if not _should_compile_tex_file(input_path):
-                removed_indexes.append(input_path_index)
-                LOGGER.info('Skipped the compilation of file "%s" because it has not changed in this branch', input_path)
-        for removed_index in reversed(removed_indexes):
-            del input_paths[removed_index]
 
     if not input_paths:
         return
