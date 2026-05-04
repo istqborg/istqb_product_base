@@ -1003,6 +1003,7 @@
 \DeclareTblrTemplate { contfoot } { default } { }
 \DeclareTblrTemplate { conthead } { default } { }
 \DeclareTblrTemplate { caption } { default } { }
+\DeclareTblrTemplate { caption-sep } { default } { :~ }
 \DeclareTblrTemplate { conthead } { default } { }
 \DeclareTblrTemplate { capcont } { default } { }
 \NewTblrEnviron
