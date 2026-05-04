@@ -1009,7 +1009,11 @@
   { istqb table }
 \SetTblrOuter
   [ istqb table ]
-  { long }
+  {
+    long,
+    entry = none,
+    label = none,
+  }
 \SetTblrInner
   [ istqb table ]
   {

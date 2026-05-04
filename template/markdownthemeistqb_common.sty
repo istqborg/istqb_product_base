@@ -1617,21 +1617,18 @@
               {
                 \group_begin:
                 \SetTblrTemplate { caption } { normal }
+                \SetTblrOuter
+                  [ istqb table ]
+                  {
+                    entry = { #1 },
+                    caption = { #1 },
+                    label = { \l_istqb_table_identifier_tl },
+                  }
               }
-            \addto@hook
-              \markdownLaTeXTableEnd
-              { \group_end: }
           }
         \addto@hook
           \markdownLaTeXTable
           { \begin { istqb table } }
-        \tl_if_empty:nF
-          { #1 }
-          {
-            \addto@hook
-              \markdownLaTeXTable
-              { [ caption = { #1 } ] }
-          }
         \markdownLaTeXRowCounter = 0
         \markdownLaTeXRowTotal = #2
         \markdownLaTeXColumnTotal = #3
