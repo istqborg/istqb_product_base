@@ -28,7 +28,8 @@
 
 %% Landscape content
 \ExplSyntaxOn
-\def \istqblandscapebegin
+\cs_new_protected:Npn
+  \istqblandscapebegin
   {
     \group_begin:
     \paperwidth = \pdfpageheight
@@ -42,7 +43,8 @@
     \pdfpagewidth = \paperwidth
     \pdfpageheight = \paperheight
   }
-\def \istqblandscapeend
+\cs_new_protected:Npn
+  \istqblandscapeend
   {
     \clearpage
     \group_end:
@@ -345,7 +347,7 @@
 
 %% Reference printing
 \ExplSyntaxOn
-\cs_new:Npn
+\cs_new_protected:Npn
   \printistqbbibliography
   {
     \nocite
@@ -589,7 +591,7 @@
 \int_gset:Nn
   \g_istqb_previous_heading_level_int
   { 0 }
-\cs_new:Npn
+\cs_new_protected:Npn
   \istqbupdateheadinglevel
   #1
   {
@@ -1037,7 +1039,7 @@
   \l_istqb_external_document_basename_tl
 \int_new:N
   \l_istqb_external_document_last_page_int
-\cs_new:Nn
+\cs_new_protected:Nn
   \istqb_structure_tables:n
   {
     \pdfximage

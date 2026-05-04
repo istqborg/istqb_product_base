@@ -240,7 +240,7 @@
     1 .tl_gset:N = \istqbbusinessoutcomecode,
     2 .tl_gset:N = \istqbbusinessoutcomedescription,
   }
-\cs_new:Nn
+\cs_new_protected:Nn
   \__istqb_gset_with_spaces:Nn
   {
     \tl_gset:Nn
@@ -616,7 +616,7 @@
       },
       jekyllDataEnd += {
         \istqblandscapeend
-        \cs_gset:Npn
+        \cs_gset_protected:Npn
           \markdownRendererDocumentBegin
           {
             \restoregeometry
@@ -1472,7 +1472,7 @@
   }
 
 %% Lists of hands-on objectives at the beginnings of chapters
-\cs_new:Npn
+\cs_new_protected:Npn
   \istqbregisterhandsonobjective
   #1#2#3#4
   {
@@ -1511,7 +1511,7 @@
       { #1 }
       \l_tmpa_tl
   }
-\cs_new:Nn
+\cs_new_protected:Nn
   \istqb_typeset_hands_on_objectives:n
   {
     \prop_get:NnNT
@@ -1825,7 +1825,7 @@
   \l_istqb_index_current_term_tl
 \str_new:N
   \l_istqb_index_current_term_str
-\cs_new:Nn
+\cs_new_protected:Nn
   \istqb_index:n
   {
     % Strip formatting from the term.
