@@ -1016,6 +1016,8 @@
     long,
     entry = none,
     label = none,
+    presep = \medskipamount,
+    postsep = \medskipamount,
   }
 \SetTblrInner
   [ istqb table ]
@@ -1023,6 +1025,9 @@
     rowhead = 1,
     row { 1 } = { istqb gray table header },
     hlines,
+    stretch = 0,
+    rows = { ht = \baselineskip },
+    colsep = 3pt,
   }
 \ExplSyntaxOff
 
