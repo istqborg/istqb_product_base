@@ -1560,7 +1560,7 @@
     \fi \markdownLaTeXRenderTableRow
   }
 \regex_const:Nn
-  \c_istqb_multi_row_cell_regex
+  \c_istqb_multi_row_and_multi_column_cell_regex
    {
      \c { markdownRendererAttributeKeyValue }
      \cB\{ ( rows | cells ) \cE\}
@@ -1570,9 +1570,9 @@
   \markdownLaTeXRenderTableCell #1
   {
     \advance \markdownLaTeXColumnCounter by 1 \relax
-    % Multi-row and multi-cell contents
+    % Multi-row and multi-column contents
     \regex_extract_all:NnNT
-      \c_istqb_multi_row_cell_regex
+      \c_istqb_multi_row_and_multi_column_cell_regex
       { #1 }
       \l_tmpa_seq
       {

@@ -402,7 +402,8 @@ The second line of the table allows you to define the formatting of columns:
 If your table overflows a page, make sure that all columns with long texts
 are specified as `----`, not as `---:`, `:---`, or `:--:`.
 
-You may also use parameter `rows` to produce multi-row cells:
+You may also use parameter `rows` and `cells` to produce multi-row and
+multi-column cells:
 
 ``` md
 | Clause | ISO/IEC 25010:2023 | ISO/IEC 25010:2011 | Notes |
