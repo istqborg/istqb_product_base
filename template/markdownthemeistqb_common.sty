@@ -1563,7 +1563,7 @@
   \c_istqb_multi_row_and_multi_column_cell_regex
    {
      \c { markdownRendererAttributeKeyValue }
-     \cB\{ ( rows | cells ) \cE\}
+     \cB\{ ( rows | cols ) \cE\}
      \cB\{ ( [1-9][0-9]* ) \cE\}
    }
 \cs_gset_protected:Npn
@@ -1571,6 +1571,9 @@
   {
     \advance \markdownLaTeXColumnCounter by 1 \relax
     % Multi-row and multi-column contents
+    \clist_clear:N
+      \l_tmpa_clist
+      { }
     \regex_extract_all:NnNT
       \c_istqb_multi_row_and_multi_column_cell_regex
       { #1 }
@@ -1578,34 +1581,40 @@
       {
         \int_step_inline:nnnn
           { 2 }
-          { 2 }
+          { 3 }
           { \seq_count:N \l_tmpa_seq }
           {
-            \addto@hook
-              \markdownLaTeXTable
-              { \SetCell }
             \str_case:en
               { \seq_item:Nn \l_tmpa_seq { ##1 } }
               {
                 { rows }
                 {
-                  \exp_args:NNx
-                    \addto@hook
-                    \markdownLaTeXTable
-                    { [ r = \seq_item:Nn \l_tmpa_seq { ##1 + 1 } ] }
+                  \clist_put_right:Nx
+                    \l_tmpa_clist
+                    { r = \seq_item:Nn \l_tmpa_seq { ##1 + 1 } }
                 }
-                { cells }
+                { cols }
                 {
-                  \exp_args:NNx
-                    \addto@hook
-                    \markdownLaTeXTable
-                    { [ c = \seq_item:Nn \l_tmpa_seq { ##1 + 1 } ] }
+                  \clist_put_right:Nx
+                    \l_tmpa_clist
+                    { c = \seq_item:Nn \l_tmpa_seq { ##1 + 1 } }
                 }
               }
-            \addto@hook
-              \markdownLaTeXTable
-              { { c } }
           }
+      }
+    \clist_if_empty:NF
+      \l_tmpa_clist
+      {
+        \addto@hook
+          \markdownLaTeXTable
+          { \SetCell [ }
+        \exp_args:NNV
+          \addto@hook
+          \markdownLaTeXTable
+          \l_tmpa_clist
+        \addto@hook
+          \markdownLaTeXTable
+          { ] { c } }
       }
     \ifnum \markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal\relax
       \addto@hook \markdownLaTeXTable { #1 & }

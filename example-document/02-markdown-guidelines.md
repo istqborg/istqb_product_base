@@ -399,27 +399,26 @@ The second line of the table allows you to define the formatting of columns:
   uniform portion of the remaining page width. The cells will wrap over
   multiple lines and are therefore well-suited for long paragraphs of text.
 
-If your table overflows a page, make sure that all columns with long texts
-are specified as `----`, not as `---:`, `:---`, or `:--:`.
-
 You may also use parameter `rows` and `cells` to produce multi-row and
 multi-column cells:
 
 ``` md
 | Clause | ISO/IEC 25010:2023 | ISO/IEC 25010:2011 | Notes |
-|:-------|:-------------------|:-------------------|:------|
+|:-------|--------------------|--------------------|-------|
 | 3.4.6  | Inclusivity | [Accessibility]{rows=2} | [Split and renamed]{rows=2} |
 | 3.4.7  | User assistance |
-| 3.4.8  | [Self-descriptiveness]{cells=2} |  | New subcharacteristic |
+| 3.4.8  | [Self-descriptiveness]{rows=2 cols=3} |
+| 3.4.9  |
 ```
 
 This will produce the following output:
 
 | Clause | ISO/IEC 25010:2023 | ISO/IEC 25010:2011 | Notes |
-|:-------|:-------------------|:-------------------|:------|
+|:-------|--------------------|--------------------|-------|
 | 3.4.6  | Inclusivity | [Accessibility]{rows=2} | [Split and renamed]{rows=2} |
 | 3.4.7  | User assistance |
-| 3.4.8  | [Self-descriptiveness]{cells=2} |  | New subcharacteristic |
+| 3.4.8  | [Self-descriptiveness]{rows=2 cols=3} |
+| 3.4.9  |
 
 You can add a caption to the table as follows:
 
