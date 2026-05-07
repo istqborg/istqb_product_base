@@ -1538,7 +1538,6 @@
   { x }
 
 % Tables
-\prop_new:N \g_istqb_multi_row_prop
 \def \markdownLaTeXRenderTableRow #1
   {
     \markdownLaTeXColumnCounter = 0
@@ -1558,6 +1557,60 @@
       \the \markdownLaTeXTable
       \expandafter \@gobble
     \fi \markdownLaTeXRenderTableRow
+  }
+\regex_const:Nn
+  \c_istqb_multi_row_cell_regex
+   {
+     \c { markdownRendererAttributeKeyValue }
+     \cB\{ ( rows | cells ) \cE\}
+     \cB\{ ( [1-9][0-9]* ) \cE\}
+   }
+\def \markdownLaTeXRenderTableCell #1
+  {
+    \advance \markdownLaTeXColumnCounter by 1 \relax
+    % Multi-row and multi-cell contents
+    \regex_extract_all:NnNT
+      \c_istqb_multi_row_cell_regex
+      { #1 }
+      \l_tmpa_seq
+      {
+        \int_step_inline:nnnn
+          { 2 }
+          { 2 }
+          { \seq_count:N \l_tmpa_seq }
+          {
+            \addto@hook
+              \markdownLaTeXTable
+              { \SetCell }
+            \str_case:en
+              { \seq_item:Nn \l_tmpa_seq { ##1 } }
+              {
+                { rows }
+                {
+                  \exp_args:NNx
+                    \addto@hook
+                    \markdownLaTeXTable
+                    { [ r = \seq_item:Nn \l_tmpa_seq { ##1 + 1 } ] }
+                }
+                { cells }
+                {
+                  \exp_args:NNx
+                    \addto@hook
+                    \markdownLaTeXTable
+                    { [ c = \seq_item:Nn \l_tmpa_seq { ##1 + 1 } ] }
+                }
+              }
+            \addto@hook
+              \markdownLaTeXTable
+              { { c } }
+          }
+      }
+    \ifnum \markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal\relax
+      \addto@hook \markdownLaTeXTable { #1 & }
+    \else
+      \addto@hook \markdownLaTeXTable { #1 \\ }
+      \expandafter \@gobble
+    \fi \markdownLaTeXRenderTableCell
   }
 \def \markdownLaTeXReadAlignments #1
   {
@@ -1598,8 +1651,6 @@
           }
       },
       table = {
-        \prop_clear:N
-          \g_istqb_multi_row_prop
         \bool_gset_true:N
           \g_istqb_intable_bool
         \markdownLaTeXTable = { }
@@ -1820,8 +1871,7 @@
     citations,
   }
 
-% Index and multi-row cells
-\RequirePackage{multirow}
+% Index
 %% Function for indexing terms
 \tl_new:N
   \l_istqb_index_current_term_tl
@@ -1849,12 +1899,13 @@
           \l_istqb_index_current_term_str
       }
   }
-%% Renderers for index terms and multi-row cells
+%% Renderers for index terms
 \markdownSetup
   {
     bracketedSpans,
     renderers = {
-      bracketedSpanAttributeContextBegin = {
+      bracketedSpan = { #1 },
+      bracketedSpanAttributeContextBegin += {
         \markdownSetup
           {
             renderers = {
@@ -1866,49 +1917,19 @@
                   { ##1 }
                   { index }
                   {
-                    \def\next####1\markdownRendererBracketedSpanAttributeContextEnd
+                    \markdownSetup
                       {
-                        \istqb_index:n
-                          { ####1 }
-                        ####1
+                        renderers = {
+                          bracketedSpan ^= {
+                            \istqb_index:n
+                              { ####1 }
+                          },
+                        },
                       }
-                    \next
-                  }
-              },
-              %% Multi-row cells
-              attributeKeyValue += {
-                \str_if_eq:nnT
-                  { ##1 }
-                  { rows }
-                  {
-                    \def\next####1\markdownRendererBracketedSpanAttributeContextEnd
-                      {
-                        \multirow
-                          { ##2 }
-                          { * }
-                          { ####1 }
-                        \int_step_inline:nnn
-                          { \the \markdownLaTeXRowCounter }
-                          { \the \markdownLaTeXRowCounter + ##2 - 2 }
-                          {
-                            \tl_set:Nn
-                              \l_tmpa_tl
-                              { ########1, }
-                            \tl_put_right:Nx
-                              \l_tmpa_tl
-                              { \the \markdownLaTeXColumnCounter }
-                            \prop_gput:NVn
-                              \g_istqb_multi_row_prop
-                              \l_tmpa_tl
-                              { true }
-                          }
-                      }
-                    \next
                   }
               },
             }
           }
       },
-      bracketedSpanAttributeContextEnd = ,
     }
   }
