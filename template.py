@@ -514,8 +514,11 @@ def _fixup_languages() -> None:
         _fixup_language(path)
 
 
-def _run_command(*args: str, text=False, timeout=60) -> bytes:
-    return subprocess.check_output(args, text=text, stderr=subprocess.STDOUT, timeout=timeout)
+def _run_command(*args: str, text=False, timeout=60) -> Union[str, bytes]:
+    result = subprocess.check_output(args, text=False, stderr=subprocess.STDOUT, timeout=timeout)
+    if text:
+        result = result.decode(errors='ignore')
+    return result
 
 
 def _find_files_in_tex_live(pathname) -> List[Path]:
@@ -1234,7 +1237,7 @@ def _compile_tex_file_to_pdf(input_path: Path, previous_continuous: bool) -> Uni
                 extra_info = '\n'.join(
                     line
                     for line
-                    in _run_command('texlogfilter', '--no-box', f'{input_path.stem}.log').decode(errors='ignore').splitlines()
+                    in _run_command('texlogfilter', '--no-box', f'{input_path.stem}.log', text=True).splitlines()
                     if not TEXLOGFILTER_FORBIDDEN_LINES.search(line)
                 )
                 message_parts.append('Here is some extra information about the potential causes of the issue:\n\n%s')
