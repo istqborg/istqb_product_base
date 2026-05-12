@@ -240,7 +240,7 @@
     1 .tl_gset:N = \istqbbusinessoutcomecode,
     2 .tl_gset:N = \istqbbusinessoutcomedescription,
   }
-\cs_new:Nn
+\cs_new_protected:Nn
   \__istqb_gset_with_spaces:Nn
   {
     \tl_gset:Nn
@@ -616,7 +616,7 @@
       },
       jekyllDataEnd += {
         \istqblandscapeend
-        \cs_gset:Npn
+        \cs_gset_protected:Npn
           \markdownRendererDocumentBegin
           {
             \restoregeometry
@@ -736,12 +736,6 @@
     renderers = {
       jekyllDataEnd += {
         \group_begin:
-        % Set how the table looks.
-        \DefTblrTemplate { contfoot-text } { default } { }
-        \DefTblrTemplate { conthead-text } { default } { }
-        \DefTblrTemplate { caption } { default } { }
-        \DefTblrTemplate { conthead } { default } { }
-        \DefTblrTemplate { capcont } { default } { }
         % Construct the table parameters.
         \tl_put_right:Nn
           \l_istqb_traceability_matrix_parameters_tl
@@ -1185,7 +1179,7 @@
                         \ifnum \markdownLaTeXRowCounter > \markdownLaTeXRowTotal \relax
                           \addto@hook
                             \markdownLaTeXTable
-                            { \end { istqbrevisionhistory } }
+                            { \end { istqb revision history } }
                           \the \markdownLaTeXTable
                           \expandafter \@gobble
                         \fi \markdownLaTeXRenderTableRow
@@ -1206,7 +1200,7 @@
                             \markdownLaTeXTableAlignment = { }
                             \addto@hook
                               \markdownLaTeXTable
-                              { \begin { istqbrevisionhistory } }
+                              { \begin { istqb revision history } }
                             \markdownLaTeXRowCounter = 0
                             \markdownLaTeXRowTotal = ####2
                             \markdownLaTeXColumnTotal = ####3
@@ -1401,9 +1395,9 @@
                             \tl_set:Nn
                               \l_istqb_business_outcomes_table_tl
                               {
-                                \begin { istqbtable } { |l|X| }
+                                \begin { istqb table } { |l|X| }
                                 \istqbbusinessoutcomecode &
-                                \istqbbusinessoutcomedescription \\ \hline
+                                \istqbbusinessoutcomedescription \\
                               }
                             \markdownSetup
                               {
@@ -1422,7 +1416,7 @@
                                           \l_istqb_business_outcomes_table_tl
                                           {
                                             \g_istqb_prefix_tl - BO########1 &
-                                            ################1 \\ \hline
+                                            ################1 \\
                                           }
                                       }
                                     \next
@@ -1431,7 +1425,7 @@
                                     \tl_put_right:Nn
                                       \l_istqb_business_outcomes_table_tl
                                       {
-                                        \end { istqbtable }
+                                        \end { istqb table }
                                       }
                                     \tl_use:N
                                       \l_istqb_business_outcomes_table_tl
@@ -1478,7 +1472,7 @@
   }
 
 %% Lists of hands-on objectives at the beginnings of chapters
-\cs_new:Npn
+\cs_new_protected:Npn
   \istqbregisterhandsonobjective
   #1#2#3#4
   {
@@ -1517,7 +1511,7 @@
       { #1 }
       \l_tmpa_tl
   }
-\cs_new:Nn
+\cs_new_protected:Nn
   \istqb_typeset_hands_on_objectives:n
   {
     \prop_get:NnNT
@@ -1544,8 +1538,8 @@
   { x }
 
 % Tables
-\prop_new:N \g_istqb_multi_row_prop
-\def \markdownLaTeXRenderTableRow #1
+\cs_gset_protected:Npn
+  \markdownLaTeXRenderTableRow #1
   {
     \markdownLaTeXColumnCounter = 0
     \ifnum \markdownLaTeXRowCounter = 0 \relax
@@ -1565,6 +1559,70 @@
       \expandafter \@gobble
     \fi \markdownLaTeXRenderTableRow
   }
+\regex_const:Nn
+  \c_istqb_multi_row_and_multi_column_cell_regex
+   {
+     \c { markdownRendererAttributeKeyValue }
+     \cB\{ ( rows | cols ) \cE\}
+     \cB\{ ( [1-9][0-9]* ) \cE\}
+   }
+\cs_gset_protected:Npn
+  \markdownLaTeXRenderTableCell #1
+  {
+    \advance \markdownLaTeXColumnCounter by 1 \relax
+    % Multi-row and multi-column contents
+    \clist_clear:N
+      \l_tmpa_clist
+      { }
+    \regex_extract_all:NnNT
+      \c_istqb_multi_row_and_multi_column_cell_regex
+      { #1 }
+      \l_tmpa_seq
+      {
+        \int_step_inline:nnnn
+          { 2 }
+          { 3 }
+          { \seq_count:N \l_tmpa_seq }
+          {
+            \str_case:en
+              { \seq_item:Nn \l_tmpa_seq { ##1 } }
+              {
+                { rows }
+                {
+                  \clist_put_right:Nx
+                    \l_tmpa_clist
+                    { r = \seq_item:Nn \l_tmpa_seq { ##1 + 1 } }
+                }
+                { cols }
+                {
+                  \clist_put_right:Nx
+                    \l_tmpa_clist
+                    { c = \seq_item:Nn \l_tmpa_seq { ##1 + 1 } }
+                }
+              }
+          }
+      }
+    \clist_if_empty:NF
+      \l_tmpa_clist
+      {
+        \addto@hook
+          \markdownLaTeXTable
+          { \SetCell [ }
+        \exp_args:NNV
+          \addto@hook
+          \markdownLaTeXTable
+          \l_tmpa_clist
+        \addto@hook
+          \markdownLaTeXTable
+          { ] { c } }
+      }
+    \ifnum \markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal\relax
+      \addto@hook \markdownLaTeXTable { #1 & }
+    \else
+      \addto@hook \markdownLaTeXTable { #1 \\ }
+      \expandafter \@gobble
+    \fi \markdownLaTeXRenderTableCell
+  }
 \def \markdownLaTeXReadAlignments #1
   {
     \advance \markdownLaTeXColumnCounter by 1 \relax
@@ -1577,67 +1635,8 @@
       \expandafter \@gobble
     \fi \markdownLaTeXReadAlignments
   }
-\def \markdownLaTeXRenderTableCell #1
-  {
-    \advance \markdownLaTeXColumnCounter by 1 \relax
-    \tl_set:Nn
-      \l_tmpa_tl
-      { \markdownLaTeXRowCounter = }
-    \tl_put_right:Nx
-      \l_tmpa_tl
-      { \the \markdownLaTeXRowCounter }
-    \tl_put_right:Nn
-      \l_tmpa_tl
-      { \relax }
-    \tl_put_right:Nn
-      \l_tmpa_tl
-      { \markdownLaTeXColumnCounter = }
-    \tl_put_right:Nx
-      \l_tmpa_tl
-      { \the \markdownLaTeXColumnCounter }
-    \tl_put_right:Nn
-      \l_tmpa_tl
-      { \relax }
-    \exp_args:NNV
-      \addto@hook
-      \markdownLaTeXTable
-      \l_tmpa_tl
-    \ifnum \markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal \relax
-      \addto@hook
-        \markdownLaTeXTable
-        { #1 & }
-    \else
-      \addto@hook
-        \markdownLaTeXTable
-        {
-          #1
-          \tl_set:Nn
-            \l_tmpa_tl
-            { \\ }
-          \int_step_inline:nn
-            { \the \markdownLaTeXColumnTotal }
-            {
-              \tl_set:Nx
-                \l_tmpb_tl
-                { \the \markdownLaTeXRowCounter }
-              \tl_put_right:Nn
-                \l_tmpb_tl
-                { ,##1 }
-              \prop_if_in:NVF
-                \g_istqb_multi_row_prop
-                \l_tmpb_tl
-                {
-                  \tl_put_right:Nn
-                    \l_tmpa_tl
-                    { \cline { ##1 - ##1 } }
-                }
-            }
-          \tl_use:N
-            \l_tmpa_tl
-        }
-      \expandafter \@gobble
-    \fi \markdownLaTeXRenderTableCell
-  }
+% TODO: Reintroduce support for multi-row cells in a way that is compatible with
+% the `tabularray` package.
 \bool_new:N \g_istqb_intable_bool
 \tl_new:N \l_istqb_table_identifier_tl
 \markdownSetup
@@ -1663,14 +1662,12 @@
           }
       },
       table = {
-        \prop_clear:N
-          \g_istqb_multi_row_prop
         \bool_gset_true:N
           \g_istqb_intable_bool
         \markdownLaTeXTable = { }
         \markdownLaTeXTableAlignment = { | }
         \markdownLaTeXTableEnd = {
-          \end { istqbtable }
+          \end { istqb table }
           \bool_gset_false:N
             \g_istqb_intable_bool
         }
@@ -1680,33 +1677,22 @@
             \addto@hook
               \markdownLaTeXTable
               {
-                \begin { table }
-                \centering
-              }
-            \addto@hook
-              \markdownLaTeXTableEnd
-              {
-                \caption { #1 }
-              }
-            \tl_if_empty:NF
-              \l_istqb_table_identifier_tl
-              {
-                \addto@hook
-                  \markdownLaTeXTableEnd
+                \group_begin:
+                \SetTblrTemplate { caption } { normal }
+                \SetTblrOuter
+                  [ istqb table ]
                   {
-                    \label
-                      { \l_istqb_table_identifier_tl }
+                    entry = { #1 },
+                    caption = { #1 },
+                    label = { \l_istqb_table_identifier_tl },
+                    presep = 1.5 \bigskipamount,
+                    postsep = 1.5 \bigskipamount,
                   }
-              }
-            \addto@hook
-              \markdownLaTeXTableEnd
-              {
-                \end { table }
               }
           }
         \addto@hook
           \markdownLaTeXTable
-          { \begin { istqbtable } }
+          { \begin { istqb table } }
         \markdownLaTeXRowCounter = 0
         \markdownLaTeXRowTotal = #2
         \markdownLaTeXColumnTotal = #3
@@ -1896,14 +1882,13 @@
     citations,
   }
 
-% Index and multi-row cells
-\RequirePackage{multirow}
+% Index
 %% Function for indexing terms
 \tl_new:N
   \l_istqb_index_current_term_tl
 \str_new:N
   \l_istqb_index_current_term_str
-\cs_new:Nn
+\cs_new_protected:Nn
   \istqb_index:n
   {
     % Strip formatting from the term.
@@ -1925,12 +1910,12 @@
           \l_istqb_index_current_term_str
       }
   }
-%% Renderers for index terms and multi-row cells
+%% Renderers for index terms
 \markdownSetup
   {
     bracketedSpans,
     renderers = {
-      bracketedSpanAttributeContextBegin = {
+      bracketedSpanAttributeContextBegin += {
         \markdownSetup
           {
             renderers = {
@@ -1942,49 +1927,19 @@
                   { ##1 }
                   { index }
                   {
-                    \def\next####1\markdownRendererBracketedSpanAttributeContextEnd
+                    \markdownSetup
                       {
-                        \istqb_index:n
-                          { ####1 }
-                        ####1
+                        renderers = {
+                          bracketedSpan ^= {
+                            \istqb_index:n
+                              { ####1 }
+                          },
+                        },
                       }
-                    \next
-                  }
-              },
-              %% Multi-row cells
-              attributeKeyValue += {
-                \str_if_eq:nnT
-                  { ##1 }
-                  { rows }
-                  {
-                    \def\next####1\markdownRendererBracketedSpanAttributeContextEnd
-                      {
-                        \multirow
-                          { ##2 }
-                          { * }
-                          { ####1 }
-                        \int_step_inline:nnn
-                          { \the \markdownLaTeXRowCounter }
-                          { \the \markdownLaTeXRowCounter + ##2 - 2 }
-                          {
-                            \tl_set:Nn
-                              \l_tmpa_tl
-                              { ########1, }
-                            \tl_put_right:Nx
-                              \l_tmpa_tl
-                              { \the \markdownLaTeXColumnCounter }
-                            \prop_gput:NVn
-                              \g_istqb_multi_row_prop
-                              \l_tmpa_tl
-                              { true }
-                          }
-                      }
-                    \next
                   }
               },
             }
           }
       },
-      bracketedSpanAttributeContextEnd = ,
     }
   }
