@@ -1228,7 +1228,7 @@ def _compile_tex_file_to_pdf(input_path: Path, previous_continuous: bool) -> Opt
         try:
             _run_command('latexmk', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=600)
         except CalledProcessError as e:
-            message = ['Compiling the file "%s" returned non-zero exit status %d and the following output:\n\n%s']
+            message_parts = ['Compiling the file "%s" returned non-zero exit status %d and the following output:\n\n%s']
             message_arguments = [input_path, e.returncode, e.output.decode(errors='ignore')]
             try:
                 extra_info = '\n'.join(
@@ -1237,11 +1237,12 @@ def _compile_tex_file_to_pdf(input_path: Path, previous_continuous: bool) -> Opt
                     in _run_command('texlogfilter', '--no-box', f'{input_path.stem}.log').decode(errors='ignore').splitlines()
                     if not TEXLOGFILTER_FORBIDDEN_LINES.search(line)
                 )
-                message.append('Here is some extra information about the potential causes of the issue:\n\n%s')
+                message_parts.append('Here is some extra information about the potential causes of the issue:\n\n%s')
                 message_arguments.append(extra_info)
             except CalledProcessError:
                 pass
-            LOGGER.error(f"{'\n\n'.join(message)}\n", *message_arguments)
+            message = '\n\n'.join(message_parts)
+            LOGGER.error(f'{message}\n', *message_arguments)
             return e.returncode
     project_name = _get_project_name(input_path)
     output_path = Path(f'{project_name}.pdf')
