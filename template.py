@@ -16,11 +16,13 @@ import logging
 from multiprocessing import Pool
 from pathlib import Path
 import subprocess
+from subprocess import CalledProcessError
 from tempfile import NamedTemporaryFile
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union, TYPE_CHECKING
 import os
 import re
 import shutil
+import sys
 
 from git import Repo, InvalidGitRepositoryError
 import yamale
@@ -116,6 +118,8 @@ PDFTEX_UNPRINTED_REFERENCES = (
     r'pdfTeX warning \(dest\): name\{cite\.[0-9]+@(?P<cite_key>[^}]*)\} has been referenced but does not exist, replaced by a fixed one'
 )
 PDFTEX_UNPRINTED_REFERENCES = re.compile(PDFTEX_UNPRINTED_REFERENCES.replace(' ', r'\s+'))
+
+TEXLOGFILTER_FORBIDDEN_LINES = re.compile(r'imakeidx|fancyhdr|newunicodechar|hyperref|lipsum|LaTeX Font Warning|\(Font\)|\\@parboxrestore')
 
 
 FileLocation = Tuple[Path, int]
@@ -511,16 +515,10 @@ def _fixup_languages() -> None:
 
 
 def _run_command(*args: str, text=False, timeout=60) -> Union[str, bytes]:
-    try:
-        output = subprocess.check_output(args, text=text, stderr=subprocess.STDOUT, timeout=timeout)
-    except subprocess.CalledProcessError as e:
-        try:
-            output = e.output.decode()
-        except UnicodeDecodeError:
-            output = e.output
-        print(output)
-        raise e
-    return output
+    result = subprocess.check_output(args, text=False, stderr=subprocess.STDOUT, timeout=timeout)
+    if text:
+        result = result.decode(errors='ignore')
+    return result
 
 
 def _find_files_in_tex_live(pathname) -> List[Path]:
@@ -1224,14 +1222,31 @@ def _validate_log_file(input_path: Path) -> None:
         )
 
 
-def _compile_tex_file_to_pdf(input_path: Path, previous_continuous: bool) -> Optional[Path]:
+def _compile_tex_file_to_pdf(input_path: Path, previous_continuous: bool) -> Union[int, Optional[Path]]:
     if not _should_compile_tex_file_to_pdf(input_path):
         return
     if previous_continuous:
         _run_command('latexmk', '-pvc', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=None)
     else:
-        _run_command('latexmk', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=600)
-        _validate_log_file(input_path.with_suffix('.log'))
+        try:
+            _run_command('latexmk', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=600)
+        except CalledProcessError as e:
+            message_parts = ['Compiling the file "%s" returned non-zero exit status %d and the following output:\n\n%s']
+            message_arguments = [input_path, e.returncode, e.output.decode(errors='ignore')]
+            try:
+                extra_info = '\n'.join(
+                    line
+                    for line
+                    in _run_command('texlogfilter', '--no-box', f'{input_path.stem}.log', text=True).splitlines()
+                    if not TEXLOGFILTER_FORBIDDEN_LINES.search(line)
+                )
+                message_parts.append('Here is some extra information about the potential causes of the issue:\n\n%s')
+                message_arguments.append(extra_info)
+            except CalledProcessError:
+                pass
+            message = '\n\n'.join(message_parts)
+            LOGGER.error(f'{message}\n', *message_arguments)
+            return e.returncode
     project_name = _get_project_name(input_path)
     output_path = Path(f'{project_name}.pdf')
     input_path.with_suffix('.pdf').rename(output_path)
@@ -1319,10 +1334,10 @@ if TYPE_CHECKING:  # The Protocol class is unavailable in Python <3.8 but that s
     from typing import Protocol
 
     class CompilationFunction(Protocol):
-        def __call__(self, input_path: Path, *args, **kwargs) -> Optional[Path]: ...
+        def __call__(self, input_path: Path, *args, **kwargs) -> Union[int, Optional[Path]]: ...
 
 
-def _compile_fn(args: Tuple['CompilationFunction', Path, Tuple[Any], Dict[Any, Any]]) -> Tuple[Path, Optional[Path]]:
+def _compile_fn(args: Tuple['CompilationFunction', Path, Tuple[Any], Dict[Any, Any]]) -> Tuple[Path, Union[int, Optional[Path]]]:
     compile_fn, input_path, args, kwargs = args
     output_path = compile_fn(input_path, *args, *kwargs)
     return input_path, output_path
@@ -1373,13 +1388,19 @@ def _compile_tex_files(compile_fn: 'CompilationFunction', *args, input_paths: Op
             _convert_xlsx_files_to_pdf()
 
             compile_parameters = zip(repeat(compile_fn), input_paths, repeat(args), repeat(kwargs))
+            some_files_failed = False
             with Pool(None) as pool:
                 for input_path, output_path in pool.imap_unordered(_compile_fn, compile_parameters):
-                    if output_path is None:
+                    if isinstance(output_path, int):
+                        assert output_path != 0
+                        some_files_failed = True
+                    elif output_path is None:
                         LOGGER.info('Skipped the compilation of file "%s" because it has been disabled', input_path)
                     else:
                         assert output_path.exists(), f'File "{output_path}" does not exist'
                         LOGGER.info('Compiled file "%s" to "%s"', input_path, output_path)
+            if some_files_failed:
+                sys.exit(1)
         finally:
             del os.environ['TEXINPUTS']
             try:
