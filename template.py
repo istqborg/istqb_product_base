@@ -1219,7 +1219,7 @@ def _validate_log_file(input_path: Path) -> None:
         )
 
 
-def _compile_tex_file_to_pdf(input_path: Path, previous_continuous: bool) -> Optional[Path]:
+def _compile_tex_file_to_pdf(input_path: Path, previous_continuous: bool) -> Union[int, Optional[Path]]:
     if not _should_compile_tex_file_to_pdf(input_path):
         return
     if previous_continuous:
