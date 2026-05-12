@@ -27,6 +27,7 @@ ninecolors
 supertabular
 tabularray
 tcolorbox
+texlogfilter
 tex-gyre
 tex4ebook
 titlesec
