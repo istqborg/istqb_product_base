@@ -379,7 +379,8 @@ def _get_line_number_from_file_location(location: FileLocation) -> int:
 
 
 @lru_cache(maxsize=None)
-def _get_references_from_tex_file(tex_input_path: Path, include_sources: bool = True, include_appendices: bool = True) -> List[Tuple[FileLocation, Path, Iterable[Path]]]:
+def _get_references_from_tex_file(tex_input_path: Path, include_sources: bool = True,
+                                  include_appendices: bool = True) -> List[Tuple[FileLocation, Path, Iterable[Path]]]:
     results = []
     with tex_input_path.open('rt') as f:
         text = f.read()
@@ -1386,6 +1387,7 @@ def _get_markdown_output_name(input_path: Path) -> str:
         )
     output_name = f'{output_stem}.md'
     return output_name
+
 
 def _is_unnumbered_markdown_heading(attributes: Optional[str]) -> bool:
     if not attributes:
