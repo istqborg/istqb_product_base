@@ -1199,7 +1199,7 @@ def _is_sample_exam_answers(input_path: Path) -> bool:
 def _get_document_type(input_path: Path) -> Optional[str]:
     metadata_yaml = _get_metadata_yaml(input_path, 'determine the document type')
     if metadata_yaml is None:
-        return False
+        return None
 
     document_type = str(metadata_yaml.get('type', '')).strip().lower()
     return document_type
