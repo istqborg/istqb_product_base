@@ -61,9 +61,9 @@ PANDOC_EXTENSIONS = ['bracketed_spans', 'fancy_lists', 'pipe_tables', 'raw_attri
 
 BUILTIN_IDENTIFIERS = {'section:references', 'section:further-reading'}
 
+ISTQB_APPENDICES_REGEXP = re.compile(r'\\begin{istqbappendices}.*', re.DOTALL)
 MARKDOWNINPUT_REGEXP = re.compile(r'\\markdownInput(\[.*?\])?{(?P<filename>.*?)}', re.DOTALL)
 ADDBIBRESOURCE_REGEXP = re.compile(r'\\addbibresource{(?P<filename>.*?)}', re.DOTALL)
-DOCUMENT_BODY_REGEXP = re.compile(r'^\s*%\s*Document (Text|Content)\s*$', re.MULTILINE)
 
 ATTRIBUTES_REGEXPS = {
     'section': re.compile(
@@ -94,11 +94,12 @@ MARKDOWN_REGEXP = re.compile(r'\.(md|mdown|markdown)$', flags=re.IGNORECASE)
 YAML_REGEXP = re.compile(r'\.ya?ml$', flags=re.IGNORECASE)
 TEMPLATE_REGEXP = re.compile(r'\.(sty|cls|lua)$', flags=re.IGNORECASE)
 
-METADATA_REGEXP = re.compile(r'metadata.*\.ya?ml', flags=re.IGNORECASE)
-QUESTIONS_YAML_REGEXP = re.compile(r'questions.*\.ya?ml', flags=re.IGNORECASE)
-QUESTIONS_MARKDOWN_REGEXP = re.compile(r'.*question.*\.(md|mdown|markdown)', flags=re.IGNORECASE)
-LANGUAGES_REGEXP = re.compile(r'..\.ya?ml', flags=re.IGNORECASE)
-TRACEABILITY_MATRIX_REGEXP = re.compile(r'traceability-matrix\.ya?ml$', flags=re.IGNORECASE)
+METADATA_REGEXP = re.compile(r'metadata.*%s' % YAML_REGEXP.pattern, flags=re.IGNORECASE)
+QUESTIONS_YAML_REGEXP = re.compile(r'questions.*%s' % YAML_REGEXP.pattern, flags=re.IGNORECASE)
+QUESTIONS_MARKDOWN_REGEXP = re.compile(r'.*question.*%s' % MARKDOWN_REGEXP.pattern, flags=re.IGNORECASE)
+BOILERPLATE_MARKDOWN_REGEXP = re.compile(r'.*(copyright|revisions).*%s' % MARKDOWN_REGEXP.pattern, flags=re.IGNORECASE)
+LANGUAGES_REGEXP = re.compile(r'..%s' % YAML_REGEXP.pattern, flags=re.IGNORECASE)
+TRACEABILITY_MATRIX_REGEXP = re.compile(r'traceability-matrix%s' % YAML_REGEXP.pattern, flags=re.IGNORECASE)
 
 QUESTIONS_METADATA_REGEXP = re.compile(r'\s{0,3}#\s*metadata\s*', flags=re.IGNORECASE)
 QUESTIONS_QUESTION_REGEXP = re.compile(r'\s{0,3}##\s*question\s*', flags=re.IGNORECASE)
@@ -378,10 +379,12 @@ def _get_line_number_from_file_location(location: FileLocation) -> int:
 
 
 @lru_cache(maxsize=None)
-def _get_references_from_tex_file(tex_input_path: Path, include_sources: bool = True) -> List[Tuple[FileLocation, Path, Iterable[Path]]]:
+def _get_references_from_tex_file(tex_input_path: Path, include_sources: bool = True, include_appendices: bool = True) -> List[Tuple[FileLocation, Path, Iterable[Path]]]:
     results = []
     with tex_input_path.open('rt') as f:
         text = f.read()
+        if not include_appendices:
+            text = ISTQB_APPENDICES_REGEXP.sub('', text)
         for pattern in [MARKDOWNINPUT_REGEXP, ADDBIBRESOURCE_REGEXP]:
             for match in pattern.finditer(text):
                 # Yield directly referenced paths.
@@ -412,6 +415,10 @@ def _get_references_from_tex_files(tex_input_paths: Iterable[Path], *args, **kwa
 
 def _flatten_references(references: Iterable[Tuple[FileLocation, Path, Iterable[Path]]]) -> Iterable[Path]:
     return chain(*[paths for *_, paths in references])
+
+
+def _get_flat_references_from_tex_file(tex_input_path: Path, *args, **kwargs) -> Iterable[Path]:
+    return _flatten_references(_get_references_from_tex_file(tex_input_path, *args, **kwargs))
 
 
 def _get_flat_references_from_tex_files(tex_input_paths: Iterable[Path], *args, **kwargs) -> Iterable[Path]:
@@ -944,7 +951,7 @@ def _get_sample_exam_markdown_paths(input_path: Path) -> List[Path]:
     _convert_yaml_questions_to_md()
     question_yaml_input_paths = [
         nested_path
-        for nested_path in _get_flat_references_from_tex_files(tex_input_paths=[input_path], include_sources=False)
+        for nested_path in _get_flat_references_from_tex_file(input_path, include_sources=False)
         if QUESTIONS_YAML_REGEXP.fullmatch(nested_path.name)
     ]
     return [question_yaml_input_path.with_suffix('.md') for question_yaml_input_path in question_yaml_input_paths]
@@ -1189,6 +1196,49 @@ def _is_sample_exam_answers(input_path: Path) -> bool:
     return 'answers' in input_path.name
 
 
+@lru_cache(maxsize=None)
+def _get_document_type(input_path: Path) -> Optional[str]:
+    metadata_yaml = _get_metadata_yaml(input_path, 'determine the document type')
+    if metadata_yaml is None:
+        return False
+
+    document_type = str(metadata_yaml.get('type', '')).strip().lower()
+    return document_type
+
+
+def _is_syllabus(input_path: Path) -> bool:
+    if 'syllabus' in input_path.name:
+        return True
+
+    document_type = _get_document_type(input_path)
+    if document_type is None:
+        return False
+    return document_type in {'syllabus', 'sylabus'}
+
+
+def _is_accreditation_guidelines(input_path: Path) -> bool:
+    if 'accreditation-guidelines' in input_path.name:
+        return True
+
+    document_type = _get_document_type(input_path)
+    if document_type is None:
+        return False
+    return document_type == 'accreditation guidelines'
+
+
+def _should_compile_tex_file_to_md(input_path: Path) -> bool:
+    if _is_sample_exam_questions(input_path):
+        return True
+
+    if _is_syllabus(input_path):
+        return True
+
+    if _is_accreditation_guidelines(input_path):
+        return True
+
+    return False
+
+
 def _get_project_name(input_path: Path) -> str:
     basename = input_path.stem
     if input_path == EXAMPLE_DOCUMENT:
@@ -1210,81 +1260,132 @@ def _get_project_name(input_path: Path) -> str:
     return project_name
 
 
-def _get_markdown_document_type(input_path: Path) -> Optional[str]:
-    if _is_sample_exam_questions(input_path):
-        return 'sample exam'
-    metadata_yaml = _get_metadata_yaml(input_path, 'determine whether it should be compiled to Markdown; will not compile')
-    if metadata_yaml is None:
-        return None
-    raw_document_type = str(metadata_yaml.get('type', '')).strip().lower()
-    normalized_document_types = {
-        'syllabus': 'syllabus',
-        'sylabus': 'syllabus',
-        'accreditation guidelines': 'accreditation guidelines',
-    }
-    return normalized_document_types.get(raw_document_type)
+def _validate_log_file(input_path: Path) -> None:
+    with input_path.open('rb') as f:
+        log_text = f.read().decode('utf8', 'ignore')
+    unprinted_references = [
+        f'"{match.group("cite_key")}"'
+        for match
+        in PDFTEX_UNPRINTED_REFERENCES.finditer(log_text)
+    ]
+    if unprinted_references:
+        raise ValueError(
+            f'The BIB entry for the citation{"s" if len(unprinted_references) > 1 else ""} {", ".join(unprinted_references)} '
+            'matches no known reference type (Standards, ISTQB Documents, Books, Articles, Web Pages, and Glossary References). '
+            'To see how the the BIB entries should be formatted, see Section 1.14 (References) of the example document '
+            '<https://github.com/istqborg/istqb_product_base/releases/download/latest/example-document.pdf>'
+        )
 
 
-def _get_document_body_markdown_paths(input_path: Path) -> List[Path]:
-    lines = input_path.read_text().splitlines()
-    in_document_body = False
-    paths: List[Path] = []
-    stop_markers = (
-        '% Appendices',
-        '% Bibliography',
-        '% Closing sections',
-        '% List of Tables',
-        '% List of Figures',
-        '% Index',
-    )
-    for line in lines:
-        stripped = line.strip()
-        if not in_document_body:
-            if DOCUMENT_BODY_REGEXP.fullmatch(stripped):
-                in_document_body = True
-            continue
-        if any(stripped.startswith(marker) for marker in stop_markers):
-            break
-        match = MARKDOWNINPUT_REGEXP.search(stripped)
-        if not match:
-            continue
-        referenced_path = Path(match.group('filename'))
-        if referenced_path.suffix.lower() != '.md':
-            continue
-        if not referenced_path.is_absolute():
-            referenced_path = (input_path.parent / referenced_path).resolve()
-        paths.append(referenced_path)
-    return paths
+def _compile_tex_file_to_pdf(input_path: Path, previous_continuous: bool) -> Optional[Path]:
+    if not _should_compile_tex_file_to_pdf(input_path):
+        return
+    if previous_continuous:
+        _run_command('latexmk', '-pvc', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=None)
+    else:
+        _run_command('latexmk', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=600)
+        _validate_log_file(input_path.with_suffix('.log'))
+    project_name = _get_project_name(input_path)
+    output_path = Path(f'{project_name}.pdf')
+    input_path.with_suffix('.pdf').rename(output_path)
+    return output_path
+
+
+def _compile_tex_file_to_html(input_path: Path, output_directory: Path) -> Optional[Path]:
+    if not _should_compile_tex_file_to_html(input_path):
+        return
+    project_name = _get_project_name(input_path)
+    output_path = output_directory / project_name / input_path.with_suffix('.html').name
+    _run_command('make4ht', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_path.parent}', f'{input_path}', timeout=600)
+    return output_path
+
+
+def _compile_tex_file_to_epub(input_path: Path, output_directory: Path) -> Optional[Path]:
+    if not _should_compile_tex_file_to_epub(input_path):
+        return
+
+    output_directory = output_directory.resolve()
+    build_directory = output_directory / 'build' / input_path.stem
+
+    def prune_output_directory(parent_directory: str, filenames: List[str]) -> List[str]:
+        parent_directory = Path(parent_directory).resolve()
+        if parent_directory == output_directory.parent:
+            return [output_directory.name]
+        return []
+
+    shutil.copytree(input_path.parent, build_directory, ignore=prune_output_directory)
+
+    with _change_directory(build_directory):
+        _run_command(
+            'tex4ebook', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_directory}', input_path.name,
+            timeout=600,
+        )
+
+    shutil.rmtree(build_directory)
+
+    project_name = _get_project_name(input_path)
+    output_path = output_directory / f'{project_name}.epub'
+    (output_directory / input_path.with_suffix('.epub').name).rename(output_path)
+    return output_path
+
+
+def _compile_tex_file_to_docx(input_path: Path, output_directory: Path) -> Optional[Path]:
+    if not _should_compile_tex_file_to_docx(input_path):
+        return
+
+    # Collect files referenced from the TeX file.
+    markdown_texts = []
+    for nested_path in _get_flat_references_from_tex_file(input_path, include_sources=False):
+        if MARKDOWN_REGEXP.search(nested_path.name):
+            with nested_path.open('rt') as f:
+                markdown_text = f.read()
+                markdown_texts.append(markdown_text)
+        elif YAML_REGEXP.search(nested_path.name):
+            if QUESTIONS_YAML_REGEXP.fullmatch(nested_path.name):
+                with nested_path.with_suffix('.md').open('rt') as f:
+                    markdown_text = f.read()
+                    markdown_texts.append(markdown_text)
+            else:
+                with nested_path.open('rt') as f:
+                    markdown_text = f'``` yml\n{f.read()}\n```'
+                    markdown_texts.append(markdown_text)
+        elif BIB_REGEXP.search(nested_path.name):
+            with nested_path.open('rt') as f:
+                markdown_text = f'``` bib\n{f.read()}\n```'
+                markdown_texts.append(markdown_text)
+
+    # Convert the collected files to DOCX.
+    markdown_text = '\n\n'.join(markdown_texts)
+    pandoc_from_format = '+'.join([PANDOC_INPUT_FORMAT, *PANDOC_EXTENSIONS])
+    project_name = _get_project_name(input_path)
+    output_path = output_directory / f'{project_name}.docx'
+    with NamedTemporaryFile('wt', delete=False) as f:
+        print(markdown_text, file=f)
+        f.close()
+        _run_command('pandoc', '-f', f'{pandoc_from_format}', '-i', f'{f.name}', '-o', f'{output_path}')
+        os.unlink(f.name)
+
+    return output_path
 
 
 def _get_markdown_output_name(input_path: Path) -> str:
     metadata_yaml = _get_metadata_yaml(input_path, 'determine the Markdown output name')
     if metadata_yaml is None:
-        return f'{input_path.stem}.md'
-    document_type = _get_markdown_document_type(input_path)
-    if document_type is None:
-        return f'{input_path.stem}.md'
-    code = str(metadata_yaml.get('code', input_path.stem)).strip().lower()
-    language = str(metadata_yaml.get('language', 'en')).strip().lower()
-    suffix_by_document_type = {
-        'syllabus': '-syllabus',
-        'accreditation guidelines': '-accreditation-guidelines',
-        'sample exam': '-sample-exam',
-    }
-    suffix = suffix_by_document_type[document_type]
-    if document_type == 'sample exam':
-        type_text = str(metadata_yaml.get('type', '')).strip().lower()
-        variant_match = re.fullmatch(r'sample exam(?:\s+(.*))?', type_text)
-        if variant_match is not None:
-            variant = variant_match.group(1)
-            if variant:
-                variant_slug = re.sub(r'[^a-z0-9]+', '-', variant).strip('-')
-                if variant_slug:
-                    suffix = f'{suffix}-{variant_slug}'
-    if language and language != 'en':
-        suffix = f'{suffix}-{language}'
-    return f'{code}{suffix}.md'
-
+        output_stem = input_path.stem
+    else:
+        code = str(metadata_yaml.get('code', input_path.stem))
+        document_type = str(metadata_yaml.get('type', ''))
+        language = str(metadata_yaml.get('language', 'en'))
+        output_stem_buffer = [code, document_type]
+        if language and language != 'en':
+            output_stem_buffer.append(language)
+        output_stem = '-'.join(
+            re.sub(r'\s+', '-', name_segment.strip().lower())
+            for name_segment
+            in output_stem_buffer
+        )
+    output_name = f'{output_stem}.md'
+    return output_name
 
 def _is_unnumbered_markdown_heading(attributes: Optional[str]) -> bool:
     if not attributes:
@@ -1392,141 +1493,27 @@ def _rewrite_syllabus_markdown(markdown_text: str) -> str:
 
 
 def _compile_tex_file_to_md(input_path: Path, output_directory: Path) -> Optional[Path]:
-    document_type = _get_markdown_document_type(input_path)
-    if document_type is None:
-        return None
-    output_path = output_directory / _get_markdown_output_name(input_path)
-    if document_type == 'sample exam':
-        markdown_input_paths = _get_sample_exam_markdown_paths(input_path)
-        if not markdown_input_paths:
-            return None
-        if len(markdown_input_paths) == 1:
-            output_path.write_text(markdown_input_paths[0].read_text())
-            return output_path
-        markdown_texts = []
-        for markdown_input_path in markdown_input_paths:
-            with markdown_input_path.open('rt') as f:
-                markdown_texts.append(f.read().rstrip())
-    else:
-        markdown_input_paths = _get_document_body_markdown_paths(input_path)
-        if not markdown_input_paths:
-            return None
-        markdown_texts = []
-        for markdown_input_path in markdown_input_paths:
-            with markdown_input_path.open('rt') as f:
-                markdown_texts.append(f.read().rstrip())
-    markdown_text = '\n\n'.join(markdown_texts) + '\n'
-    if document_type == 'syllabus':
-        markdown_text = _rewrite_syllabus_markdown(markdown_text)
-    output_path.write_text(markdown_text)
-    return output_path
-
-
-def _validate_log_file(input_path: Path) -> None:
-    with input_path.open('rb') as f:
-        log_text = f.read().decode('utf8', 'ignore')
-    unprinted_references = [
-        f'"{match.group("cite_key")}"'
-        for match
-        in PDFTEX_UNPRINTED_REFERENCES.finditer(log_text)
-    ]
-    if unprinted_references:
-        raise ValueError(
-            f'The BIB entry for the citation{"s" if len(unprinted_references) > 1 else ""} {", ".join(unprinted_references)} '
-            'matches no known reference type (Standards, ISTQB Documents, Books, Articles, Web Pages, and Glossary References). '
-            'To see how the the BIB entries should be formatted, see Section 1.14 (References) of the example document '
-            '<https://github.com/istqborg/istqb_product_base/releases/download/latest/example-document.pdf>'
-        )
-
-
-def _compile_tex_file_to_pdf(input_path: Path, previous_continuous: bool) -> Optional[Path]:
-    if not _should_compile_tex_file_to_pdf(input_path):
-        return
-    if previous_continuous:
-        _run_command('latexmk', '-pvc', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=None)
-    else:
-        _run_command('latexmk', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=600)
-        _validate_log_file(input_path.with_suffix('.log'))
-    project_name = _get_project_name(input_path)
-    output_path = Path(f'{project_name}.pdf')
-    input_path.with_suffix('.pdf').rename(output_path)
-    return output_path
-
-
-def _compile_tex_file_to_html(input_path: Path, output_directory: Path) -> Optional[Path]:
-    if not _should_compile_tex_file_to_html(input_path):
-        return
-    project_name = _get_project_name(input_path)
-    output_path = output_directory / project_name / input_path.with_suffix('.html').name
-    _run_command('make4ht', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_path.parent}', f'{input_path}', timeout=600)
-    return output_path
-
-
-def _compile_tex_file_to_epub(input_path: Path, output_directory: Path) -> Optional[Path]:
-    if not _should_compile_tex_file_to_epub(input_path):
-        return
-
-    output_directory = output_directory.resolve()
-    build_directory = output_directory / 'build' / input_path.stem
-
-    def prune_output_directory(parent_directory: str, filenames: List[str]) -> List[str]:
-        parent_directory = Path(parent_directory).resolve()
-        if parent_directory == output_directory.parent:
-            return [output_directory.name]
-        return []
-
-    shutil.copytree(input_path.parent, build_directory, ignore=prune_output_directory)
-
-    with _change_directory(build_directory):
-        _run_command(
-            'tex4ebook', '-s', '-c', f'{ISTQB_CFG}', '-e', f'{ISTQB_MK4}', '-d', f'{output_directory}', input_path.name,
-            timeout=600,
-        )
-
-    shutil.rmtree(build_directory)
-
-    project_name = _get_project_name(input_path)
-    output_path = output_directory / f'{project_name}.epub'
-    (output_directory / input_path.with_suffix('.epub').name).rename(output_path)
-    return output_path
-
-
-def _compile_tex_file_to_docx(input_path: Path, output_directory: Path) -> Optional[Path]:
-    if not _should_compile_tex_file_to_docx(input_path):
+    if not _should_compile_tex_file_to_md(input_path):
         return
 
     # Collect files referenced from the TeX file.
     markdown_texts = []
-    for nested_path in _get_flat_references_from_tex_files(tex_input_paths=[input_path], include_sources=False):
+    for nested_path in _get_flat_references_from_tex_file(input_path, include_appendices=False):
+        if BOILERPLATE_MARKDOWN_REGEXP.search(nested_path.name):
+            continue
         if MARKDOWN_REGEXP.search(nested_path.name):
             with nested_path.open('rt') as f:
                 markdown_text = f.read()
                 markdown_texts.append(markdown_text)
-        elif YAML_REGEXP.search(nested_path.name):
-            if QUESTIONS_YAML_REGEXP.fullmatch(nested_path.name):
-                with nested_path.with_suffix('.md').open('rt') as f:
-                    markdown_text = f.read()
-                    markdown_texts.append(markdown_text)
-            else:
-                with nested_path.open('rt') as f:
-                    markdown_text = f'``` yml\n{f.read()}\n```'
-                    markdown_texts.append(markdown_text)
-        elif BIB_REGEXP.search(nested_path.name):
-            with nested_path.open('rt') as f:
-                markdown_text = f'``` bib\n{f.read()}\n```'
-                markdown_texts.append(markdown_text)
 
-    # Convert the collected files to DOCX.
-    markdown_text = '\n\n'.join(markdown_texts)
-    pandoc_from_format = '+'.join([PANDOC_INPUT_FORMAT, *PANDOC_EXTENSIONS])
-    project_name = _get_project_name(input_path)
-    output_path = output_directory / f'{project_name}.docx'
-    with NamedTemporaryFile('wt', delete=False) as f:
+    # Convert the collected files to MD.
+    markdown_text = '\n\n'.join(markdown_text.strip() for markdown_text in markdown_texts)
+    if _is_syllabus(input_path):
+        markdown_text = _rewrite_syllabus_markdown(markdown_text)
+    markdown_output_name = _get_markdown_output_name(input_path)
+    output_path = output_directory / markdown_output_name
+    with output_path.open('wt') as f:
         print(markdown_text, file=f)
-        f.close()
-        _run_command('pandoc', '-f', f'{pandoc_from_format}', '-i', f'{f.name}', '-o', f'{output_path}')
-        os.unlink(f.name)
-
     return output_path
 
 
@@ -1550,7 +1537,7 @@ def _should_compile_tex_file(input_path: Path) -> bool:
         return True
 
     changed_paths = set(_changed_paths())
-    referenced_paths = set(chain([input_path], _get_flat_references_from_tex_files([input_path])))
+    referenced_paths = set(chain([input_path], _get_flat_references_from_tex_file(input_path)))
     return bool(referenced_paths & changed_paths)
 
 
