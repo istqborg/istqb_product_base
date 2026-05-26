@@ -28,7 +28,8 @@
 
 %% Landscape content
 \ExplSyntaxOn
-\def \istqblandscapebegin
+\cs_new_protected:Npn
+  \istqblandscapebegin
   {
     \group_begin:
     \paperwidth = \pdfpageheight
@@ -42,7 +43,8 @@
     \pdfpagewidth = \paperwidth
     \pdfpageheight = \paperheight
   }
-\def \istqblandscapeend
+\cs_new_protected:Npn
+  \istqblandscapeend
   {
     \clearpage
     \group_end:
@@ -345,7 +347,7 @@
 
 %% Reference printing
 \ExplSyntaxOn
-\cs_new:Npn
+\cs_new_protected:Npn
   \printistqbbibliography
   {
     \nocite
@@ -589,7 +591,7 @@
 \int_gset:Nn
   \g_istqb_previous_heading_level_int
   { 0 }
-\cs_new:Npn
+\cs_new_protected:Npn
   \istqbupdateheadinglevel
   #1
   {
@@ -994,40 +996,39 @@
 \RequirePackage{hyperref}
 
 % Tables
-\RequirePackage{nicematrix, tabularx}
-\RequirePackage{xcolor, colortbl}
+\RequirePackage{xcolor}
 \definecolor{istqbgraytableheader}{HTML}{D9D9D9}
 \definecolor{istqbbluetableheader}{HTML}{B5C5E5}
 \definecolor{istqbgreentableheader}{HTML}{C5E0B3}
+\RequirePackage{tabularray}
 \ExplSyntaxOn
-\newenvironment
-  { istqbtable }
-  [ 1 ]
+\DeclareTblrTemplate { contfoot } { default } { }
+\DeclareTblrTemplate { conthead } { default } { }
+\DeclareTblrTemplate { caption } { default } { }
+\DeclareTblrTemplate { caption-sep } { default } { :~ }
+\DeclareTblrTemplate { conthead } { default } { }
+\DeclareTblrTemplate { capcont } { default } { }
+\NewTblrEnviron
+  { istqb table }
+\SetTblrOuter
+  [ istqb table ]
   {
-    \renewcommand { \arraystretch }{ 1.25 }  % Set vertical cell margins
-    \setlength \tabcolsep { 3pt }  % Set horizontal cell margins
-    \str_if_in:nnTF
-      { #1 }
-      { X }
-      {
-        \cs_set:Npn
-          \endistqbtable
-          { \end { NiceTabularX } }
-        \begin { NiceTabularX } \linewidth { #1 } \hline
-      }
-      {
-        \cs_set:Npn
-          \endistqbtable
-          {
-            \end { NiceTabular }
-            \par
-          }
-        \centering
-        \begin { NiceTabular } { #1 } \hline
-      }
-    \RowStyle [ nb-rows=1, rowcolor=istqbgraytableheader ] { }  % Color table head
+    long,
+    entry = none,
+    label = none,
+    presep = \medskipamount,
+    postsep = \medskipamount,
   }
-  { }
+\SetTblrInner
+  [ istqb table ]
+  {
+    rowhead = 1,
+    row { 1 } = { istqb gray table header },
+    hlines,
+    stretch = 0,
+    rows = { ht = \baselineskip },
+    colsep = 3pt,
+  }
 \ExplSyntaxOff
 
 %% Revision History
@@ -1043,7 +1044,7 @@
   \l_istqb_external_document_basename_tl
 \int_new:N
   \l_istqb_external_document_last_page_int
-\cs_new:Nn
+\cs_new_protected:Nn
   \istqb_structure_tables:n
   {
     \pdfximage

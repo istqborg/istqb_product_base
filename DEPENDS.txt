@@ -20,15 +20,14 @@ luaxml
 make4ht
 makeindex
 mdframed
-multirow
 mwe
 needspace
 newunicodechar
-nicematrix
 ninecolors
 supertabular
 tabularray
 tcolorbox
+texlogfilter
 tex-gyre
 tex4ebook
 titlesec
