@@ -1410,7 +1410,7 @@ def _rewrite_syllabus_markdown(markdown_text: str) -> str:
     return '\n'.join(rewritten_lines).rstrip() + '\n'
 
 
-def _compile_tex_file_to_markdown(input_path: Path, output_directory: Path) -> Optional[Path]:
+def _compile_tex_file_to_md(input_path: Path, output_directory: Path) -> Optional[Path]:
     document_type = _get_markdown_document_type(input_path)
     if document_type is None:
         return None
@@ -1641,9 +1641,9 @@ def _compile_tex_files_to_docx(output_directory: Path, input_paths: Optional[Ite
     _compile_tex_files(_compile_tex_file_to_docx, output_directory, input_paths=input_paths)
 
 
-def _compile_tex_files_to_markdown(output_directory: Path, input_paths: Optional[Iterable[Path]]) -> None:
+def _compile_tex_files_to_md(output_directory: Path, input_paths: Optional[Iterable[Path]]) -> None:
     output_directory.mkdir(parents=True, exist_ok=True)
-    _compile_tex_files(_compile_tex_file_to_markdown, output_directory, input_paths=input_paths)
+    _compile_tex_files(_compile_tex_file_to_md, output_directory, input_paths=input_paths)
 
 
 def find_files(args: Namespace) -> None:
@@ -1702,9 +1702,9 @@ def compile_tex_files_to_docx(args: Namespace) -> None:
     _compile_tex_files_to_docx(Path(args.outputdir), input_paths)
 
 
-def compile_tex_files_to_markdown(args: Namespace) -> None:
+def compile_tex_files_to_md(args: Namespace) -> None:
     input_paths = sorted(map(Path, args.filenames)) if args.filenames else None
-    _compile_tex_files_to_markdown(Path(args.outputdir), input_paths)
+    _compile_tex_files_to_md(Path(args.outputdir), input_paths)
 
 
 def main():
@@ -1802,13 +1802,13 @@ def main():
     parser_compile_tex_files_to_docx.add_argument('filenames', nargs='*')
     parser_compile_tex_files_to_docx.set_defaults(func=compile_tex_files_to_docx)
 
-    parser_compile_tex_files_to_markdown = subparsers.add_parser(
-        'compile-tex-to-markdown',
-        help='Compile selected TeX files in this repository to combined Markdown',
+    parser_compile_tex_files_to_md = subparsers.add_parser(
+        'compile-tex-to-md',
+        help='Compile selected TeX files in this repository to a combined MD file',
     )
-    parser_compile_tex_files_to_markdown.add_argument('outputdir')
-    parser_compile_tex_files_to_markdown.add_argument('filenames', nargs='*')
-    parser_compile_tex_files_to_markdown.set_defaults(func=compile_tex_files_to_markdown)
+    parser_compile_tex_files_to_md.add_argument('outputdir')
+    parser_compile_tex_files_to_md.add_argument('filenames', nargs='*')
+    parser_compile_tex_files_to_md.set_defaults(func=compile_tex_files_to_md)
 
     args = parser.parse_args()
     if 'func' not in args:

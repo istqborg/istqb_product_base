@@ -240,7 +240,7 @@ jobs:
           git checkout ${{ inputs.base-version || github.sha }}
           pip install -r requirements.txt --break-system-packages
       - name: Compile Markdown documents
-        run: istqb-template compile-tex-to-markdown md/
+        run: istqb-template compile-tex-to-md md/
       - name: Upload Markdown documents
         uses: actions/upload-artifact@v4
         with:
