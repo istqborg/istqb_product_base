@@ -1104,12 +1104,9 @@ def _should_compile_tex_file_to_pdf(input_path: Path) -> bool:
     if (input_path.parent / input_path.stem / 'NO_PDF').exists():
         return False
 
-    metadata_path = _get_metadata_path(input_path, 'determine whether it should be compiled to PDF; will compile')
-    if metadata_path is None:
+    metadata_yaml = _get_metadata_yaml(input_path, 'determine whether it should be compiled to PDF; will compile')
+    if metadata_yaml is None:
         return True
-    with metadata_path.open('rt') as f:
-        metadata_yaml_text = f.read()
-    metadata_yaml = yaml.safe_load(metadata_yaml_text)
 
     if 'pdf-output' in metadata_yaml:
         pdf_output = bool(metadata_yaml['pdf-output'])
@@ -1126,13 +1123,9 @@ def _should_compile_tex_file_to_html(input_path: Path) -> bool:
     if (input_path.parent / input_path.stem / 'NO_HTML').exists():
         return False
 
-    metadata_path = _get_metadata_path(input_path, 'determine whether it should be compiled to HTML; will not compile')
-    if metadata_path is None:
+    metadata_yaml = _get_metadata_yaml(input_path, 'determine whether it should be compiled to HTML; will not compile')
+    if metadata_yaml is None:
         return False
-
-    with metadata_path.open('rt') as f:
-        metadata_yaml_text = f.read()
-    metadata_yaml = yaml.safe_load(metadata_yaml_text)
 
     if 'html-output' in metadata_yaml:
         html_output = bool(metadata_yaml['html-output'])
@@ -1150,13 +1143,9 @@ def _should_compile_tex_file_to_epub(input_path: Path) -> bool:
     if (input_path.parent / input_path.stem / 'NO_HTML').exists():
         return False
 
-    metadata_path = _get_metadata_path(input_path, 'determine whether it should be compiled to EPUB; will not compile')
-    if metadata_path is None:
+    metadata_yaml = _get_metadata_yaml(input_path, 'determine whether it should be compiled to EPUB; will not compile')
+    if metadata_yaml is None:
         return False
-
-    with metadata_path.open('rt') as f:
-        metadata_yaml_text = f.read()
-    metadata_yaml = yaml.safe_load(metadata_yaml_text)
 
     if 'epub-output' in metadata_yaml:
         epub_output = bool(metadata_yaml['epub-output'])
@@ -1178,13 +1167,9 @@ def _should_compile_tex_file_to_docx(input_path: Path) -> bool:
     if _is_sample_exam_answers(input_path):
         return False
 
-    metadata_path = _get_metadata_path(input_path, 'determine whether it should be compiled to DOCX; will not compile')
-    if metadata_path is None:
+    metadata_yaml = _get_metadata_yaml(input_path, 'determine whether it should be compiled to DOCX; will not compile')
+    if metadata_yaml is None:
         return False
-
-    with metadata_path.open('rt') as f:
-        metadata_yaml_text = f.read()
-    metadata_yaml = yaml.safe_load(metadata_yaml_text)
 
     if 'docx-output' in metadata_yaml:
         docx_output = bool(metadata_yaml['docx-output'])
@@ -1208,13 +1193,9 @@ def _get_project_name(input_path: Path) -> str:
     basename = input_path.stem
     if input_path == EXAMPLE_DOCUMENT:
         return basename
-    metadata_path = _get_metadata_path(input_path, f'determine the project name; will use "{basename}"')
-    if metadata_path is None:
+    metadata_yaml = _get_metadata_yaml(input_path, f'determine the project name; will use "{basename}"')
+    if metadata_yaml is None:
         return basename
-
-    with metadata_path.open('rt') as f:
-        metadata_yaml_text = f.read()
-    metadata_yaml = yaml.safe_load(metadata_yaml_text)
 
     organization = metadata_yaml.get('organization', 'ISTQB®').replace('®', '').strip()
     code = metadata_yaml.get('code', 'CODE').strip()
