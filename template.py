@@ -397,7 +397,7 @@ def _get_references_from_tex_file(tex_input_path: Path, include_sources: bool = 
                 referenced_paths = [referenced_path]
                 # For YAML questions, yield also MD question source files.
                 if include_sources and QUESTIONS_YAML_REGEXP.fullmatch(referenced_path.name):
-                    for referenced_md_path in referenced_path.parent.iterdir():
+                    for referenced_md_path in sorted(referenced_path.parent.iterdir()):
                         if not referenced_md_path.is_file():
                             continue
                         if QUESTIONS_MARKDOWN_REGEXP.fullmatch(referenced_md_path.name):
