@@ -1498,13 +1498,18 @@ def _compile_tex_file_to_md(input_path: Path, output_directory: Path) -> Optiona
 
     # Collect files referenced from the TeX file.
     markdown_texts = []
-    for nested_path in _get_flat_references_from_tex_file(input_path, include_appendices=False):
-        if BOILERPLATE_MARKDOWN_REGEXP.search(nested_path.name):
-            continue
+    for nested_path in _get_flat_references_from_tex_file(input_path, include_sources=False, include_appendices=False):
         if MARKDOWN_REGEXP.search(nested_path.name):
+            if BOILERPLATE_MARKDOWN_REGEXP.search(nested_path.name):
+                continue
             with nested_path.open('rt') as f:
                 markdown_text = f.read()
                 markdown_texts.append(markdown_text)
+        elif YAML_REGEXP.search(nested_path.name):
+            if QUESTIONS_YAML_REGEXP.fullmatch(nested_path.name):
+                with nested_path.with_suffix('.md').open('rt') as f:
+                    markdown_text = f.read()
+                    markdown_texts.append(markdown_text)
 
     # Convert the collected files to MD.
     markdown_text = '\n\n'.join(markdown_text.strip() for markdown_text in markdown_texts)
