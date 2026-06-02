@@ -63,6 +63,7 @@ PANDOC_EXTENSIONS = ['bracketed_spans', 'fancy_lists', 'pipe_tables', 'raw_attri
 
 BUILTIN_IDENTIFIERS = {'section:references', 'section:further-reading'}
 
+ISTQB_APPENDICES_REGEXP = re.compile(r'\\begin{istqbappendices}.*', re.DOTALL)
 MARKDOWNINPUT_REGEXP = re.compile(r'\\markdownInput(\[.*?\])?{(?P<filename>.*?)}', re.DOTALL)
 ADDBIBRESOURCE_REGEXP = re.compile(r'\\addbibresource{(?P<filename>.*?)}', re.DOTALL)
 
@@ -95,11 +96,12 @@ MARKDOWN_REGEXP = re.compile(r'\.(md|mdown|markdown)$', flags=re.IGNORECASE)
 YAML_REGEXP = re.compile(r'\.ya?ml$', flags=re.IGNORECASE)
 TEMPLATE_REGEXP = re.compile(r'\.(sty|cls|lua)$', flags=re.IGNORECASE)
 
-METADATA_REGEXP = re.compile(r'metadata.*\.ya?ml', flags=re.IGNORECASE)
-QUESTIONS_YAML_REGEXP = re.compile(r'questions.*\.ya?ml', flags=re.IGNORECASE)
-QUESTIONS_MARKDOWN_REGEXP = re.compile(r'.*question.*\.(md|mdown|markdown)', flags=re.IGNORECASE)
-LANGUAGES_REGEXP = re.compile(r'..\.ya?ml', flags=re.IGNORECASE)
-TRACEABILITY_MATRIX_REGEXP = re.compile(r'traceability-matrix\.ya?ml$', flags=re.IGNORECASE)
+METADATA_REGEXP = re.compile(r'metadata.*%s' % YAML_REGEXP.pattern, flags=re.IGNORECASE)
+QUESTIONS_YAML_REGEXP = re.compile(r'questions.*%s' % YAML_REGEXP.pattern, flags=re.IGNORECASE)
+QUESTIONS_MARKDOWN_REGEXP = re.compile(r'.*question.*%s' % MARKDOWN_REGEXP.pattern, flags=re.IGNORECASE)
+BOILERPLATE_MARKDOWN_REGEXP = re.compile(r'.*(copyright|revisions).*%s' % MARKDOWN_REGEXP.pattern, flags=re.IGNORECASE)
+LANGUAGES_REGEXP = re.compile(r'..%s' % YAML_REGEXP.pattern, flags=re.IGNORECASE)
+TRACEABILITY_MATRIX_REGEXP = re.compile(r'traceability-matrix%s' % YAML_REGEXP.pattern, flags=re.IGNORECASE)
 
 QUESTIONS_METADATA_REGEXP = re.compile(r'\s{0,3}#\s*metadata\s*', flags=re.IGNORECASE)
 QUESTIONS_QUESTION_REGEXP = re.compile(r'\s{0,3}##\s*question\s*', flags=re.IGNORECASE)
@@ -118,6 +120,8 @@ PDFTEX_UNPRINTED_REFERENCES = (
     r'pdfTeX warning \(dest\): name\{cite\.[0-9]+@(?P<cite_key>[^}]*)\} has been referenced but does not exist, replaced by a fixed one'
 )
 PDFTEX_UNPRINTED_REFERENCES = re.compile(PDFTEX_UNPRINTED_REFERENCES.replace(' ', r'\s+'))
+MARKDOWN_HEADING_REGEXP = re.compile(r'^(?P<hashes>#{1,6})\s+(?P<title>.*?)(?P<attrs>\s+\{[^{}]*\})?\s*$')
+MARKDOWN_LIST_ITEM_REGEXP = re.compile(r'^(?P<indent>\s*)(?:[-*+]|\d+[.)])\s+(?P<text>.+?)\s*$')
 
 TEXLOGFILTER_FORBIDDEN_LINES = re.compile(r'imakeidx|fancyhdr|newunicodechar|hyperref|lipsum|LaTeX Font Warning|\(Font\)|\\@parboxrestore')
 
@@ -379,10 +383,13 @@ def _get_line_number_from_file_location(location: FileLocation) -> int:
 
 
 @lru_cache(maxsize=None)
-def _get_references_from_tex_file(tex_input_path: Path, include_sources: bool = True) -> List[Tuple[FileLocation, Path, Iterable[Path]]]:
+def _get_references_from_tex_file(tex_input_path: Path, include_sources: bool = True,
+                                  include_appendices: bool = True) -> List[Tuple[FileLocation, Path, Iterable[Path]]]:
     results = []
     with tex_input_path.open('rt') as f:
         text = f.read()
+        if not include_appendices:
+            text = ISTQB_APPENDICES_REGEXP.sub('', text)
         for pattern in [MARKDOWNINPUT_REGEXP, ADDBIBRESOURCE_REGEXP]:
             for match in pattern.finditer(text):
                 # Yield directly referenced paths.
@@ -395,7 +402,7 @@ def _get_references_from_tex_file(tex_input_path: Path, include_sources: bool = 
                 referenced_paths = [referenced_path]
                 # For YAML questions, yield also MD question source files.
                 if include_sources and QUESTIONS_YAML_REGEXP.fullmatch(referenced_path.name):
-                    for referenced_md_path in referenced_path.parent.iterdir():
+                    for referenced_md_path in sorted(referenced_path.parent.iterdir()):
                         if not referenced_md_path.is_file():
                             continue
                         if QUESTIONS_MARKDOWN_REGEXP.fullmatch(referenced_md_path.name):
@@ -413,6 +420,10 @@ def _get_references_from_tex_files(tex_input_paths: Iterable[Path], *args, **kwa
 
 def _flatten_references(references: Iterable[Tuple[FileLocation, Path, Iterable[Path]]]) -> Iterable[Path]:
     return chain(*[paths for *_, paths in references])
+
+
+def _get_flat_references_from_tex_file(tex_input_path: Path, *args, **kwargs) -> Iterable[Path]:
+    return _flatten_references(_get_references_from_tex_file(tex_input_path, *args, **kwargs))
 
 
 def _get_flat_references_from_tex_files(tex_input_paths: Iterable[Path], *args, **kwargs) -> Iterable[Path]:
@@ -935,6 +946,16 @@ def _read_md_questions(input_files: Iterable[Path]) -> Iterable[Tuple[int, Dict]
             question_number += 1
 
 
+def _get_sample_exam_markdown_paths(input_path: Path) -> List[Path]:
+    _convert_yaml_questions_to_md()
+    question_yaml_input_paths = [
+        nested_path
+        for nested_path in _get_flat_references_from_tex_file(input_path, include_sources=False)
+        if QUESTIONS_YAML_REGEXP.fullmatch(nested_path.name)
+    ]
+    return [question_yaml_input_path.with_suffix('.md') for question_yaml_input_path in question_yaml_input_paths]
+
+
 def _cluster_files(input_paths: Iterable[Path]) -> Iterable[Tuple[Path, List[Path]]]:
     clusters = defaultdict(lambda: list())
     for input_path in input_paths:
@@ -1076,16 +1097,22 @@ def _get_metadata_path(input_path: Path, action: str) -> Optional[Path]:
     return metadata_path
 
 
+def _get_metadata_yaml(input_path: Path, action: str) -> Optional[Dict[str, Any]]:
+    metadata_path = _get_metadata_path(input_path, action)
+    if metadata_path is None:
+        return None
+    with metadata_path.open('rt') as f:
+        metadata_yaml_text = f.read()
+    return yaml.safe_load(metadata_yaml_text)
+
+
 def _should_compile_tex_file_to_pdf(input_path: Path) -> bool:
     if (input_path.parent / input_path.stem / 'NO_PDF').exists():
         return False
 
-    metadata_path = _get_metadata_path(input_path, 'determine whether it should be compiled to PDF; will compile')
-    if metadata_path is None:
+    metadata_yaml = _get_metadata_yaml(input_path, 'determine whether it should be compiled to PDF; will compile')
+    if metadata_yaml is None:
         return True
-    with metadata_path.open('rt') as f:
-        metadata_yaml_text = f.read()
-    metadata_yaml = yaml.safe_load(metadata_yaml_text)
 
     if 'pdf-output' in metadata_yaml:
         pdf_output = bool(metadata_yaml['pdf-output'])
@@ -1102,13 +1129,9 @@ def _should_compile_tex_file_to_html(input_path: Path) -> bool:
     if (input_path.parent / input_path.stem / 'NO_HTML').exists():
         return False
 
-    metadata_path = _get_metadata_path(input_path, 'determine whether it should be compiled to HTML; will not compile')
-    if metadata_path is None:
+    metadata_yaml = _get_metadata_yaml(input_path, 'determine whether it should be compiled to HTML; will not compile')
+    if metadata_yaml is None:
         return False
-
-    with metadata_path.open('rt') as f:
-        metadata_yaml_text = f.read()
-    metadata_yaml = yaml.safe_load(metadata_yaml_text)
 
     if 'html-output' in metadata_yaml:
         html_output = bool(metadata_yaml['html-output'])
@@ -1126,13 +1149,9 @@ def _should_compile_tex_file_to_epub(input_path: Path) -> bool:
     if (input_path.parent / input_path.stem / 'NO_HTML').exists():
         return False
 
-    metadata_path = _get_metadata_path(input_path, 'determine whether it should be compiled to EPUB; will not compile')
-    if metadata_path is None:
+    metadata_yaml = _get_metadata_yaml(input_path, 'determine whether it should be compiled to EPUB; will not compile')
+    if metadata_yaml is None:
         return False
-
-    with metadata_path.open('rt') as f:
-        metadata_yaml_text = f.read()
-    metadata_yaml = yaml.safe_load(metadata_yaml_text)
 
     if 'epub-output' in metadata_yaml:
         epub_output = bool(metadata_yaml['epub-output'])
@@ -1154,13 +1173,9 @@ def _should_compile_tex_file_to_docx(input_path: Path) -> bool:
     if _is_sample_exam_answers(input_path):
         return False
 
-    metadata_path = _get_metadata_path(input_path, 'determine whether it should be compiled to DOCX; will not compile')
-    if metadata_path is None:
+    metadata_yaml = _get_metadata_yaml(input_path, 'determine whether it should be compiled to DOCX; will not compile')
+    if metadata_yaml is None:
         return False
-
-    with metadata_path.open('rt') as f:
-        metadata_yaml_text = f.read()
-    metadata_yaml = yaml.safe_load(metadata_yaml_text)
 
     if 'docx-output' in metadata_yaml:
         docx_output = bool(metadata_yaml['docx-output'])
@@ -1180,17 +1195,56 @@ def _is_sample_exam_answers(input_path: Path) -> bool:
     return 'answers' in input_path.name
 
 
+@lru_cache(maxsize=None)
+def _get_document_type(input_path: Path) -> Optional[str]:
+    metadata_yaml = _get_metadata_yaml(input_path, 'determine the document type')
+    if metadata_yaml is None:
+        return None
+
+    document_type = str(metadata_yaml.get('type', '')).strip().lower()
+    return document_type
+
+
+def _is_syllabus(input_path: Path) -> bool:
+    if 'syllabus' in input_path.name:
+        return True
+
+    document_type = _get_document_type(input_path)
+    if document_type is None:
+        return False
+    return document_type in {'syllabus', 'sylabus'}
+
+
+def _is_accreditation_guidelines(input_path: Path) -> bool:
+    if 'accreditation-guidelines' in input_path.name:
+        return True
+
+    document_type = _get_document_type(input_path)
+    if document_type is None:
+        return False
+    return document_type == 'accreditation guidelines'
+
+
+def _should_compile_tex_file_to_md(input_path: Path) -> bool:
+    if _is_sample_exam_questions(input_path):
+        return True
+
+    if _is_syllabus(input_path):
+        return True
+
+    if _is_accreditation_guidelines(input_path):
+        return True
+
+    return False
+
+
 def _get_project_name(input_path: Path) -> str:
     basename = input_path.stem
     if input_path == EXAMPLE_DOCUMENT:
         return basename
-    metadata_path = _get_metadata_path(input_path, f'determine the project name; will use "{basename}"')
-    if metadata_path is None:
+    metadata_yaml = _get_metadata_yaml(input_path, f'determine the project name; will use "{basename}"')
+    if metadata_yaml is None:
         return basename
-
-    with metadata_path.open('rt') as f:
-        metadata_yaml_text = f.read()
-    metadata_yaml = yaml.safe_load(metadata_yaml_text)
 
     organization = metadata_yaml.get('organization', 'ISTQB®').replace('®', '').strip()
     code = metadata_yaml.get('code', 'CODE').strip()
@@ -1297,7 +1351,7 @@ def _compile_tex_file_to_docx(input_path: Path, output_directory: Path) -> Optio
 
     # Collect files referenced from the TeX file.
     markdown_texts = []
-    for nested_path in _get_flat_references_from_tex_files(tex_input_paths=[input_path], include_sources=False):
+    for nested_path in _get_flat_references_from_tex_file(input_path, include_sources=False):
         if MARKDOWN_REGEXP.search(nested_path.name):
             with nested_path.open('rt') as f:
                 markdown_text = f.read()
@@ -1330,6 +1384,161 @@ def _compile_tex_file_to_docx(input_path: Path, output_directory: Path) -> Optio
     return output_path
 
 
+def _get_markdown_output_name(input_path: Path) -> str:
+    metadata_yaml = _get_metadata_yaml(input_path, 'determine the Markdown output name')
+    if metadata_yaml is None:
+        output_stem = input_path.stem
+    else:
+        code = str(metadata_yaml.get('code', input_path.stem))
+        document_type = str(metadata_yaml.get('type', ''))
+        language = str(metadata_yaml.get('language', 'en'))
+        output_stem_buffer = [code, document_type]
+        if language and language != 'en':
+            output_stem_buffer.append(language)
+        output_stem = '-'.join(
+            re.sub(r'\s+', '-', name_segment.strip().lower())
+            for name_segment
+            in output_stem_buffer
+        )
+    output_name = f'{output_stem}.md'
+    return output_name
+
+
+def _is_unnumbered_markdown_heading(attributes: Optional[str]) -> bool:
+    if not attributes:
+        return False
+    return '-}' in attributes or '.unnumbered' in attributes
+
+
+def _is_learning_objectives_heading(attributes: Optional[str]) -> bool:
+    return bool(attributes and '.learning-objectives' in attributes)
+
+
+def _title_has_number_prefix(title: str, number: str) -> bool:
+    number_prefix = re.escape(number)
+    return bool(re.match(rf'^{number_prefix}(?=\s|$|[–-])', title))
+
+
+def _rewrite_learning_objectives_block(lines: List[str], chapter_number: int) -> List[str]:
+    rewritten_lines = []
+    subchapter_number = 0
+    learning_objective_number = 0
+    top_level_indent: Optional[int] = None
+
+    for line in lines:
+        list_item_match = MARKDOWN_LIST_ITEM_REGEXP.fullmatch(line)
+        if list_item_match is None:
+            rewritten_lines.append(line)
+            continue
+
+        indent = list_item_match.group('indent')
+        text = list_item_match.group('text')
+        indent_length = len(indent)
+        if top_level_indent is None:
+            top_level_indent = indent_length
+
+        if indent_length == top_level_indent:
+            subchapter_number += 1
+            learning_objective_number = 0
+            rewritten_lines.append(f'- {chapter_number}.{subchapter_number} {text}')
+        else:
+            learning_objective_number += 1
+            rewritten_lines.append(f'   - {chapter_number}.{subchapter_number}.{learning_objective_number} {text}')
+
+    return rewritten_lines
+
+
+def _rewrite_syllabus_markdown(markdown_text: str) -> str:
+    lines = markdown_text.splitlines()
+    rewritten_lines = []
+
+    chapter_number = -1
+    subchapter_number = 0
+    subsubchapter_number = 0
+
+    line_number = 0
+    while line_number < len(lines):
+        line = lines[line_number]
+        heading_match = MARKDOWN_HEADING_REGEXP.fullmatch(line)
+        if heading_match is None:
+            rewritten_lines.append(line)
+            line_number += 1
+            continue
+
+        hashes = heading_match.group('hashes')
+        title = heading_match.group('title')
+        attributes = heading_match.group('attrs') or ''
+        level = len(hashes)
+
+        formatted_title = title
+        if level == 1:
+            subchapter_number = 0
+            subsubchapter_number = 0
+            if not _is_unnumbered_markdown_heading(attributes):
+                chapter_number += 1
+                heading_number = str(chapter_number)
+                if not _title_has_number_prefix(title, heading_number):
+                    formatted_title = f'{heading_number} {title}'
+        elif level == 2 and chapter_number >= 0 and not _is_unnumbered_markdown_heading(attributes):
+            subchapter_number += 1
+            subsubchapter_number = 0
+            heading_number = f'{chapter_number}.{subchapter_number}'
+            if not _title_has_number_prefix(title, heading_number):
+                formatted_title = f'{heading_number} {title}'
+        elif level == 3 and chapter_number >= 0 and subchapter_number > 0 and not _is_unnumbered_markdown_heading(attributes):
+            subsubchapter_number += 1
+            heading_number = f'{chapter_number}.{subchapter_number}.{subsubchapter_number}'
+            if not _title_has_number_prefix(title, heading_number):
+                formatted_title = f'{heading_number} {title}'
+
+        rewritten_lines.append(f'{hashes} {formatted_title}{attributes}')
+        line_number += 1
+
+        if not _is_learning_objectives_heading(attributes) or chapter_number < 0:
+            continue
+
+        learning_objectives_lines = []
+        while line_number < len(lines):
+            nested_line = lines[line_number]
+            if MARKDOWN_HEADING_REGEXP.fullmatch(nested_line):
+                break
+            learning_objectives_lines.append(nested_line)
+            line_number += 1
+        rewritten_lines.extend(_rewrite_learning_objectives_block(learning_objectives_lines, chapter_number))
+
+    return '\n'.join(rewritten_lines).rstrip() + '\n'
+
+
+def _compile_tex_file_to_md(input_path: Path, output_directory: Path) -> Optional[Path]:
+    if not _should_compile_tex_file_to_md(input_path):
+        return
+
+    # Collect files referenced from the TeX file.
+    markdown_texts = []
+    for nested_path in _get_flat_references_from_tex_file(input_path, include_sources=False, include_appendices=False):
+        if MARKDOWN_REGEXP.search(nested_path.name):
+            if BOILERPLATE_MARKDOWN_REGEXP.search(nested_path.name):
+                continue
+            with nested_path.open('rt') as f:
+                markdown_text = f.read()
+                markdown_texts.append(markdown_text)
+        elif YAML_REGEXP.search(nested_path.name):
+            if QUESTIONS_YAML_REGEXP.fullmatch(nested_path.name):
+                with nested_path.with_suffix('.md').open('rt') as f:
+                    markdown_text = f.read()
+                    markdown_texts.append(markdown_text)
+
+    # Convert the collected files to MD.
+    markdown_text = '\n\n'.join(markdown_text.strip() for markdown_text in markdown_texts)
+    if _is_syllabus(input_path):
+        markdown_text = _rewrite_syllabus_markdown(markdown_text)
+    markdown_output_name = _get_markdown_output_name(input_path)
+    output_path = output_directory / markdown_output_name
+    with output_path.open('wt') as f:
+        print(markdown_text, file=f)
+    return output_path
+
+
 if TYPE_CHECKING:  # The Protocol class is unavailable in Python <3.8 but that should not prevent us from running the script.
     from typing import Protocol
 
@@ -1350,7 +1559,7 @@ def _should_compile_tex_file(input_path: Path) -> bool:
         return True
 
     changed_paths = set(_changed_paths())
-    referenced_paths = set(chain([input_path], _get_flat_references_from_tex_files([input_path])))
+    referenced_paths = set(chain([input_path], _get_flat_references_from_tex_file(input_path)))
     return bool(referenced_paths & changed_paths)
 
 
@@ -1428,6 +1637,11 @@ def _compile_tex_files_to_docx(output_directory: Path, input_paths: Optional[Ite
     _compile_tex_files(_compile_tex_file_to_docx, output_directory, input_paths=input_paths)
 
 
+def _compile_tex_files_to_md(output_directory: Path, input_paths: Optional[Iterable[Path]]) -> None:
+    output_directory.mkdir(parents=True, exist_ok=True)
+    _compile_tex_files(_compile_tex_file_to_md, output_directory, input_paths=input_paths)
+
+
 def find_files(args: Namespace) -> None:
     file_types = [args.filetype]
     tex_input_paths = [Path(vars(args)['from'])] if vars(args)['from'] is not None else None
@@ -1482,6 +1696,11 @@ def compile_tex_files_to_epub(args: Namespace) -> None:
 def compile_tex_files_to_docx(args: Namespace) -> None:
     input_paths = sorted(map(Path, args.filenames)) if args.filenames else None
     _compile_tex_files_to_docx(Path(args.outputdir), input_paths)
+
+
+def compile_tex_files_to_md(args: Namespace) -> None:
+    input_paths = sorted(map(Path, args.filenames)) if args.filenames else None
+    _compile_tex_files_to_md(Path(args.outputdir), input_paths)
 
 
 def main():
@@ -1578,6 +1797,14 @@ def main():
     parser_compile_tex_files_to_docx.add_argument('outputdir')
     parser_compile_tex_files_to_docx.add_argument('filenames', nargs='*')
     parser_compile_tex_files_to_docx.set_defaults(func=compile_tex_files_to_docx)
+
+    parser_compile_tex_files_to_md = subparsers.add_parser(
+        'compile-tex-to-md',
+        help='Compile selected TeX files in this repository to a combined MD file',
+    )
+    parser_compile_tex_files_to_md.add_argument('outputdir')
+    parser_compile_tex_files_to_md.add_argument('filenames', nargs='*')
+    parser_compile_tex_files_to_md.set_defaults(func=compile_tex_files_to_md)
 
     args = parser.parse_args()
     if 'func' not in args:
