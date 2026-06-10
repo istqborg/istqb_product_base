@@ -27,8 +27,14 @@ To typeset ISTQB documents on your computer, take the following steps:
 
    For example, here is how you would typeset the example documents to PDF in a terminal of a Linux system:
    ``` sh
+   $ cd istqb_product_template
+   $ docker run --rm -it --platform linux/amd64 -v "$PWD":/mnt -w /mnt ghcr.io/istqborg/istqb_product_base compile-tex-to-pdf
+   ```
+   or without navigating to the repository folder
+   ``` sh
    $ docker run --rm -it --platform linux/amd64 -v "$PWD"/istqb_product_template/:/mnt -w /mnt ghcr.io/istqborg/istqb_product_base compile-tex-to-pdf
    ```
+   the results would look like
    ```
    Compiled file "/mnt/accreditation-guidelines.tex" to "ISTQB-CT-TEMP-Accreditation Guidelines-v0.1-EN.pdf"
    Compiled file "/mnt/body-of-knowledge.tex" to "ISTQB-CT-TEMP-Body of Knowledge-v0.1-EN.pdf"
@@ -36,6 +42,12 @@ To typeset ISTQB documents on your computer, take the following steps:
    Compiled file "/mnt/sample-exam-answers.tex" to "ISTQB-CT-TEMP-Sample Exam -- Answers-v0.1-EN.pdf"
    Compiled file "/mnt/sample-exam-questions.tex" to "ISTQB-CT-TEMP-Sample Exam -- Questions-v0.1-EN.pdf"
    Compiled file "/mnt/syllabus.tex" to "ISTQB-CT-TEMP-Syllabus-v0.1-EN.pdf"
+   ```
+
+   On non-main branches, the template compiles only TeX files that have changed in the branch, or files that reference changed inputs. This is indicated by message like `Skipped the compilation of file "/mnt/syllabus.tex" because it has not changed in this branch`.  
+   To compile every TeX file regardless of branch changes, add `--full-compile`:
+   ``` sh
+   $ docker run --rm -it --platform linux/amd64 -v "$PWD":/mnt -w /mnt ghcr.io/istqborg/istqb_product_base compile-tex-to-pdf --full-compile
    ```
 
    Besides typesetting documents to PDF with the `compile-tex-to-pdf` command, you can also convert them to HTML, EPUB, DOCX, and combined MD file, among other things. Here is how you would list the available commands in a terminal of a Linux system:
@@ -80,6 +92,19 @@ To typeset ISTQB documents on your computer, take the following steps:
  [istqb-product-base]: https://github.com/istqborg/istqb_product_base/pkgs/container/istqb_product_base "Package istqb_product_base"
  [istqborg]: https://github.com/istqborg "ISTQB.ORG"
  [istqb_product_template]: https://github.com/istqborg/istqb_product_template "istqborg/istqb_product_template: Example documents for the LaTeX+Markdown template that can be forked as a base for new products"
+
+## Local Docker build
+
+To build and use a local Docker image of `istqb_product_base` after local code changes, run this from the `istqb_product_base` repository:
+``` sh
+$ docker build --platform linux/amd64 -t istqb_product_base:local .
+```
+
+Then run the local image from an ISTQB document repository:
+``` sh
+$ cd ../istqb_product_template
+$ docker run --rm -it --platform linux/amd64 -v "$PWD":/mnt -w /mnt istqb_product_base:local compile-tex-to-pdf --full-compile
+```
 
 ## Further Reading
 
