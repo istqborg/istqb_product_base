@@ -1596,7 +1596,7 @@ def _compile_tex_files(
             shutil.copytree(ROOT_DIRECTORY, ROOT_COPY_DIRECTORY)
 
             _validate_files(file_types=['all'], silent=True)
-            if compile_fn == _compile_tex_file_to_docx:
+            if compile_fn in (_compile_tex_file_to_docx, _compile_tex_file_to_md):
                 _convert_yaml_questions_to_md(force_overwrite=True)
             _fixup_line_endings()
             _convert_eps_files_to_pdf()
