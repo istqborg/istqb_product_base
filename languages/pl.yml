@@ -1,0 +1,66 @@
+hyphenation: false
+appendix: Załącznik
+references: Referencje
+further-reading: Dodatkowe źródła
+hands-on-objective: [Cel praktyczny, Cele praktyczne]
+bibliography-subsections:
+  standards: Standardy
+  documents: Dokumenty ISTQB®
+  books: Książki
+  articles: Artykuły
+  web-pages:
+  - Strony internetowe
+  - Powyższe referencje odsyłają do informacji dostępnych w Internecie i innych miejscach. Chociaż referencje te zostały sprawdzone w czasie publikacji tego sylabusa, ISTQB® nie ponosi odpowiedzialności, jeśli referencje nie będą już dostępne.
+  glossary-references:
+  - Odnośniki do słowników
+  - Odnośniki do terminologii użytej w tym dokumencie
+float-labels:
+  figure: Rysunek
+  table: Tabela
+reference-labels:
+  section: rozdział
+  figure: rysunek
+  table: tabelę
+sample-exam:
+  question: [Pytanie, Pytania]
+  additional-question: [Dodatkowe pytanie, Dodatkowe pytania]
+  question-number: Numer pytania
+  learning-objective: Cel nauczania
+  k-level: K-Level
+  answer: [Odpowiedź, Odpowiedzi]
+  additional-answer: [Dodatkowa odpowiedź, Dodatkowe odpowiedzi]
+  answer-key: Klucz odpowiedzi
+  additional-answer-key: Klucz do dodatkowych odpowiedzi
+  correct-answer: Poprawna odpowiedź
+  select-answers:
+    - Wybierz JEDNĄ odpowiedź.
+    - Wybierz DWIE odpowiedzi.
+  point:
+    exceptions:
+      2: punkty
+      3: punkty
+      4: punkty
+    singular: punkt
+    plural: punktów
+  number-of-points: Liczba punktów
+  explanation: Uzasadnienie
+traceability-matrix:
+  section-name: |
+    Macierz śledzenia między celami biznesowymi (Business Outcomes)
+    i`~`{=tex}celami nauczania (Learning Objectives)
+  description:
+    - Ta sekcja przedstawia śledzenie między celami biznesowymi a`~`{=tex}celami nauczania
+    - z`~`{=tex}dokumentu
+  business-outcomes: Cele biznesowe
+  learning-objective:
+    number: Numer celu
+    description: Cel nauczania (poziom)
+page: [Strona, z]
+provided-by: [Dostarczył, Dostarczyli]
+istqb: International Software Testing Qualifications Board
+list-delimiters: [i, ',', i]
+business-outcomes: [Kod, Opis]
+contents: Spis treści
+lists:
+  table: Spis tabel
+  figure: Spis rysunków

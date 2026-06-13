@@ -2,6 +2,7 @@ babel-czech
 babel-english
 babel-german
 babel-slovak
+babel-polish
 biber
 biblatex
 biblatex-iso690
@@ -11,6 +12,7 @@ graphbox
 hyphen-czech
 hyphen-german
 hyphen-slovak
+hyphen-polish
 imakeidx
 lastpage
 latexmk
