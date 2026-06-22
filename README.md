@@ -108,7 +108,7 @@ $ docker run --rm -it --platform linux/amd64 -v "$PWD":/mnt -w /mnt istqb_produc
 
 ## Localizations
 
-To enable support for more languages in order to localize ISTQB documents into local languages, add new YAML file to `languages/` as and update `DEPENDS.txt`.
+To enable support for more languages in order to localize ISTQB documents into local languages, add new YAML file to `languages/` and update `DEPENDS.txt`.
 
 ## Further Reading
 
