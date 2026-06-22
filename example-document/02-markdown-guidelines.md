@@ -709,3 +709,7 @@ You can index terms by writing `[0-switch coverage]{.index}`, `[functional appro
 Indexed terms are placed in section *Index* at the end of the document together with the page numbers on which the terms appeared.
 
 Words should only be included in the index when they are directly relevant to the subject matter, scope and audience of the syllabus. Keywords (Glossary terms) and Domain-specific Keywords that are contained in the syllabus should also be listed in the Index.
+
+## Localizations
+
+To localize ISTQB documents into local languages, the support have to be added. See https://github.com/istqborg/istqb_product_base/blob/main/README.md for more details.

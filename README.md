@@ -106,6 +106,10 @@ $ cd ../istqb_product_template
 $ docker run --rm -it --platform linux/amd64 -v "$PWD":/mnt -w /mnt istqb_product_base:local compile-tex-to-pdf --full-compile
 ```
 
+## Localizations
+
+To enable support for more languages in order to localize ISTQB documents into local languages, add new YAML file to `languages/` and update `DEPENDS.txt`.
+
 ## Further Reading
 
 For more information about the LaTeX+Markdown template, consult the following materials:
@@ -115,3 +119,4 @@ For more information about the LaTeX+Markdown template, consult the following ma
 
  [example-document]: https://github.com/istqborg/istqb_product_base/releases/download/latest/example-document.pdf
  [whitepaper]: https://github.com/witiko/markdown-themes-in-practice/releases/download/latest/tb140starynovotny-markdown-themes.pdf
+
