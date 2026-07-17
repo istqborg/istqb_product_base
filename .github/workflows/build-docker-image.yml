@@ -16,7 +16,7 @@ jobs:
       image: ghcr.io/witiko/expltools/explcheck
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Run explcheck
         shell: bash
         run: explcheck template/*.{tex,sty,cls}
@@ -27,7 +27,7 @@ jobs:
       image: python:3.12
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install additional packages
         run: |
           set -ex
@@ -44,7 +44,7 @@ jobs:
       image: python:3.10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install additional packages
         run: |
           set -ex
@@ -63,7 +63,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout Git repository istqborg/istqb_product_base
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Build temporary Docker image ghcr.io/istqborg/istqb_product_base
         run: DOCKER_BUILDKIT=1 docker build --build-arg MARKDOWN_VERSION=3.15.0-4-gd3a1c32c-latest-minimal -t ghcr.io/istqborg/istqb_product_base:${{ github.run_id }}-${{ github.sha }} .
       - name: Login to GitHub Packages
@@ -84,7 +84,7 @@ jobs:
       image: ghcr.io/istqborg/istqb_product_base:${{ github.run_id }}-${{ github.sha }}
     steps:
       - name: Checkout Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Compile LaTeX documents to PDF
@@ -99,7 +99,7 @@ jobs:
       image: ghcr.io/istqborg/istqb_product_base:${{ github.run_id }}-${{ github.sha }}
     steps:
       - name: Checkout Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: istqborg/istqb_product_template
           fetch-depth: 0

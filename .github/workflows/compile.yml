@@ -28,7 +28,7 @@ jobs:
       image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
       - name: Checkout Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Set safe Git directory
@@ -64,7 +64,7 @@ jobs:
       image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
       - name: Checkout Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Set safe Git directory
@@ -110,7 +110,7 @@ jobs:
       image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
       - name: Checkout Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Set safe Git directory
@@ -149,7 +149,7 @@ jobs:
       image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
       - name: Checkout Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Set safe Git directory
@@ -188,7 +188,7 @@ jobs:
       image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
       - name: Checkout Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Set safe Git directory
@@ -225,7 +225,7 @@ jobs:
       image: ghcr.io/istqborg/istqb_product_base:latest
     steps:
       - name: Checkout Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Set safe Git directory
