@@ -92,12 +92,12 @@ jobs:
         run: istqb-template compile-tex-to-pdf
       - name: Upload compilation logs
         if: steps.compile.outcome == 'failure'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: PDF compilation logs
           path: '*.log'
       - name: Upload PDF documents
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: PDF
           path: '*.pdf'
@@ -136,7 +136,7 @@ jobs:
       - name: Compile LaTeX documents to HTML
         run: istqb-template compile-tex-to-html html/
       - name: Upload HTML documents
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: HTML
           path: html/
@@ -175,7 +175,7 @@ jobs:
       - name: Compile LaTeX documents to EPUB
         run: istqb-template compile-tex-to-epub epub/
       - name: Upload EPUB documents
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: EPUB
           path: epub/
@@ -212,7 +212,7 @@ jobs:
       - name: Convert documents to DOCX
         run: istqb-template compile-tex-to-docx docx/
       - name: Upload DOCX documents
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: DOCX
           path: docx/
@@ -249,7 +249,7 @@ jobs:
       - name: Compile Markdown documents
         run: istqb-template compile-tex-to-md md/
       - name: Upload Markdown documents
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: MD
           path: md/
@@ -265,7 +265,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: PDF
       - name: Create a prerelease
