@@ -3,6 +3,11 @@
 
 % Fonts
 \LoadClass[10pt]{article}
+\usepackage{fontspec}
+\setsansfont[Ligatures=TeX, Scale=1.0]{TeX Gyre Heros}
+\renewcommand*\familydefault{\sfdefault}
+\usepackage{unicode-math}
+\setmathfont{TeX Gyre Termes Math}
 \usepackage{microtype}
 \DisableLigatures[-]{family=tt*}
 
@@ -32,16 +37,16 @@
   \istqblandscapebegin
   {
     \group_begin:
-    \paperwidth = \pdfpageheight
-    \paperheight = \pdfpagewidth
+    \paperwidth = \pageheight
+    \paperheight = \pagewidth
     \edef \Gm@restore@org { \Gm@restore }
     \exp_args:NV
       \newgeometry
       \g_istqb_geometry_tl
     \fancyhfoffset [ L ] { 0pt }
     \fancyhfoffset [ R ] { 0pt }
-    \pdfpagewidth = \paperwidth
-    \pdfpageheight = \paperheight
+    \pagewidth = \paperwidth
+    \pageheight = \paperheight
   }
 \cs_new_protected:Npn
   \istqblandscapeend
@@ -58,14 +63,6 @@
 \RaggedRight  % Do not try to justify text by increasing horizontal spaces.
 \usepackage{parskip}  % Put half of line height between paragraphs.
 \sloppy  % Prevent overfull lines.
-
-%% Typefaces
-\RequirePackage[T1]{fontenc}
-\RequirePackage{tgheros}
-\renewcommand*\familydefault{\sfdefault}
-
-%% Microtypography
-\RequirePackage{microtype}
 
 %% Header and Footer
 \RequirePackage{fancyhdr}
