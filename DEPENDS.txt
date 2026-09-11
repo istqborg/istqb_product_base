@@ -26,6 +26,7 @@ mwe
 needspace
 newunicodechar
 ninecolors
+pmboxdraw
 supertabular
 tabularray
 tcolorbox
