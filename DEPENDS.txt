@@ -32,6 +32,7 @@ tabularray
 tcolorbox
 texlogfilter
 tex-gyre
+tex-gyre-math
 tex4ebook
 titlesec
 tocbibind
