@@ -1,0 +1,59 @@
+hyphenation: false
+appendix: Annexe
+references: Références
+further-reading: Lectures complémentaires
+hands-on-objective: [Objectif pratique, Objectifs pratiques]
+bibliography-subsections:
+  standards: Normes
+  documents: Documents ISTQB®
+  books: Livres
+  articles: Articles
+  web-pages:
+  - Pages Web
+  - Les références précédentes renvoient à des informations disponibles sur Internet et ailleurs. Bien que ces références aient été vérifiées au moment de la publication de ce syllabus, l'ISTQB® ne peut être tenu responsable si elles ne sont plus disponibles.
+  glossary-references:
+  - Références du glossaire
+  - Référence concernant la terminologie utilisée dans ce syllabus
+float-labels:
+  figure: Figure
+  table: Tableau
+reference-labels:
+  section: section
+  figure: figure
+  table: tableau
+sample-exam:
+  question: [Question, Questions]
+  additional-question: [Question supplémentaire, Questions supplémentaires]
+  question-number: Numéro de question (#)
+  learning-objective: Objectif d'apprentissage (LO)
+  k-level: Niveau K
+  answer: [Réponse, Réponses]
+  additional-answer: [Réponse supplémentaire, Réponses supplémentaires]
+  answer-key: Clés de réponses
+  additional-answer-key: Clés de réponses supplémentaires
+  correct-answer: Réponse correcte
+  select-answers:
+    - Sélectionnez UNE option.
+    - Sélectionnez DEUX options.
+  point: [Point, Points]
+  number-of-points: Nombre de points
+  explanation: Explication / Justification
+traceability-matrix:
+  section-name: |
+    Matrice de traçabilité des objectifs métier avec les objectifs d'apprentissage
+  description:
+    - Cette section présente la traçabilité entre les objectifs métier et les objectifs d'apprentissage
+    - du syllabus
+  business-outcomes: Objectifs métier
+  learning-objective:
+    number: LO
+    description: Objectif d'apprentissage (Niveau K)
+page: [Page, de]
+provided-by: [Fourni par, Fourni par]
+istqb: International Software Testing Qualifications Board
+list-delimiters: [et, ',', et]
+business-outcomes: [Code, Description]
+contents: Table des matières
+lists:
+  table: Liste des tableaux
+  figure: Liste des figures
