@@ -10,7 +10,7 @@ bibliography-subsections:
   articles: Articles
   web-pages:
   - Pages Web
-  - Les références précédentes renvoient à des informations disponibles sur Internet et ailleurs. Bien que ces références aient été vérifiées au moment de la publication de ce syllabus, l’ISTQB® ne peut être tenu responsable si elles ne sont plus disponibles.
+  - Les références précédentes renvoient à des informations disponibles sur Internet et ailleurs. Bien que ces références aient été vérifiées au moment de la publication de ce syllabus, l'ISTQB® ne peut être tenu responsable si elles ne sont plus disponibles.
   glossary-references:
   - Références du glossaire
   - Référence concernant la terminologie utilisée dans ce syllabus
@@ -25,7 +25,7 @@ sample-exam:
   question: [Question, Questions]
   additional-question: [Question supplémentaire, Questions supplémentaires]
   question-number: Numéro de question (#)
-  learning-objective: Objectif d’apprentissage (LO)
+  learning-objective: Objectif d'apprentissage (LO)
   k-level: Niveau K
   answer: [Réponse, Réponses]
   additional-answer: [Réponse supplémentaire, Réponses supplémentaires]
@@ -40,14 +40,14 @@ sample-exam:
   explanation: Explication / Justification
 traceability-matrix:
   section-name: |
-    Matrice de traçabilité des objectifs métier avec les objectifs d’apprentissage
+    Matrice de traçabilité des objectifs métier avec les objectifs d'apprentissage
   description:
-    - Cette section présente la traçabilité entre les objectifs métier et les objectifs d’apprentissage
+    - Cette section présente la traçabilité entre les objectifs métier et les objectifs d'apprentissage
     - du syllabus
   business-outcomes: Objectifs métier
   learning-objective:
     number: LO
-    description: Objectif d’apprentissage (Niveau K)
+    description: Objectif d'apprentissage (Niveau K)
 page: [Page, de]
 provided-by: [Fourni par, Fourni par]
 istqb: International Software Testing Qualifications Board
