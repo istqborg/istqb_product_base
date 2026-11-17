@@ -294,6 +294,8 @@
 
 % Bibliography
 \RequirePackage{csquotes}
+% Since the 2026-11-09 release, BibLaTeX uses `regexpatch`, which is a superset of but conflicts with `xpatch` loaded by later packages.
+\RequirePackage{regexpatch} \disable@package@load{xpatch}{}
 \PassOptionsToPackage{style=iso-authoryear}{biblatex}
 \RequirePackage{biblatex}
 \urlstyle{same}
