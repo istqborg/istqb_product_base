@@ -29,6 +29,7 @@ needspace
 newunicodechar
 ninecolors
 pmboxdraw
+regexpatch
 supertabular
 tabularray
 tcolorbox
