@@ -353,10 +353,34 @@
   \g_istqb_metadata_hyphenation_specified_bool
 \bool_gset_false:N
   \g_istqb_metadata_hyphenation_specified_bool
-\RequirePackage { lineno }
-\cs_gset:Npn
-  \linenumberfont
-  { \normalfont \normalsize \sffamily }
+%% Line numbers
+%%% We number lines with the package lualineno, which is compatible with tagging, unlike the package lineno.
+%%% See also <https://github.com/istqborg/istqb_product_base/issues/152#issuecomment-5715946481>.
+%%% Since lualineno uses the package luakeyval, keys are separated by spaces rather than commas.
+\RequirePackage { lualineno }
+\int_new:N
+  \g_istqb_line_number_int
+\lualineno
+  {
+    define =
+      {
+        name = { istqb }
+        toks =
+          {
+            \int_gincr:N
+              \g_istqb_line_number_int
+          }
+        left =
+          {
+            \normalfont
+            \normalsize
+            \sffamily
+            \int_use:N
+              \g_istqb_line_number_int
+            \kern 10pt
+          }
+      }
+  }
 \keys_define:nn
   { istqb / metadata }
   {
@@ -393,7 +417,10 @@
       \tl_if_eq:nnT
         { #1 }
         { true }
-        { \AtBeginDocument { \linenumbers } }
+        {
+          \AtBeginDocument
+            { \lualineno { set = { istqb } } }
+        }
     },
     pdf-output .code:n = { },
     docx-output .code:n = { },
@@ -720,11 +747,10 @@
     },
   }
 \RequirePackage
-  { tabularray }
-\RequirePackage
   { pifont }
-\tl_new:N \l_istqb_traceability_matrix_parameters_tl
 \tl_new:N \l_istqb_traceability_matrix_colspec_tl
+\tl_new:N \l_istqb_traceability_matrix_empty_cells_tl
+\tl_new:N \l_istqb_traceability_matrix_header_tl
 \tl_new:N \l_istqb_traceability_matrix_body_tl
 \tl_new:N \l_istqb_traceability_matrix_tl
 \clist_new:N \l_istqb_traceability_matrix_subchapter_numbers_clist
@@ -736,43 +762,37 @@
     renderers = {
       jekyllDataEnd += {
         \group_begin:
-        % Construct the table parameters.
-        \tl_put_right:Nn
-          \l_istqb_traceability_matrix_parameters_tl
-          {
-            cell { 1 } { 1 } = { bg = istqbbluetableheader },
-            cell { 1 } { 3-Z } = { cmd = { \rotatebox [ origin = c ] { 270 } } },
-            row { 1-Z } = { rowsep+ = 1pt },
-            rowhead = 1,
-            hlines,
-            vlines,
-            hspan = minimal,
-          }
+        % Construct the column specification: the numbers and the descriptions of business outcomes and learning
+        % objectives, followed by one column per business outcome.
         \tl_set:Nn
           \l_istqb_traceability_matrix_colspec_tl
-          { l X [ m ] }
-        \int_step_inline:nn
-          {
-            \seq_count:N
-              \g_istqb_business_outcomes_numbers_seq
-          }
+          { | l | X | }
+        \tl_clear:N
+          \l_istqb_traceability_matrix_empty_cells_tl
+        \seq_map_inline:Nn
+          \g_istqb_business_outcomes_numbers_seq
           {
             \tl_put_right:Nn
               \l_istqb_traceability_matrix_colspec_tl
-              { c }
+              { c | }
+            \tl_put_right:Nn
+              \l_istqb_traceability_matrix_empty_cells_tl
+              { & }
           }
-        \tl_put_right:Nx
-          \l_istqb_traceability_matrix_parameters_tl
-          { colspec = { \tl_use:N \l_istqb_traceability_matrix_colspec_tl }, }
-        % Construct the table body for the number of related learning objectives.
-        \tl_put_right:Nn
-          \l_istqb_traceability_matrix_body_tl
+        % Construct the header row, which is repeated on every page.
+        \tl_set:Nn
+          \l_istqb_traceability_matrix_header_tl
           {
-            \SetCell
-              [ c = 2 ]
-              { halign = l, valign = m, bg = istqbbluetableheader }
+            \hline
+            \multicolumn
+              { 1 }
+              { | >{ \columncolor { istqbbluetableheader } } l }
+              { }
+            &
+            \cellcolor { istqbbluetableheader }
             \Large
             \RaggedRight
+            \arraybackslash
           }
         \tl_set:NV
           \l_tmpa_tl
@@ -808,27 +828,31 @@
                 { \unskip }
             }
         \tl_put_right:Nx
-          \l_istqb_traceability_matrix_body_tl
-          { { \tl_use:N \l_tmpa_tl } }
-        \tl_put_right:Nn
-          \l_istqb_traceability_matrix_body_tl
-          { & }
+          \l_istqb_traceability_matrix_header_tl
+          { { \exp_not:V \l_tmpa_tl } }
         \seq_map_inline:Nn
           \g_istqb_business_outcomes_numbers_seq
           {
-            \tl_put_right:Nn
-              \l_istqb_traceability_matrix_body_tl
-              { & }
-            \tl_put_right:NV
-              \l_istqb_traceability_matrix_body_tl
-              \g_istqb_prefix_tl
-            \tl_put_right:Nn
-              \l_istqb_traceability_matrix_body_tl
-              { -BO ##1 }
+            \tl_put_right:Nx
+              \l_istqb_traceability_matrix_header_tl
+              {
+                &
+                \exp_not:N \rotatebox
+                  [ origin = c ]
+                  { 270 }
+                  { \exp_not:V \g_istqb_prefix_tl -BO ##1 }
+              }
           }
         \tl_put_right:Nn
+          \l_istqb_traceability_matrix_header_tl
+          {
+            \\
+            \hline
+            \endhead
+          }
+        % Construct the table body for the number of related learning objectives.
+        \tl_clear:N
           \l_istqb_traceability_matrix_body_tl
-          { \\ }
         \seq_map_inline:Nn
           \g_istqb_business_outcomes_numbers_seq
           {
@@ -872,44 +896,52 @@
               }
             \tl_put_right:Nn
               \l_istqb_traceability_matrix_body_tl
-              { \\ }
+              { \\ \hline }
           }
         \tl_put_right:Nn
           \l_istqb_traceability_matrix_body_tl
           { \pagebreak }
-        % Construct the table parameters and body for the traceability matrix.
+        % Construct the table body for the traceability matrix.
         \tl_put_right:Nn
           \l_istqb_traceability_matrix_body_tl
           {
-            \SetCell { bg = istqbbluetableheader }
+            \cellcolor { istqbbluetableheader }
             \tl_use:N
               \g_istqb_translation_traceability_matrix_learning_objective_number_tl
             &
-            \SetCell { bg = istqbbluetableheader }
+            \cellcolor { istqbbluetableheader }
             \tl_use:N
               \g_istqb_translation_traceability_matrix_learning_objective_description_tl
-            \\
           }
+        \tl_put_right:NV
+          \l_istqb_traceability_matrix_body_tl
+          \l_istqb_traceability_matrix_empty_cells_tl
+        \tl_put_right:Nn
+          \l_istqb_traceability_matrix_body_tl
+          { \\ \hline }
         % Print out chapters.
         \seq_map_inline:Nn
           \g_istqb_learning_objective_chapter_numbers_seq
           {
             \tl_put_right:Nn
               \l_istqb_traceability_matrix_body_tl
-              { \SetCell { bg = istqbgreentableheader } ##1 & }
+              {
+                \cellcolor { istqbgreentableheader } ##1 &
+                \cellcolor { istqbgreentableheader }
+              }
             \prop_get:NnN
               \g_istqb_learning_objective_chapter_names_prop
               { ##1 }
               \l_tmpa_tl
-            \tl_put_right:Nn
-              \l_istqb_traceability_matrix_body_tl
-              { \SetCell { bg = istqbgreentableheader } }
             \tl_put_right:NV
               \l_istqb_traceability_matrix_body_tl
               \l_tmpa_tl
+            \tl_put_right:NV
+              \l_istqb_traceability_matrix_body_tl
+              \l_istqb_traceability_matrix_empty_cells_tl
             \tl_put_right:Nn
               \l_istqb_traceability_matrix_body_tl
-              { \\ }
+              { \\ \hline }
             % Print out subchapters.
             \prop_get:NnN
               \g_istqb_learning_objective_subchapter_numbers_prop
@@ -920,20 +952,23 @@
               {
                 \tl_put_right:Nn
                   \l_istqb_traceability_matrix_body_tl
-                  { \SetCell { bg = istqbbluetableheader } ##1.####1 & }
+                  {
+                    \cellcolor { istqbbluetableheader } ##1.####1 &
+                    \cellcolor { istqbbluetableheader }
+                  }
                 \prop_get:NnN
                   \g_istqb_learning_objective_subchapter_names_prop
                   { ##1.####1 }
                   \l_tmpa_tl
-                \tl_put_right:Nn
-                  \l_istqb_traceability_matrix_body_tl
-                  { \SetCell { bg = istqbbluetableheader } }
                 \tl_put_right:NV
                   \l_istqb_traceability_matrix_body_tl
                   \l_tmpa_tl
+                \tl_put_right:NV
+                  \l_istqb_traceability_matrix_body_tl
+                  \l_istqb_traceability_matrix_empty_cells_tl
                 \tl_put_right:Nn
                   \l_istqb_traceability_matrix_body_tl
-                  { \\ }
+                  { \\ \hline }
                 % Print out learning objectives.
                 \prop_get:NnN
                   \g_istqb_learning_objective_numbers_prop
@@ -969,7 +1004,7 @@
                       \l_istqb_traceability_matrix_body_tl
                       { ) }
                     % Print out the related business outcomes.
-                    \prop_get:NnNT
+                    \prop_get:NnNTF
                       \g_istqb_traceability_matrix_prop
                       { ##1.####1.########1 }
                       \l_istqb_traceability_matrix_related_business_outcome_numbers_clist
@@ -990,26 +1025,41 @@
                               }
                           }
                       }
+                      {
+                        \tl_put_right:NV
+                          \l_istqb_traceability_matrix_body_tl
+                          \l_istqb_traceability_matrix_empty_cells_tl
+                      }
                     \tl_put_right:Nn
                       \l_istqb_traceability_matrix_body_tl
-                      { \\ }
+                      { \\ \hline }
                   }
               }
           }
         % Construct the final table.
-        \tl_put_right:Nn
+        \tl_set:Nn
           \l_istqb_traceability_matrix_tl
-          { \begin { longtblr } [ entry = none ] }
+          { \begin { xltabular } { \linewidth } }
         \tl_put_right:Nx
           \l_istqb_traceability_matrix_tl
-          { { \tl_use:N \l_istqb_traceability_matrix_parameters_tl } }
+          { { \exp_not:V \l_istqb_traceability_matrix_colspec_tl } }
+        \tl_put_right:NV
+          \l_istqb_traceability_matrix_tl
+          \l_istqb_traceability_matrix_header_tl
         \tl_put_right:NV
           \l_istqb_traceability_matrix_tl
           \l_istqb_traceability_matrix_body_tl
         \tl_put_right:Nn
           \l_istqb_traceability_matrix_tl
-          { \end { longtblr } }
-        % Typeset the final table.
+          { \end { xltabular } }
+        % Typeset the final table with vertically centered descriptions and some extra space above every row.
+        \cs_set:Npn
+          \tabularxcolumn
+          ##1
+          { m { ##1 } }
+        \dim_set:Nn
+          \extrarowheight
+          { 1pt }
         \tl_use:N
           \l_istqb_traceability_matrix_tl
         \group_end:
@@ -1164,50 +1214,10 @@
                   { ##1 }
                   { revision-history }
                   {
-                    \def \markdownLaTeXRenderTableRow ####1
-                      {
-                        \markdownLaTeXColumnCounter = 0
-                        \ifnum \markdownLaTeXRowCounter = 0 \relax
-                          \markdownLaTeXReadAlignments ####1
-                          \markdownLaTeXTable = \expandafter \expandafter \expandafter {
-                            \expandafter \the \expandafter \markdownLaTeXTable \expandafter {
-                              \the \markdownLaTeXTableAlignment } }
-                        \else
-                          \markdownLaTeXRenderTableCell ####1
-                        \fi
-                        \advance \markdownLaTeXRowCounter by 1 \relax
-                        \ifnum \markdownLaTeXRowCounter > \markdownLaTeXRowTotal \relax
-                          \addto@hook
-                            \markdownLaTeXTable
-                            { \end { istqb revision history } }
-                          \the \markdownLaTeXTable
-                          \expandafter \@gobble
-                        \fi \markdownLaTeXRenderTableRow
-                      }
-                    \def \markdownLaTeXReadAlignments ####1
-                      {
-                        \advance \markdownLaTeXColumnCounter by 1 \relax
-                        % Ignore alignment information, since the alignment in revision history is predetermined.
-                        \ifnum\markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal \relax \else
-                          \expandafter \@gobble
-                        \fi \markdownLaTeXReadAlignments
-                      }
-                    \markdownSetup
-                      {
-                        renderers = {
-                          table = {
-                            \markdownLaTeXTable = { }
-                            \markdownLaTeXTableAlignment = { }
-                            \addto@hook
-                              \markdownLaTeXTable
-                              { \begin { istqb revision history } }
-                            \markdownLaTeXRowCounter = 0
-                            \markdownLaTeXRowTotal = ####2
-                            \markdownLaTeXColumnTotal = ####3
-                            \markdownLaTeXRenderTableRow
-                          },
-                        }
-                      }
+                    % Ignore alignment information, since the alignment in revision history is predetermined.
+                    \tl_set:Nn
+                      \l_istqb_markdown_table_colspec_override_tl
+                      { |l|l|X| }
                   }
               },
               %% Hands-on objective sections
@@ -1283,22 +1293,28 @@
                                       \l_istqb_hands_on_objective_name_tl
                                   }
                               }
-                            \begin
-                              { istqb hands on objective section }
-                              [
-                                frametitle =
-                                  {
-                                    \tl_use:N
-                                      \g_istqb_hands_on_objective_singular_tl
-                                    { ~ }
-                                    \g_istqb_prefix_tl
-                                    -
-                                    \tl_use:N
-                                      \l_tmpa_tl
-                                    { ~ }
-                                    ####1
-                                  }
-                              ]
+                            % Expand the title in advance, since tcolorbox may typeset it after the content of the box.
+                            \use:e
+                              {
+                                \exp_not:N \begin
+                                  { istqb hands on objective section }
+                                  [
+                                    title =
+                                      {
+                                        \exp_not:V
+                                          \g_istqb_hands_on_objective_singular_tl
+                                        { ~ }
+                                        \exp_not:V
+                                          \g_istqb_prefix_tl
+                                        -
+                                        \exp_not:V
+                                          \l_tmpa_tl
+                                        { ~ }
+                                        \exp_not:n
+                                          { ####1 }
+                                      }
+                                  ]
+                              }
                           },
                           (sectionEnd|thematicBreak) = {
                             \end
@@ -1538,27 +1554,33 @@
   { x }
 
 % Tables
-\cs_gset_protected:Npn
-  \markdownLaTeXRenderTableRow #1
-  {
-    \markdownLaTeXColumnCounter = 0
-    \ifnum \markdownLaTeXRowCounter = 0 \relax
-      \markdownLaTeXReadAlignments #1
-      \markdownLaTeXTable = \expandafter \expandafter \expandafter {
-        \expandafter \the \expandafter \markdownLaTeXTable \expandafter {
-          \the \markdownLaTeXTableAlignment } }
-    \else
-      \markdownLaTeXRenderTableCell #1
-    \fi
-    \advance \markdownLaTeXRowCounter by 1 \relax
-    \ifnum \markdownLaTeXRowCounter > \markdownLaTeXRowTotal \relax
-      \markdownLaTeXTable = \expandafter \expandafter \expandafter {
-        \expandafter \the \expandafter \markdownLaTeXTable
-          \the \markdownLaTeXTableEnd }
-      \the \markdownLaTeXTable
-      \expandafter \@gobble
-    \fi \markdownLaTeXRenderTableRow
-  }
+%% We typeset tables with the function `\istqb_table:nnnnn` from the class istqb, which uses the packages
+%% longtable and xltabular. These are compatible with tagging, unlike the package tabularray.
+%% See also <https://github.com/istqborg/istqb_product_base/issues/152#issuecomment-5715946481>.
+\bool_new:N \g_istqb_intable_bool
+\tl_new:N \l_istqb_table_identifier_tl
+\tl_new:N \l_istqb_markdown_table_caption_tl
+\tl_new:N \l_istqb_markdown_table_label_tl
+\tl_new:N \l_istqb_markdown_table_colspec_tl
+\tl_new:N \l_istqb_markdown_table_colspec_override_tl
+\tl_new:N \l_istqb_markdown_table_header_tl
+\tl_new:N \l_istqb_markdown_table_body_tl
+\tl_new:N \l_istqb_markdown_table_row_tl
+\tl_new:N \l_istqb_markdown_table_cell_tl
+\tl_new:N \l_istqb_markdown_table_rule_tl
+\tl_new:N \l_istqb_markdown_table_spanned_rows_tl
+\int_new:N \l_istqb_markdown_table_rows_int
+\int_new:N \l_istqb_markdown_table_columns_int
+\int_new:N \l_istqb_markdown_table_row_int
+\int_new:N \l_istqb_markdown_table_column_int
+\int_new:N \l_istqb_markdown_table_skipped_cells_int
+\int_new:N \l_istqb_markdown_table_cell_rows_int
+\int_new:N \l_istqb_markdown_table_cell_columns_int
+\int_new:N \l_istqb_markdown_table_rule_start_int
+\int_new:N \l_istqb_markdown_table_spanned_rows_int
+\bool_new:N \l_istqb_markdown_table_spanned_bool
+\prop_new:N \l_istqb_markdown_table_spanned_rows_prop
+\seq_new:N \l_istqb_markdown_table_attributes_seq
 \regex_const:Nn
   \c_istqb_multi_row_and_multi_column_cell_regex
    {
@@ -1566,79 +1588,353 @@
      \cB\{ ( rows | cols ) \cE\}
      \cB\{ ( [1-9][0-9]* ) \cE\}
    }
-\cs_gset_protected:Npn
-  \markdownLaTeXRenderTableCell #1
+%%% Process a single cell of a table.
+%%%
+%%% Multi-column cells are typeset with `\multicolumn` and the cells that they span are skipped. Multi-row cells are
+%%% marked as such in tagged PDF and we don't draw horizontal rules through them. The cells that they span should be
+%%% empty.
+\cs_new_protected:Nn
+  \istqb_markdown_table_cell:n
   {
-    \advance \markdownLaTeXColumnCounter by 1 \relax
-    % Multi-row and multi-column contents
-    \clist_clear:N
-      \l_tmpa_clist
-      { }
-    \regex_extract_all:NnNT
-      \c_istqb_multi_row_and_multi_column_cell_regex
-      { #1 }
-      \l_tmpa_seq
+    \int_incr:N
+      \l_istqb_markdown_table_column_int
+    \int_compare:nNnTF
+      { \l_istqb_markdown_table_skipped_cells_int } > { 0 }
       {
-        \int_step_inline:nnnn
-          { 2 }
-          { 3 }
-          { \seq_count:N \l_tmpa_seq }
+        \int_decr:N
+          \l_istqb_markdown_table_skipped_cells_int
+      }
+      {
+        % Determine the number of rows and columns that the cell spans.
+        \int_set:Nn
+          \l_istqb_markdown_table_cell_rows_int
+          { 1 }
+        \int_set:Nn
+          \l_istqb_markdown_table_cell_columns_int
+          { 1 }
+        \regex_extract_all:NnNT
+          \c_istqb_multi_row_and_multi_column_cell_regex
+          { #1 }
+          \l_istqb_markdown_table_attributes_seq
           {
-            \str_case:en
-              { \seq_item:Nn \l_tmpa_seq { ##1 } }
+            \int_step_inline:nnnn
+              { 2 }
+              { 3 }
+              { \seq_count:N \l_istqb_markdown_table_attributes_seq }
               {
-                { rows }
-                {
-                  \clist_put_right:Nx
-                    \l_tmpa_clist
-                    { r = \seq_item:Nn \l_tmpa_seq { ##1 + 1 } }
-                }
-                { cols }
-                {
-                  \clist_put_right:Nx
-                    \l_tmpa_clist
-                    { c = \seq_item:Nn \l_tmpa_seq { ##1 + 1 } }
-                }
+                \str_case:en
+                  { \seq_item:Nn \l_istqb_markdown_table_attributes_seq { ##1 } }
+                  {
+                    { rows }
+                    {
+                      \int_set:Nn
+                        \l_istqb_markdown_table_cell_rows_int
+                        { \seq_item:Nn \l_istqb_markdown_table_attributes_seq { ##1 + 1 } }
+                    }
+                    { cols }
+                    {
+                      \int_set:Nn
+                        \l_istqb_markdown_table_cell_columns_int
+                        { \seq_item:Nn \l_istqb_markdown_table_attributes_seq { ##1 + 1 } }
+                    }
+                  }
+              }
+          }
+        \int_set:Nn
+          \l_istqb_markdown_table_cell_columns_int
+          {
+            \int_min:nn
+              { \l_istqb_markdown_table_cell_columns_int }
+              { \l_istqb_markdown_table_columns_int - \l_istqb_markdown_table_column_int + 1 }
+          }
+        % Typeset the cell.
+        \int_compare:nNnF
+          { \l_istqb_markdown_table_column_int } = { 1 }
+          {
+            \tl_put_right:Nn
+              \l_istqb_markdown_table_row_tl
+              { & }
+          }
+        \tl_set:Nn
+          \l_istqb_markdown_table_cell_tl
+          { #1 }
+        \int_compare:nNnT
+          { \l_istqb_markdown_table_cell_rows_int } > { 1 }
+          {
+            \tl_put_left:Nx
+              \l_istqb_markdown_table_cell_tl
+              {
+                \exp_not:N \tagpdfsetup
+                  { table / multirow = \int_use:N \l_istqb_markdown_table_cell_rows_int }
+              }
+            \int_set:Nn
+              \l_istqb_markdown_table_spanned_rows_int
+              { \l_istqb_markdown_table_cell_rows_int - 1 }
+            \int_step_inline:nnn
+              { \l_istqb_markdown_table_column_int }
+              { \l_istqb_markdown_table_column_int + \l_istqb_markdown_table_cell_columns_int - 1 }
+              {
+                \prop_put:NnV
+                  \l_istqb_markdown_table_spanned_rows_prop
+                  { ##1 }
+                  \l_istqb_markdown_table_spanned_rows_int
+              }
+          }
+        \int_compare:nNnTF
+          { \l_istqb_markdown_table_cell_columns_int } > { 1 }
+          {
+            \tl_put_right:Nx
+              \l_istqb_markdown_table_row_tl
+              {
+                \exp_not:N \multicolumn
+                  { \int_use:N \l_istqb_markdown_table_cell_columns_int }
+                  {
+                    \int_compare:nNnT
+                      { \l_istqb_markdown_table_column_int } = { 1 }
+                      { | }
+                    c |
+                  }
+                  { \exp_not:V \l_istqb_markdown_table_cell_tl }
+              }
+            \int_set:Nn
+              \l_istqb_markdown_table_skipped_cells_int
+              { \l_istqb_markdown_table_cell_columns_int - 1 }
+          }
+          {
+            \tl_put_right:NV
+              \l_istqb_markdown_table_row_tl
+              \l_istqb_markdown_table_cell_tl
+          }
+      }
+  }
+%%% Draw horizontal rules below a row of a table, except below the cells that span into the next row.
+\cs_new_protected:Nn
+  \istqb_markdown_table_rule:
+  {
+    \tl_clear:N
+      \l_istqb_markdown_table_rule_tl
+    \bool_set_false:N
+      \l_istqb_markdown_table_spanned_bool
+    \int_zero:N
+      \l_istqb_markdown_table_rule_start_int
+    \int_step_inline:nn
+      { \l_istqb_markdown_table_columns_int + 1 }
+      {
+        \prop_get:NnNF
+          \l_istqb_markdown_table_spanned_rows_prop
+          { ##1 }
+          \l_istqb_markdown_table_spanned_rows_tl
+          {
+            \tl_set:Nn
+              \l_istqb_markdown_table_spanned_rows_tl
+              { 0 }
+          }
+        \bool_lazy_or:nnTF
+          { \int_compare_p:nNn { ##1 } > { \l_istqb_markdown_table_columns_int } }
+          { \int_compare_p:nNn { \l_istqb_markdown_table_spanned_rows_tl } > { 0 } }
+          {
+            % There is no rule below this column (or we are past the last column). Draw the rule below the
+            % preceding columns, if any.
+            \int_compare:nNnF
+              { ##1 } > { \l_istqb_markdown_table_columns_int }
+              {
+                \bool_set_true:N
+                  \l_istqb_markdown_table_spanned_bool
+              }
+            \int_compare:nNnT
+              { \l_istqb_markdown_table_rule_start_int } > { 0 }
+              {
+                \tl_put_right:Nx
+                  \l_istqb_markdown_table_rule_tl
+                  {
+                    \exp_not:N \cline
+                      {
+                        \int_use:N \l_istqb_markdown_table_rule_start_int
+                        -
+                        \int_eval:n { ##1 - 1 }
+                      }
+                  }
+                \int_zero:N
+                  \l_istqb_markdown_table_rule_start_int
+              }
+          }
+          {
+            \int_compare:nNnT
+              { \l_istqb_markdown_table_rule_start_int } = { 0 }
+              {
+                \int_set:Nn
+                  \l_istqb_markdown_table_rule_start_int
+                  { ##1 }
               }
           }
       }
-    \clist_if_empty:NF
-      \l_tmpa_clist
+    \bool_if:NTF
+      \l_istqb_markdown_table_spanned_bool
       {
-        \addto@hook
-          \markdownLaTeXTable
-          { \SetCell [ }
-        \exp_args:NNV
-          \addto@hook
-          \markdownLaTeXTable
-          \l_tmpa_clist
-        \addto@hook
-          \markdownLaTeXTable
-          { ] { c } }
+        \tl_put_right:NV
+          \l_istqb_markdown_table_body_tl
+          \l_istqb_markdown_table_rule_tl
       }
-    \ifnum \markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal\relax
-      \addto@hook \markdownLaTeXTable { #1 & }
-    \else
-      \addto@hook \markdownLaTeXTable { #1 \\ }
-      \expandafter \@gobble
-    \fi \markdownLaTeXRenderTableCell
+      {
+        \tl_put_right:Nn
+          \l_istqb_markdown_table_body_tl
+          { \hline }
+      }
+    % Decrement the number of rows that are spanned by cells from the current row.
+    \int_step_inline:nn
+      { \l_istqb_markdown_table_columns_int }
+      {
+        \prop_get:NnNT
+          \l_istqb_markdown_table_spanned_rows_prop
+          { ##1 }
+          \l_istqb_markdown_table_spanned_rows_tl
+          {
+            \int_compare:nNnTF
+              { \l_istqb_markdown_table_spanned_rows_tl } > { 1 }
+              {
+                \int_set:Nn
+                  \l_istqb_markdown_table_spanned_rows_int
+                  { \l_istqb_markdown_table_spanned_rows_tl - 1 }
+                \prop_put:NnV
+                  \l_istqb_markdown_table_spanned_rows_prop
+                  { ##1 }
+                  \l_istqb_markdown_table_spanned_rows_int
+              }
+              {
+                \prop_remove:Nn
+                  \l_istqb_markdown_table_spanned_rows_prop
+                  { ##1 }
+              }
+          }
+      }
   }
-\def \markdownLaTeXReadAlignments #1
+\cs_generate_variant:Nn
+  \istqb_table:nnnnn
+  { VVVVV }
+%%% Typeset the table.
+\cs_new_protected:Nn
+  \istqb_markdown_table_end:
   {
-    \advance \markdownLaTeXColumnCounter by 1 \relax
-    \if #1 d
-      \addto@hook \markdownLaTeXTableAlignment { X| }
-    \else
-      \addto@hook \markdownLaTeXTableAlignment { #1| }
-    \fi
-    \ifnum\markdownLaTeXColumnCounter < \markdownLaTeXColumnTotal \relax \else
-      \expandafter \@gobble
-    \fi \markdownLaTeXReadAlignments
+    \tl_clear:N
+      \l_istqb_markdown_table_label_tl
+    \tl_if_empty:NF
+      \l_istqb_markdown_table_caption_tl
+      {
+        \tl_set_eq:NN
+          \l_istqb_markdown_table_label_tl
+          \l_istqb_table_identifier_tl
+      }
+    \istqb_table:VVVVV
+      \l_istqb_markdown_table_caption_tl
+      \l_istqb_markdown_table_label_tl
+      \l_istqb_markdown_table_colspec_tl
+      \l_istqb_markdown_table_header_tl
+      \l_istqb_markdown_table_body_tl
+    \bool_gset_false:N
+      \g_istqb_intable_bool
   }
-% TODO: Reintroduce support for multi-row cells in a way that is compatible with
-% the `tabularray` package.
-\bool_new:N \g_istqb_intable_bool
-\tl_new:N \l_istqb_table_identifier_tl
+%%% Process a single row of a table.
+\cs_new_protected:Nn
+  \istqb_markdown_table_row:n
+  {
+    \int_incr:N
+      \l_istqb_markdown_table_row_int
+    \int_zero:N
+      \l_istqb_markdown_table_column_int
+    \int_zero:N
+      \l_istqb_markdown_table_skipped_cells_int
+    \tl_clear:N
+      \l_istqb_markdown_table_row_tl
+    \tl_map_function:nN
+      { #1 }
+      \istqb_markdown_table_cell:n
+    \int_compare:nNnTF
+      { \l_istqb_markdown_table_row_int } = { 1 }
+      {
+        % Record the header row. Cells in the header row may not span the following rows.
+        \tl_set_eq:NN
+          \l_istqb_markdown_table_header_tl
+          \l_istqb_markdown_table_row_tl
+        \prop_clear:N
+          \l_istqb_markdown_table_spanned_rows_prop
+      }
+      {
+        \tl_put_right:NV
+          \l_istqb_markdown_table_body_tl
+          \l_istqb_markdown_table_row_tl
+        \tl_put_right:Nn
+          \l_istqb_markdown_table_body_tl
+          { \\ }
+        \istqb_markdown_table_rule:
+      }
+    \int_compare:nNnTF
+      { \l_istqb_markdown_table_row_int } < { \l_istqb_markdown_table_rows_int }
+      { \istqb_markdown_table_row:n }
+      { \istqb_markdown_table_end: }
+  }
+\cs_new_protected:Nn
+  \istqb_markdown_table_alignments:n
+  {
+    \tl_if_empty:NTF
+      \l_istqb_markdown_table_colspec_override_tl
+      {
+        \tl_set:Nn
+          \l_istqb_markdown_table_colspec_tl
+          { | }
+        \tl_map_inline:nn
+          { #1 }
+          {
+            \str_if_eq:nnTF
+              { ##1 }
+              { d }
+              {
+                \tl_put_right:Nn
+                  \l_istqb_markdown_table_colspec_tl
+                  { X | }
+              }
+              {
+                \tl_put_right:Nn
+                  \l_istqb_markdown_table_colspec_tl
+                  { ##1 | }
+              }
+          }
+      }
+      {
+        \tl_set_eq:NN
+          \l_istqb_markdown_table_colspec_tl
+          \l_istqb_markdown_table_colspec_override_tl
+      }
+    \int_compare:nNnTF
+      { \l_istqb_markdown_table_rows_int } > { 0 }
+      { \istqb_markdown_table_row:n }
+      { \istqb_markdown_table_end: }
+  }
+%%% Start typesetting a table. The renderer `table` receives the caption (#1), the number of rows including the
+%%% header row (#2), and the number of columns (#3). The renderer is followed by a row with the alignments of the
+%%% columns and by the individual rows, which we process with `\istqb_markdown_table_alignments:n` and
+%%% `\istqb_markdown_table_row:n`, respectively.
+\cs_new_protected:Nn
+  \istqb_markdown_table:nnn
+  {
+    \tl_set:Nn
+      \l_istqb_markdown_table_caption_tl
+      { #1 }
+    \int_set:Nn
+      \l_istqb_markdown_table_rows_int
+      { #2 }
+    \int_set:Nn
+      \l_istqb_markdown_table_columns_int
+      { #3 }
+    \int_zero:N
+      \l_istqb_markdown_table_row_int
+    \tl_clear:N
+      \l_istqb_markdown_table_header_tl
+    \tl_clear:N
+      \l_istqb_markdown_table_body_tl
+    \prop_clear:N
+      \l_istqb_markdown_table_spanned_rows_prop
+    \istqb_markdown_table_alignments:n
+  }
 \markdownSetup
   {
     pipeTables,
@@ -1664,39 +1960,10 @@
       table = {
         \bool_gset_true:N
           \g_istqb_intable_bool
-        \markdownLaTeXTable = { }
-        \markdownLaTeXTableAlignment = { | }
-        \markdownLaTeXTableEnd = {
-          \end { istqb table }
-          \bool_gset_false:N
-            \g_istqb_intable_bool
-        }
-        \tl_if_empty:nF
+        \istqb_markdown_table:nnn
           { #1 }
-          {
-            \addto@hook
-              \markdownLaTeXTable
-              {
-                \group_begin:
-                \SetTblrTemplate { caption } { normal }
-                \SetTblrOuter
-                  [ istqb table ]
-                  {
-                    entry = { #1 },
-                    caption = { #1 },
-                    label = { \l_istqb_table_identifier_tl },
-                    presep = 1.5 \bigskipamount,
-                    postsep = 1.5 \bigskipamount,
-                  }
-              }
-          }
-        \addto@hook
-          \markdownLaTeXTable
-          { \begin { istqb table } }
-        \markdownLaTeXRowCounter = 0
-        \markdownLaTeXRowTotal = #2
-        \markdownLaTeXColumnTotal = #3
-        \markdownLaTeXRenderTableRow
+          { #2 }
+          { #3 }
       },
       tableAttributeContextEnd = {
         \group_end:

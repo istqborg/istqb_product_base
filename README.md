@@ -50,7 +50,7 @@ To typeset ISTQB documents on your computer, take the following steps:
    $ docker run --rm -it --platform linux/amd64 -v "$PWD":/mnt -w /mnt ghcr.io/istqborg/istqb_product_base compile-tex-to-pdf --full-compile
    ```
 
-   Besides typesetting documents to PDF with the `compile-tex-to-pdf` command, you can also convert them to HTML, EPUB, DOCX, and combined MD file, among other things. Here is how you would list the available commands in a terminal of a Linux system:
+   Besides typesetting documents to PDF with the `compile-tex-to-pdf` command, you can also convert them to DOCX and combined MD file, among other things. (Conversion to HTML and EPUB is disabled until the template migrates from TeX4ht to a PDFToolkit-based solution, see issue [#152](https://github.com/istqborg/istqb_product_base/issues/152).) Here is how you would list the available commands in a terminal of a Linux system:
    ``` sh
    $ docker run --rm -it ghcr.io/istqborg/istqb_product_base --help
    ```
@@ -75,9 +75,9 @@ To typeset ISTQB documents on your computer, take the following steps:
                            Convert all YAML files with questions definitions to MD
        compile-tex-to-pdf  Compile all TeX files in this repository to PDF
        compile-tex-to-html
-                           Compile all TeX files in this repository to HTML
+                           Compile all TeX files in this repository to HTML (currently disabled)
        compile-tex-to-epub
-                           Compile all TeX files in this repository to EPUB
+                           Compile all TeX files in this repository to EPUB (currently disabled)
        compile-tex-to-docx
                            Compile all TeX files in this repository to DOCX
        compile-tex-to-md

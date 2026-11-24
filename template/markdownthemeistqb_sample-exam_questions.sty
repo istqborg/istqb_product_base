@@ -29,7 +29,6 @@
   }
 
 % Questions
-\RequirePackage { paralist }
 \tl_new:N
   \l_istqb_question_tl
 \cs_new_protected:Nn
@@ -45,15 +44,6 @@
           \l_istqb_question_tl
           {
             \group_begin:
-            % Do not add top margin directly above question headings, since they don't play well with vertical boxes and
-            % are are incorrectly preserved even if the heading begins a new page.
-            %
-            % See also <https://github.com/istqborg/istqb_product_base/issues/188>.
-            \titlespacing
-              \subsection
-              { 0pt }
-              { 0pt }
-              { *2.3 }
             % Print question heading.
             \tl_set:NV
               \l_tmpa_tl
@@ -95,9 +85,16 @@
             \tl_put_right:Nn
               \l_tmpa_tl
               { ) }
-            \exp_args:NNV
-              \subsection *
-              \l_tmpa_tl
+            % Do not add top margin directly above question headings, since they don't play well with vertical boxes and
+            % are are incorrectly preserved even if the heading begins a new page.
+            %
+            % See also <https://github.com/istqborg/istqb_product_base/issues/188>.
+            \use:e
+              {
+                \exp_not:N \subsection *
+                  [ before-vspace = 0pt ]
+                  { \exp_not:V \l_tmpa_tl }
+              }
             \exp_args:NVV
               \markboth
               \l_tmpa_tl
@@ -108,13 +105,12 @@
               { subsection }
               \l_tmpa_tl
             % Print question text.
-            \setdefaultleftmargin
-              { 3.2em }
-              { 2.2em }
-              { 1.87em }
-              { 1.7em }
-              { 1em }
-              { 1em }
+            \dim_set:Nn \leftmargini { 3.2em }
+            \dim_set:Nn \leftmarginii { 2.2em }
+            \dim_set:Nn \leftmarginiii { 1.87em }
+            \dim_set:Nn \leftmarginiv { 1.7em }
+            \dim_set:Nn \leftmarginv { 1em }
+            \dim_set:Nn \leftmarginvi { 1em }
             \prop_item:Nn
               \g_istqb_question_text_prop
               { ##1 }
@@ -128,13 +124,9 @@
                   { ##1 }
                   \l_tmpa_clist
                 \medskip
-                \setdefaultleftmargin
+                \dim_set:Nn
+                  \leftmargini
                   { 1.5em }
-                  { }
-                  { }
-                  { }
-                  { }
-                  { }
                 \begin { enumerate }
                 \clist_map_inline:Nn
                   \l_tmpa_clist
@@ -198,12 +190,12 @@
               {
                 % Add only a small space between the section heading and the heading of the first question.
                 \vspace
-                  { 1.5 \beforetitleunit }
+                  { 1.5 \istqbbeforetitleunit }
               }
               {
                 % Add regular spaces between a question and the heading of the next question.
                 \vspace
-                  { 4.0 \beforetitleunit }
+                  { 4.0 \istqbbeforetitleunit }
               }
             \vbox_set:NV
               \l_tmpa_box

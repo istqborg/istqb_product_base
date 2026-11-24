@@ -1,6 +1,8 @@
 # Custom latexmk configuration
 ## Enable shell escape
-set_tex_cmds('--shell-escape -interaction=nonstopmode %O %S');
+## The placeholder %P is the same as %S, unless code that should be executed before the source file is specified with
+## the option -pretex. The script template.py uses the option to add `\DocumentMetadata` to TeX files.
+set_tex_cmds('--shell-escape -interaction=nonstopmode %O %P');
 
 ## Output PDF by default
 $pdf_mode = 4;
