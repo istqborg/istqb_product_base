@@ -612,8 +612,10 @@
     \int_if_zero:VF
       \g_istqb_previous_heading_level_int
       {
-        % Encourage page breaks before sections
-        \penalty -2000
+        % Encourage page breaks before sections, unless the section directly follows another heading
+        \legacy_if:nF
+          { @nobreak }
+          { \penalty -2000 }
         % Discourage page breaks between sections and subsections in TOC
         \int_compare:nT
           { \g_istqb_previous_heading_level_int < #1 }
@@ -622,6 +624,10 @@
         \int_compare:nT
           { \g_istqb_previous_heading_level_int > #1 }
           { \addtocontents { toc } { \pagebreak[0] } }
+        % Directly after another heading, the above writes to TOC would allow a page break between the headings
+        \legacy_if:nT
+          { @nobreak }
+          { \nobreak }
       }
     \int_gset:Nn
       \g_istqb_previous_heading_level_int
@@ -661,23 +667,39 @@
 \istqbbeforetitleunit=1ex\@plus.3ex\@minus.06ex
 \newskip\istqbaftertitleunit
 \istqbaftertitleunit=1ex\@plus.1ex
+%%% The package parskip subtracts \parskip from the vertical space that titlesec adds before and after headings, but it
+%%% doesn't patch the heading templates. Therefore, we subtract \parskip from the vertical space ourselves. For framed
+%%% headings, we also subtract the following lengths, so that the frames are where they were in version 1.2.2 of this
+%%% class, when they were drawn by the package tcolorbox inside headings typeset by the package titlesec.
+\newskip\istqbbeforeframedtitleadjustment
+\istqbbeforeframedtitleadjustment=6.9pt
+\newskip\istqbafterframedtitleadjustment
+\istqbafterframedtitleadjustment=3.34pt
 %%% Frames around sections and subsections.
+\newdimen\istqbheadinglinewidth
 \newcommand\istqbheadingframe[3]{% #1: rule width, #2: space above the heading text, #3: heading material
   \begingroup
   \setlength\fboxrule{#1}%
   \setlength\fboxsep{0pt}%
+  % The heading templates reduce \linewidth by the left and right margins of the heading. In our headings, these
+  % margins are inside the frame, which spans the whole \hsize.
+  \setlength\istqbheadinglinewidth{\dimexpr\linewidth - 2\fboxrule\relax}%
   \fbox{%
-    \parbox{\dimexpr\linewidth - 2\fboxrule\relax}{%
+    \parbox[b]{\dimexpr\hsize - 2\fboxrule\relax}{%
+      \setlength\linewidth{\istqbheadinglinewidth}%
       \vspace*{#2}%
-      #3%
+      % Like titlesec, add struts, so that the height of the frame does not depend on the letters in the heading.
+      \strut#3\strut
     }%
   }%
   \endgroup
 }
 \EditInstance{heading}{section}{
   placement = top,
+  % Unlike `placement = top`, don't use the page style plain on the first page of a section.
+  placement-start-code = \clearpage\global\@topnum\z@,
   before-vspace = 0pt,
-  after-vspace = \istqbaftertitleunit * 47 / 20,
+  after-vspace = \istqbaftertitleunit * 47 / 20 - \parskip - \istqbafterframedtitleadjustment,
   heading-decls = \normalfont\bfseries\fontsize{16}{19.2}\selectfont,
   heading-format = \istqbheadingframe{0.95pt}{0.05in}{#1},
 }
@@ -687,8 +709,8 @@
   separator-b = \hspace{0.3em},
 }
 \EditInstance{heading}{subsection}{
-  before-vspace = \istqbbeforetitleunit * 11 / 2,
-  after-vspace = \istqbaftertitleunit * 23 / 10,
+  before-vspace = \istqbbeforetitleunit * 11 / 2 - \parskip - \istqbbeforeframedtitleadjustment,
+  after-vspace = \istqbaftertitleunit * 23 / 10 - \parskip - \istqbafterframedtitleadjustment,
   heading-decls = \normalfont\mdseries\fontsize{14}{16.8}\selectfont,
   heading-format = \istqbheadingframe{0.63pt}{0.035in}{#1},
 }
@@ -698,8 +720,8 @@
   separator-b = \hspace{0.3em},
 }
 \EditInstance{heading}{subsubsection}{
-  before-vspace = \istqbbeforetitleunit * 13 / 4,
-  after-vspace = \istqbaftertitleunit,
+  before-vspace = \istqbbeforetitleunit * 13 / 4 - \parskip,
+  after-vspace = \istqbaftertitleunit - \parskip,
   heading-decls = \normalfont\mdseries\fontsize{12}{14.4}\selectfont,
 }
 \EditInstance{headformat}{subsubsection}{
@@ -849,7 +871,8 @@
     toptitle=10pt,
     bottomtitle=10pt,
     before skip=10pt,
-    after skip=5pt,
+    % Reproduce the vertical space after the box in version 1.2.2 of this class, which used the package mdframed.
+    after skip=12pt,
   }
 }
 \newtcolorbox{istqbhandsonobjectivesection}[1][]{istqb/hands-on-objective, #1}
@@ -1067,11 +1090,20 @@
     \dim_set:Nn
       \tabcolsep
       { 3pt }
+    % Approximate the height of rows in version 1.2.2 of this class, when tables were typeset with the package
+    % tabularray with the settings `rows = { ht = \baselineskip }` and `rowsep = 2pt`.
+    \cs_set:Npn
+      \arraystretch
+      { 1.25 }
     \tl_if_empty:nTF
       { #1 }
       {
         \skip_set:Nn \LTpre { \medskipamount }
         \skip_set:Nn \LTpost { \medskipamount }
+        % Don't increment the counter of tables for tables without captions.
+        \cs_set:Npn
+          \LTcaptype
+          { }
       }
       {
         \skip_set:Nn \LTpre { 1.5 \bigskipamount }

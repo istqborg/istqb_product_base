@@ -753,6 +753,7 @@
 \tl_new:N \l_istqb_traceability_matrix_header_tl
 \tl_new:N \l_istqb_traceability_matrix_body_tl
 \tl_new:N \l_istqb_traceability_matrix_tl
+\dim_new:N \l_istqb_traceability_matrix_first_column_dim
 \clist_new:N \l_istqb_traceability_matrix_subchapter_numbers_clist
 \clist_new:N \l_istqb_traceability_matrix_learning_objective_numbers_clist
 \clist_new:N \l_istqb_traceability_matrix_related_business_outcome_numbers_clist
@@ -766,7 +767,7 @@
         % objectives, followed by one column per business outcome.
         \tl_set:Nn
           \l_istqb_traceability_matrix_colspec_tl
-          { | l | X | }
+          { | w { l } { \l_istqb_traceability_matrix_first_column_dim } | X | }
         \tl_clear:N
           \l_istqb_traceability_matrix_empty_cells_tl
         \seq_map_inline:Nn
@@ -779,20 +780,28 @@
               \l_istqb_traceability_matrix_empty_cells_tl
               { & }
           }
-        % Construct the header row, which is repeated on every page.
+        % Construct the header row, which is repeated on every page. The first cell spans the first two columns, whose
+        % total width we can determine from the width of the first column, which we measure below, and the width of
+        % the X column, which the package tabularx stores in the register `\TX@col@width`.
         \tl_set:Nn
           \l_istqb_traceability_matrix_header_tl
           {
             \hline
             \multicolumn
-              { 1 }
-              { | >{ \columncolor { istqbbluetableheader } } l }
-              { }
-            &
-            \cellcolor { istqbbluetableheader }
-            \Large
-            \RaggedRight
-            \arraybackslash
+              { 2 }
+              {
+                | >{ \columncolor { istqbbluetableheader } \Large \RaggedRight \arraybackslash }
+                m
+                  {
+                    \dimexpr
+                      \l_istqb_traceability_matrix_first_column_dim
+                      + \TX@col@width
+                      + 2 \tabcolsep
+                      + \arrayrulewidth
+                    \relax
+                  }
+                |
+              }
           }
         \tl_set:NV
           \l_tmpa_tl
@@ -837,10 +846,17 @@
               \l_istqb_traceability_matrix_header_tl
               {
                 &
-                \exp_not:N \rotatebox
-                  [ origin = c ]
-                  { 270 }
-                  { \exp_not:V \g_istqb_prefix_tl -BO ##1 }
+                % Add some space above and below the rotated text, so that it doesn't touch the horizontal rules.
+                \exp_not:N \raisebox
+                  { 0pt }
+                  [ \exp_not:N \dimexpr \exp_not:N \height + 3pt \exp_not:N \relax ]
+                  [ \exp_not:N \dimexpr \exp_not:N \depth + 3pt \exp_not:N \relax ]
+                  {
+                    \exp_not:N \rotatebox
+                      [ origin = c ]
+                      { 270 }
+                      { \exp_not:V \g_istqb_prefix_tl -BO ##1 }
+                  }
               }
           }
         \tl_put_right:Nn
@@ -1036,6 +1052,38 @@
                   }
               }
           }
+        % Measure the width of the first column, i.e. the widest text before the first `&` in a row of the table body.
+        \dim_zero:N
+          \l_istqb_traceability_matrix_first_column_dim
+        \seq_set_split:NnV
+          \l_tmpa_seq
+          { \\ }
+          \l_istqb_traceability_matrix_body_tl
+        \seq_map_inline:Nn
+          \l_tmpa_seq
+          {
+            \seq_set_split:Nnn
+              \l_tmpb_seq
+              { & }
+              { ##1 }
+            \seq_get_left:NN
+              \l_tmpb_seq
+              \l_tmpa_tl
+            \regex_replace_all:nnN
+              { \c{cellcolor} \cB. .*? \cE. | \c{hline} | \c{pagebreak} }
+              { }
+              \l_tmpa_tl
+            \hbox_set:Nn
+              \l_tmpa_box
+              { \tl_use:N \l_tmpa_tl }
+            \dim_set:Nn
+              \l_istqb_traceability_matrix_first_column_dim
+              {
+                \dim_max:nn
+                  { \l_istqb_traceability_matrix_first_column_dim }
+                  { \box_wd:N \l_tmpa_box }
+              }
+          }
         % Construct the final table.
         \tl_set:Nn
           \l_istqb_traceability_matrix_tl
@@ -1052,14 +1100,19 @@
         \tl_put_right:Nn
           \l_istqb_traceability_matrix_tl
           { \end { xltabular } }
-        % Typeset the final table with vertically centered descriptions and some extra space above every row.
+        % Typeset the final table with vertically centered descriptions and with the same height of rows as in version
+        % 1.2.2 of the class istqb, when the table was typeset with the package tabularray. Don't increment the counter
+        % of tables, since the table has no caption.
         \cs_set:Npn
           \tabularxcolumn
           ##1
           { m { ##1 } }
-        \dim_set:Nn
-          \extrarowheight
-          { 1pt }
+        \cs_set:Npn
+          \arraystretch
+          { 1.5 }
+        \cs_set:Npn
+          \LTcaptype
+          { }
         \tl_use:N
           \l_istqb_traceability_matrix_tl
         \group_end:
@@ -1578,9 +1631,14 @@
 \int_new:N \l_istqb_markdown_table_cell_columns_int
 \int_new:N \l_istqb_markdown_table_rule_start_int
 \int_new:N \l_istqb_markdown_table_spanned_rows_int
+\int_new:N \l_istqb_markdown_table_covered_columns_int
 \bool_new:N \l_istqb_markdown_table_spanned_bool
 \prop_new:N \l_istqb_markdown_table_spanned_rows_prop
+\prop_new:N \l_istqb_markdown_table_spanned_columns_prop
+\prop_new:N \l_istqb_markdown_table_covered_columns_prop
+\seq_new:N \l_istqb_markdown_table_alignments_seq
 \seq_new:N \l_istqb_markdown_table_attributes_seq
+\bool_new:N \l_istqb_markdown_table_multicolumn_bool
 \regex_const:Nn
   \c_istqb_multi_row_and_multi_column_cell_regex
    {
@@ -1588,16 +1646,192 @@
      \cB\{ ( rows | cols ) \cE\}
      \cB\{ ( [1-9][0-9]* ) \cE\}
    }
+%%% Process a single cell of a table that is not spanned by a multi-row multi-column cell from one of the previous rows.
+\cs_new_protected:Nn
+  \istqb_markdown_table_uncovered_cell:n
+  {
+    % Determine the number of rows and columns that the cell spans.
+    \int_set:Nn
+      \l_istqb_markdown_table_cell_rows_int
+      { 1 }
+    \int_set:Nn
+      \l_istqb_markdown_table_cell_columns_int
+      { 1 }
+    \regex_extract_all:NnNT
+      \c_istqb_multi_row_and_multi_column_cell_regex
+      { #1 }
+      \l_istqb_markdown_table_attributes_seq
+      {
+        \int_step_inline:nnnn
+          { 2 }
+          { 3 }
+          { \seq_count:N \l_istqb_markdown_table_attributes_seq }
+          {
+            \str_case:en
+              { \seq_item:Nn \l_istqb_markdown_table_attributes_seq { ##1 } }
+              {
+                { rows }
+                {
+                  \int_set:Nn
+                    \l_istqb_markdown_table_cell_rows_int
+                    { \seq_item:Nn \l_istqb_markdown_table_attributes_seq { ##1 + 1 } }
+                }
+                { cols }
+                {
+                  \int_set:Nn
+                    \l_istqb_markdown_table_cell_columns_int
+                    { \seq_item:Nn \l_istqb_markdown_table_attributes_seq { ##1 + 1 } }
+                }
+              }
+          }
+      }
+    \int_set:Nn
+      \l_istqb_markdown_table_cell_columns_int
+      {
+        \int_min:nn
+          { \l_istqb_markdown_table_cell_columns_int }
+          { \l_istqb_markdown_table_columns_int - \l_istqb_markdown_table_column_int + 1 }
+      }
+    % Typeset multi-column cells and multi-row cells outside X columns as horizontally centered `\multicolumn`.
+    \bool_set:Nn
+      \l_istqb_markdown_table_multicolumn_bool
+      {
+        \int_compare_p:nNn
+          { \l_istqb_markdown_table_cell_columns_int } > { 1 }
+        ||
+        (
+          \int_compare_p:nNn
+            { \l_istqb_markdown_table_cell_rows_int } > { 1 }
+          &&
+          ! \str_if_eq_p:ee
+            { \seq_item:Nn \l_istqb_markdown_table_alignments_seq { \l_istqb_markdown_table_column_int } }
+            { d }
+        )
+      }
+    % Typeset the cell.
+    \int_compare:nNnF
+      { \l_istqb_markdown_table_column_int } = { 1 }
+      {
+        \tl_put_right:Nn
+          \l_istqb_markdown_table_row_tl
+          { & }
+      }
+    \tl_set:Nn
+      \l_istqb_markdown_table_cell_tl
+      { #1 }
+    \int_compare:nNnT
+      { \l_istqb_markdown_table_cell_rows_int } > { 1 }
+      {
+        % Center multi-row cells vertically like the package multirow, which is incompatible with tagging: Move the
+        % contents of the cell down by a half of the height of the rows that it spans, assuming that these rows contain
+        % a single line of text. In X columns, typeset the contents in a horizontally centered paragraph box, so that
+        % long texts can wrap.
+        \bool_if:NF
+          \l_istqb_markdown_table_multicolumn_bool
+          {
+            \tl_set:Nx
+              \l_istqb_markdown_table_cell_tl
+              {
+                \exp_not:N \parbox
+                  [ t ]
+                  { \exp_not:N \linewidth }
+                  {
+                    \exp_not:N \centering
+                    \exp_not:V \l_istqb_markdown_table_cell_tl
+                  }
+              }
+          }
+        \tl_set:Nx
+          \l_istqb_markdown_table_cell_tl
+          {
+            \exp_not:N \raisebox
+              {
+                \exp_not:N \dimexpr
+                  0pt
+                  - ( \exp_not:N \arraystretch \exp_not:N \baselineskip + \exp_not:N \arrayrulewidth )
+                  * \int_eval:n { \l_istqb_markdown_table_cell_rows_int - 1 }
+                  / 2
+                \exp_not:N \relax
+              }
+              [ 0pt ]
+              [ 0pt ]
+              { \exp_not:V \l_istqb_markdown_table_cell_tl }
+          }
+        \tl_put_left:Nx
+          \l_istqb_markdown_table_cell_tl
+          {
+            \exp_not:N \tagpdfsetup
+              { table / multirow = \int_use:N \l_istqb_markdown_table_cell_rows_int }
+          }
+        % Record the rows and columns that the cell spans.
+        \int_set:Nn
+          \l_istqb_markdown_table_spanned_rows_int
+          { \l_istqb_markdown_table_cell_rows_int - 1 }
+        \int_step_inline:nnn
+          { \l_istqb_markdown_table_column_int }
+          { \l_istqb_markdown_table_column_int + \l_istqb_markdown_table_cell_columns_int - 1 }
+          {
+            \prop_put:NnV
+              \l_istqb_markdown_table_spanned_rows_prop
+              { ##1 }
+              \l_istqb_markdown_table_spanned_rows_int
+          }
+        \exp_args:NNVV
+          \prop_put:Nnn
+          \l_istqb_markdown_table_spanned_columns_prop
+          \l_istqb_markdown_table_column_int
+          \l_istqb_markdown_table_cell_columns_int
+      }
+    \bool_if:NTF
+      \l_istqb_markdown_table_multicolumn_bool
+      {
+        \tl_put_right:Nx
+          \l_istqb_markdown_table_row_tl
+          {
+            \exp_not:N \multicolumn
+              { \int_use:N \l_istqb_markdown_table_cell_columns_int }
+              {
+                \int_compare:nNnT
+                  { \l_istqb_markdown_table_column_int } = { 1 }
+                  { | }
+                c |
+              }
+              { \exp_not:V \l_istqb_markdown_table_cell_tl }
+          }
+        \int_set:Nn
+          \l_istqb_markdown_table_skipped_cells_int
+          { \l_istqb_markdown_table_cell_columns_int - 1 }
+      }
+      {
+        \tl_put_right:NV
+          \l_istqb_markdown_table_row_tl
+          \l_istqb_markdown_table_cell_tl
+      }
+  }
 %%% Process a single cell of a table.
 %%%
 %%% Multi-column cells are typeset with `\multicolumn` and the cells that they span are skipped. Multi-row cells are
 %%% marked as such in tagged PDF and we don't draw horizontal rules through them. The cells that they span should be
-%%% empty.
+%%% empty. In the following rows, the cells that are spanned by a multi-row multi-column cell are typeset as a single
+%%% empty `\multicolumn`, so that we don't draw vertical rules through the multi-row multi-column cell either.
 \cs_new_protected:Nn
   \istqb_markdown_table_cell:n
   {
     \int_incr:N
       \l_istqb_markdown_table_column_int
+    \exp_args:NNV
+      \prop_get:NnNF
+      \l_istqb_markdown_table_covered_columns_prop
+      \l_istqb_markdown_table_column_int
+      \l_tmpa_tl
+      {
+        \tl_set:Nn
+          \l_tmpa_tl
+          { 1 }
+      }
+    \int_set:Nn
+      \l_istqb_markdown_table_covered_columns_int
+      { \l_tmpa_tl }
     \int_compare:nNnTF
       { \l_istqb_markdown_table_skipped_cells_int } > { 0 }
       {
@@ -1605,105 +1839,36 @@
           \l_istqb_markdown_table_skipped_cells_int
       }
       {
-        % Determine the number of rows and columns that the cell spans.
-        \int_set:Nn
-          \l_istqb_markdown_table_cell_rows_int
-          { 1 }
-        \int_set:Nn
-          \l_istqb_markdown_table_cell_columns_int
-          { 1 }
-        \regex_extract_all:NnNT
-          \c_istqb_multi_row_and_multi_column_cell_regex
-          { #1 }
-          \l_istqb_markdown_table_attributes_seq
-          {
-            \int_step_inline:nnnn
-              { 2 }
-              { 3 }
-              { \seq_count:N \l_istqb_markdown_table_attributes_seq }
-              {
-                \str_case:en
-                  { \seq_item:Nn \l_istqb_markdown_table_attributes_seq { ##1 } }
-                  {
-                    { rows }
-                    {
-                      \int_set:Nn
-                        \l_istqb_markdown_table_cell_rows_int
-                        { \seq_item:Nn \l_istqb_markdown_table_attributes_seq { ##1 + 1 } }
-                    }
-                    { cols }
-                    {
-                      \int_set:Nn
-                        \l_istqb_markdown_table_cell_columns_int
-                        { \seq_item:Nn \l_istqb_markdown_table_attributes_seq { ##1 + 1 } }
-                    }
-                  }
-              }
-          }
-        \int_set:Nn
-          \l_istqb_markdown_table_cell_columns_int
-          {
-            \int_min:nn
-              { \l_istqb_markdown_table_cell_columns_int }
-              { \l_istqb_markdown_table_columns_int - \l_istqb_markdown_table_column_int + 1 }
-          }
-        % Typeset the cell.
-        \int_compare:nNnF
-          { \l_istqb_markdown_table_column_int } = { 1 }
-          {
-            \tl_put_right:Nn
-              \l_istqb_markdown_table_row_tl
-              { & }
-          }
-        \tl_set:Nn
-          \l_istqb_markdown_table_cell_tl
-          { #1 }
-        \int_compare:nNnT
-          { \l_istqb_markdown_table_cell_rows_int } > { 1 }
-          {
-            \tl_put_left:Nx
-              \l_istqb_markdown_table_cell_tl
-              {
-                \exp_not:N \tagpdfsetup
-                  { table / multirow = \int_use:N \l_istqb_markdown_table_cell_rows_int }
-              }
-            \int_set:Nn
-              \l_istqb_markdown_table_spanned_rows_int
-              { \l_istqb_markdown_table_cell_rows_int - 1 }
-            \int_step_inline:nnn
-              { \l_istqb_markdown_table_column_int }
-              { \l_istqb_markdown_table_column_int + \l_istqb_markdown_table_cell_columns_int - 1 }
-              {
-                \prop_put:NnV
-                  \l_istqb_markdown_table_spanned_rows_prop
-                  { ##1 }
-                  \l_istqb_markdown_table_spanned_rows_int
-              }
-          }
         \int_compare:nNnTF
-          { \l_istqb_markdown_table_cell_columns_int } > { 1 }
+          { \l_istqb_markdown_table_covered_columns_int } > { 1 }
           {
+            \int_compare:nNnF
+              { \l_istqb_markdown_table_column_int } = { 1 }
+              {
+                \tl_put_right:Nn
+                  \l_istqb_markdown_table_row_tl
+                  { & }
+              }
             \tl_put_right:Nx
               \l_istqb_markdown_table_row_tl
               {
                 \exp_not:N \multicolumn
-                  { \int_use:N \l_istqb_markdown_table_cell_columns_int }
+                  { \int_use:N \l_istqb_markdown_table_covered_columns_int }
                   {
                     \int_compare:nNnT
                       { \l_istqb_markdown_table_column_int } = { 1 }
                       { | }
                     c |
                   }
-                  { \exp_not:V \l_istqb_markdown_table_cell_tl }
+                  { \exp_not:n { #1 } }
               }
             \int_set:Nn
               \l_istqb_markdown_table_skipped_cells_int
-              { \l_istqb_markdown_table_cell_columns_int - 1 }
+              { \l_istqb_markdown_table_covered_columns_int - 1 }
           }
           {
-            \tl_put_right:NV
-              \l_istqb_markdown_table_row_tl
-              \l_istqb_markdown_table_cell_tl
+            \istqb_markdown_table_uncovered_cell:n
+              { #1 }
           }
       }
   }
@@ -1780,6 +1945,23 @@
           \l_istqb_markdown_table_body_tl
           { \hline }
       }
+    % Record the cells of the next row that are spanned by multi-row cells, together with the number of columns that
+    % the multi-row cells span.
+    \prop_clear:N
+      \l_istqb_markdown_table_covered_columns_prop
+    \prop_map_inline:Nn
+      \l_istqb_markdown_table_spanned_columns_prop
+      {
+        \prop_if_in:NnT
+          \l_istqb_markdown_table_spanned_rows_prop
+          { ##1 }
+          {
+            \prop_put:Nnn
+              \l_istqb_markdown_table_covered_columns_prop
+              { ##1 }
+              { ##2 }
+          }
+      }
     % Decrement the number of rows that are spanned by cells from the current row.
     \int_step_inline:nn
       { \l_istqb_markdown_table_columns_int }
@@ -1803,6 +1985,9 @@
               {
                 \prop_remove:Nn
                   \l_istqb_markdown_table_spanned_rows_prop
+                  { ##1 }
+                \prop_remove:Nn
+                  \l_istqb_markdown_table_spanned_columns_prop
                   { ##1 }
               }
           }
@@ -1857,6 +2042,8 @@
           \l_istqb_markdown_table_row_tl
         \prop_clear:N
           \l_istqb_markdown_table_spanned_rows_prop
+        \prop_clear:N
+          \l_istqb_markdown_table_spanned_columns_prop
       }
       {
         \tl_put_right:NV
@@ -1875,6 +2062,15 @@
 \cs_new_protected:Nn
   \istqb_markdown_table_alignments:n
   {
+    \seq_clear:N
+      \l_istqb_markdown_table_alignments_seq
+    \tl_map_inline:nn
+      { #1 }
+      {
+        \seq_put_right:Nn
+          \l_istqb_markdown_table_alignments_seq
+          { ##1 }
+      }
     \tl_if_empty:NTF
       \l_istqb_markdown_table_colspec_override_tl
       {
@@ -1933,6 +2129,10 @@
       \l_istqb_markdown_table_body_tl
     \prop_clear:N
       \l_istqb_markdown_table_spanned_rows_prop
+    \prop_clear:N
+      \l_istqb_markdown_table_spanned_columns_prop
+    \prop_clear:N
+      \l_istqb_markdown_table_covered_columns_prop
     \istqb_markdown_table_alignments:n
   }
 \markdownSetup
