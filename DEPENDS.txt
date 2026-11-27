@@ -29,6 +29,8 @@ make4ht
 makeindex
 mwe
 newunicodechar
+pdfcol
+pmboxdraw
 tcolorbox
 texlogfilter
 tex-gyre
