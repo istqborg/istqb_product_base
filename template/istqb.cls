@@ -180,10 +180,7 @@
     after skip=1.75\topskip,
   }
 }
-\@ifundefined
-  {HCode}%
-  {\RequirePackage{lastpage}}%
-  {\def\lastpage@lastpage{??}}
+\RequirePackage{lastpage}  % Before the last page is known, `\lastpage@lastpage` expands to `??`, see below.
 \ExplSyntaxOn
 \tl_new:N \g_istqb_version_tl
 \tl_new:N \g_istqb_date_tl
@@ -291,8 +288,26 @@
 
 % Bibliography
 \RequirePackage{csquotes}
-% Since the 2026-11-09 release, BibLaTeX uses `regexpatch`, which is a superset of but conflicts with `xpatch` loaded by later packages.
-\RequirePackage{regexpatch} \disable@package@load{xpatch}{}
+%% With LuaTeX, the package csquotes adds an extra space after opening quotation marks to the text of tagged PDFs.
+%% Disable the production of space characters for the marker glue, as suggested by @u-fischer in
+%% <https://github.com/latex3/tagging-project/issues/1041#issuecomment-3536771210>.
+\ExplSyntaxOn
+\FirstAidNeededT
+  { csquotes }
+  { sty }
+  { 2026-05-19~v5.2p~context-sensitive~quotations~(JAW) }
+  {
+    \cs_set:Npn
+      \csq@setmarker@open
+      {
+        \penalty \@M
+        \tag_spacechar_off:
+        \hskip - \csq@themarker \relax
+        \hskip \csq@themarker \relax
+        \tag_spacechar_on:
+      }
+  }
+\ExplSyntaxOff
 \PassOptionsToPackage{style=iso-authoryear}{biblatex}
 \RequirePackage{biblatex}
 \urlstyle{same}
@@ -597,8 +612,10 @@
     \int_if_zero:VF
       \g_istqb_previous_heading_level_int
       {
-        % Encourage page breaks before sections
-        \penalty -2000
+        % Encourage page breaks before sections, unless the section directly follows another heading
+        \legacy_if:nF
+          { @nobreak }
+          { \penalty -2000 }
         % Discourage page breaks between sections and subsections in TOC
         \int_compare:nT
           { \g_istqb_previous_heading_level_int < #1 }
@@ -607,6 +624,10 @@
         \int_compare:nT
           { \g_istqb_previous_heading_level_int > #1 }
           { \addtocontents { toc } { \pagebreak[0] } }
+        % Directly after another heading, the above writes to TOC would allow a page break between the headings
+        \legacy_if:nT
+          { @nobreak }
+          { \nobreak }
       }
     \int_gset:Nn
       \g_istqb_previous_heading_level_int
@@ -617,72 +638,95 @@
   { VF }
 \ExplSyntaxOff
 %% Sections, subsections, and subsubsections
-\RequirePackage{tcolorbox}
-\tcbset{
-  istqb/section/.style={
-    boxrule=0.95pt,
-    colframe=black,
-    colback=white,
-    left=0.08in,
-    right=0.2in,
-    top=0.05in,
-    bottom=0in,
-    before skip=0pt,
-    after skip=0pt,
-    left skip=0in,
-    right skip=0in,
-    boxsep=0pt,
-    arc=0mm,
-    outer arc=0mm,
-  },
-  istqb/subsection/.style={
-    istqb/section,
-    boxrule=0.63pt,
-    top=0.035in,
+%%% We customize the heading templates of the LaTeX kernel, which produce tagged PDF, rather than use the package
+%%% titlesec, whose commands `\titleformat`, `\titlespacing`, and `\titlelabel` are not supported with tagging. The
+%%% heading templates are only available with `\DocumentMetadata`, which the script template.py adds to TeX files.
+%%% See also <https://github.com/istqborg/istqb_product_base/issues/152#issuecomment-5715946481>.
+\ExplSyntaxOn
+\msg_new:nnnn
+  { istqb }
+  { missing-heading-templates }
+  {
+    The~class~istqb~requires~the~heading~templates~of~the~LaTeX~kernel,~which~are~only~available~with~
+    \iow_char:N\\DocumentMetadata.
   }
+  {
+    Typeset~the~document~with~the~command~"istqb-template~compile-tex-to-pdf",~which~adds~
+    \iow_char:N\\DocumentMetadata~automatically.
+  }
+\cs_if_exist:NF
+  \ParseLaTeXeHeading
+  {
+    \msg_fatal:nn
+      { istqb }
+      { missing-heading-templates }
+  }
+\ExplSyntaxOff
+%%% Units of vertical space before and after headings, taken from the package titlesec.
+\newskip\istqbbeforetitleunit
+\istqbbeforetitleunit=1ex\@plus.3ex\@minus.06ex
+\newskip\istqbaftertitleunit
+\istqbaftertitleunit=1ex\@plus.1ex
+%%% The package parskip subtracts \parskip from the vertical space that titlesec adds before and after headings, but it
+%%% doesn't patch the heading templates. Therefore, we subtract \parskip from the vertical space ourselves. For framed
+%%% headings, we also subtract the following lengths, so that the frames are where they were in version 1.2.2 of this
+%%% class, when they were drawn by the package tcolorbox inside headings typeset by the package titlesec.
+\newskip\istqbbeforeframedtitleadjustment
+\istqbbeforeframedtitleadjustment=6.9pt
+\newskip\istqbafterframedtitleadjustment
+\istqbafterframedtitleadjustment=3.34pt
+%%% Frames around sections and subsections.
+\newdimen\istqbheadinglinewidth
+\newcommand\istqbheadingframe[3]{% #1: rule width, #2: space above the heading text, #3: heading material
+  \begingroup
+  \setlength\fboxrule{#1}%
+  \setlength\fboxsep{0pt}%
+  % The heading templates reduce \linewidth by the left and right margins of the heading. In our headings, these
+  % margins are inside the frame, which spans the whole \hsize.
+  \setlength\istqbheadinglinewidth{\dimexpr\linewidth - 2\fboxrule\relax}%
+  \fbox{%
+    \parbox[b]{\dimexpr\hsize - 2\fboxrule\relax}{%
+      \setlength\linewidth{\istqbheadinglinewidth}%
+      \vspace*{#2}%
+      % Like titlesec, add struts, so that the height of the frame does not depend on the letters in the heading.
+      \strut#3\strut
+    }%
+  }%
+  \endgroup
 }
-\RequirePackage{xpatch}
-\xpatchcmd{\section}{\normalfont\Large\bfseries}{\istqbsectionbox}{}{\PatchFailed}
-\xpatchcmd{\subsection}{\normalfont\large\bfseries}{\istqbsubsectionbox}{}{\PatchFailed}
-\RequirePackage{titlesec, etoolbox}
-\pretocmd{\section}{\clearpage}{}{\PatchFailed}
-\newcommand\istqbsectionbox[1]{%
-  \clearpage
-  \begin{tcolorbox}[istqb/section]
-    \normalfont
-    \bfseries
-    \fontsize{16}{19.2}\selectfont
-    \phantomsection
-    \begingroup
-    \titlelabel{\thetitle\kern0.3em}
-    #1%
-    \endgroup
-  \end{tcolorbox}%
+\EditInstance{heading}{section}{
+  placement = top,
+  % Unlike `placement = top`, don't use the page style plain on the first page of a section.
+  placement-start-code = \clearpage\global\@topnum\z@,
+  before-vspace = 0pt,
+  after-vspace = \istqbaftertitleunit * 47 / 20 - \parskip - \istqbafterframedtitleadjustment,
+  heading-decls = \normalfont\bfseries\fontsize{16}{19.2}\selectfont,
+  heading-format = \istqbheadingframe{0.95pt}{0.05in}{#1},
 }
-\newcommand\istqbsubsectionbox[1]{%
-  \begin{tcolorbox}[istqb/subsection]
-    \normalfont
-    \mdseries
-    \fontsize{14}{16.8}\selectfont
-    \phantomsection
-    \begingroup
-    \titlelabel{\thetitle\kern0.3em}
-    #1%
-    \endgroup
-  \end{tcolorbox}%
+\EditInstance{headformat}{section}{
+  left-margin = 0.08in,
+  right-margin = 0.2in,
+  separator-b = \hspace{0.3em},
 }
-\titleformat\subsubsection
-{% format
-    \normalfont
-    \mdseries
-    \fontsize{12}{14.4}\selectfont
-}%
-{\thesubsubsection}% label
-{0.5em}% sep
-{}% before-code
-\titlespacing\section{0pt}{0pt}{*2.35}
-\titlespacing\subsection{0pt}{*5.5}{*2.3}
-\titlespacing\subsubsection{0pt}{*3.25}{*1}
+\EditInstance{heading}{subsection}{
+  before-vspace = \istqbbeforetitleunit * 11 / 2 - \parskip - \istqbbeforeframedtitleadjustment,
+  after-vspace = \istqbaftertitleunit * 23 / 10 - \parskip - \istqbafterframedtitleadjustment,
+  heading-decls = \normalfont\mdseries\fontsize{14}{16.8}\selectfont,
+  heading-format = \istqbheadingframe{0.63pt}{0.035in}{#1},
+}
+\EditInstance{headformat}{subsection}{
+  left-margin = 0.08in,
+  right-margin = 0.2in,
+  separator-b = \hspace{0.3em},
+}
+\EditInstance{heading}{subsubsection}{
+  before-vspace = \istqbbeforetitleunit * 13 / 4 - \parskip,
+  after-vspace = \istqbaftertitleunit - \parskip,
+  heading-decls = \normalfont\mdseries\fontsize{12}{14.4}\selectfont,
+}
+\EditInstance{headformat}{subsubsection}{
+  separator-b = \hspace{0.5em},
+}
 %%% Document commands
 \ExplSyntaxOn
 \tl_new:N \g_istqb_current_chapter_name_tl
@@ -732,7 +776,7 @@
 \RequirePackage{xparse}
 \newenvironment{istqbappendices}{%
   \begingroup
-  \let\istqboldsection\section
+  \DeclareCommandCopy\istqboldsection\section
   \RenewDocumentCommand\section{sm}{%
     \stepcounter{istqbappendix}%
     \IfBooleanTF
@@ -803,17 +847,35 @@
 \ExplSyntaxOff
 
 %% Hands-on objectives
-\RequirePackage{mdframed}
-\newmdenv[%
-  skipabove = 10pt,
-  skipbelow = 5pt,
-  frametitleaboveskip = 10pt,
-  frametitlebelowskip = 10pt,
-  innerleftmargin = 5pt,
-  innerrightmargin = 5pt,
-  innertopmargin = 0pt,
-  innerbottommargin = 10pt,
-]{istqbhandsonobjectivesection}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{breakable}
+\tcbset{
+  istqb/hands-on-objective/.style={
+    breakable,
+    boxrule=0.4pt,
+    colframe=black,
+    colback=white,
+    coltitle=black,
+    colbacktitle=white,
+    fonttitle=\normalfont\bfseries,
+    titlerule=0pt,
+    arc=0mm,
+    outer arc=0mm,
+    boxsep=0pt,
+    left=5pt,
+    right=5pt,
+    top=0pt,
+    bottom=10pt,
+    lefttitle=5pt,
+    righttitle=5pt,
+    toptitle=10pt,
+    bottomtitle=10pt,
+    before skip=10pt,
+    % Reproduce the vertical space after the box in version 1.2.2 of this class, which used the package mdframed.
+    after skip=12pt,
+  }
+}
+\newtcolorbox{istqbhandsonobjectivesection}[1][]{istqb/hands-on-objective, #1}
 
 %% Learning objectives
 \RequirePackage{longtable}
@@ -995,47 +1057,183 @@
 \RequirePackage{hyperref}
 
 % Tables
+%% We typeset tables with the packages longtable and xltabular, which are compatible with tagging.
+%% See also <https://github.com/istqborg/istqb_product_base/issues/152#issuecomment-5715946481>.
 \RequirePackage{xcolor}
 \definecolor{istqbgraytableheader}{HTML}{D9D9D9}
 \definecolor{istqbbluetableheader}{HTML}{B5C5E5}
 \definecolor{istqbgreentableheader}{HTML}{C5E0B3}
-\RequirePackage{tabularray}
+\RequirePackage{longtable}
+\RequirePackage{xltabular}
 \ExplSyntaxOn
-\DeclareTblrTemplate { contfoot } { default } { }
-\DeclareTblrTemplate { conthead } { default } { }
-\DeclareTblrTemplate { caption } { default } { }
-\DeclareTblrTemplate { caption-sep } { default } { :~ }
-\DeclareTblrTemplate { conthead } { default } { }
-\DeclareTblrTemplate { capcont } { default } { }
-\NewTblrEnviron
-  { istqb table }
-\SetTblrOuter
-  [ istqb table ]
+\tl_new:N \l_istqb_table_tl
+\tl_new:N \l_istqb_table_end_tl
+\tl_new:N \l_istqb_table_caption_tl
+\tl_new:N \l_istqb_table_label_tl
+\tl_new:N \l_istqb_table_header_tl
+\tl_new:N \l_istqb_table_body_tl
+\seq_new:N \l_istqb_table_rows_seq
+\keys_define:nn
+  { istqb / table }
   {
-    long,
-    entry = none,
-    label = none,
-    presep = \medskipamount,
-    postsep = \medskipamount,
+    caption .tl_set:N = \l_istqb_table_caption_tl,
+    label .tl_set:N = \l_istqb_table_label_tl,
   }
-\SetTblrInner
-  [ istqb table ]
+%%% Typeset a table that may break across pages, repeating the header row on every page.
+%%%
+%%% #1: caption (may be empty), #2: label (may be empty), #3: column specification,
+%%% #4: cells of the header row, #5: rows of the table body, each followed by `\\` and a horizontal rule.
+\cs_new_protected:Nn
+  \istqb_table:nnnnn
   {
-    rowhead = 1,
-    row { 1 } = { istqb gray table header },
-    hlines,
-    stretch = 0,
-    rows = { ht = \baselineskip },
-    colsep = 3pt,
+    \group_begin:
+    \dim_set:Nn
+      \tabcolsep
+      { 3pt }
+    % Approximate the height of rows in version 1.2.2 of this class, when tables were typeset with the package
+    % tabularray with the settings `rows = { ht = \baselineskip }` and `rowsep = 2pt`.
+    \cs_set:Npn
+      \arraystretch
+      { 1.25 }
+    \tl_if_empty:nTF
+      { #1 }
+      {
+        \skip_set:Nn \LTpre { \medskipamount }
+        \skip_set:Nn \LTpost { \medskipamount }
+        % Don't increment the counter of tables for tables without captions.
+        \cs_set:Npn
+          \LTcaptype
+          { }
+      }
+      {
+        \skip_set:Nn \LTpre { 1.5 \bigskipamount }
+        \skip_set:Nn \LTpost { 1.5 \bigskipamount }
+      }
+    % Use the package xltabular if the table contains X columns and the package longtable otherwise.
+    \tl_if_in:nnTF
+      { #3 }
+      { X }
+      {
+        \tl_set:Nn
+          \l_istqb_table_tl
+          { \begin { xltabular } { \linewidth } { #3 } }
+        \tl_set:Nn
+          \l_istqb_table_end_tl
+          { \end { xltabular } }
+      }
+      {
+        \tl_set:Nn
+          \l_istqb_table_tl
+          { \begin { longtable } { #3 } }
+        \tl_set:Nn
+          \l_istqb_table_end_tl
+          { \end { longtable } }
+      }
+    % Typeset the caption and the header row on the first page.
+    \tl_if_empty:nF
+      { #1 }
+      {
+        \tl_put_right:Nn
+          \l_istqb_table_tl
+          { \caption { #1 } }
+        \tl_if_empty:nF
+          { #2 }
+          {
+            \tl_put_right:Nn
+              \l_istqb_table_tl
+              { \label { #2 } }
+          }
+        \tl_put_right:Nn
+          \l_istqb_table_tl
+          {
+            \\
+            \hline
+            \rowcolor { istqbgraytableheader }
+            #4 \\
+            \hline
+            \endfirsthead
+          }
+      }
+    % Typeset the header row on the following pages (and on the first page if there is no caption).
+    \tl_put_right:Nn
+      \l_istqb_table_tl
+      {
+        \hline
+        \rowcolor { istqbgraytableheader }
+        #4 \\
+        \hline
+        \endhead
+        #5
+      }
+    \tl_put_right:NV
+      \l_istqb_table_tl
+      \l_istqb_table_end_tl
+    \tl_use:N
+      \l_istqb_table_tl
+    \group_end:
   }
+\cs_generate_variant:Nn
+  \istqb_table:nnnnn
+  { nnnVV }
+%%% Typeset a table from rows separated by `\\`, where the first row is the header row.
+%%%
+%%% #1: caption (may be empty), #2: label (may be empty), #3: column specification, #4: rows.
+\cs_new_protected:Nn
+  \istqb_table_from_rows:nnnn
+  {
+    \seq_set_split:Nnn
+      \l_istqb_table_rows_seq
+      { \\ }
+      { #4 }
+    \seq_pop_left:NN
+      \l_istqb_table_rows_seq
+      \l_istqb_table_header_tl
+    \tl_clear:N
+      \l_istqb_table_body_tl
+    \seq_map_inline:Nn
+      \l_istqb_table_rows_seq
+      {
+        \tl_if_blank:nF
+          { ##1 }
+          {
+            \tl_put_right:Nn
+              \l_istqb_table_body_tl
+              { ##1 \\ \hline }
+          }
+      }
+    \istqb_table:nnnVV
+      { #1 }
+      { #2 }
+      { #3 }
+      \l_istqb_table_header_tl
+      \l_istqb_table_body_tl
+  }
+\cs_generate_variant:Nn
+  \istqb_table_from_rows:nnnn
+  { VVnn }
+%%% A table environment with optional keys `caption` and `label` and a mandatory column specification.
+\NewDocumentEnvironment
+  { istqbtable }
+  { O { } m +b }
+  {
+    \group_begin:
+    \keys_set:nn
+      { istqb / table }
+      { #1 }
+    \istqb_table_from_rows:VVnn
+      \l_istqb_table_caption_tl
+      \l_istqb_table_label_tl
+      { #2 }
+      { #3 }
+    \group_end:
+  }
+  { }
 \ExplSyntaxOff
 
 %% Revision History
-\newenvironment{istqbrevisionhistory}{%
-  \begin{istqbtable}{|l|l|X|}%
-}{%
-  \end{istqbtable}%
-}
+\NewDocumentEnvironment{istqbrevisionhistory}{+b}{%
+  \begin{istqbtable}{|l|l|X|}#1\end{istqbtable}%
+}{}
 
 % Structure Tables
 \ExplSyntaxOn
@@ -1113,52 +1311,76 @@
 
 % Unicode characters
 \RequirePackage{newunicodechar}
+%% Typeset a substitute for a character that is missing from the font. In tagged PDF, the original character is
+%% recorded as the actual text of the substitute, so that it is extracted correctly, e.g. by assistive technologies.
+%% See also <https://github.com/istqborg/istqb_product_base/issues/152#issuecomment-5715946481>.
+%%
+%% The first argument of `\istqbactualtext` is the character code of the original character rather than the character
+%% itself, since the character is active and would be expanded when read back from auxiliary files such as `.toc`.
+\ExplSyntaxOn
+\cs_new_protected:Npn
+  \istqbactualtext
+  #1#2
+  {
+    \tag_mc_end_push:
+    \exp_args:Ne
+      \tag_mc_begin:n
+      { actualtext = \char_generate:nn { #1 } { 12 } }
+    #2
+    \tag_mc_end:
+    \tag_mc_begin_pop:n
+      { }
+  }
+\ExplSyntaxOff
+\newcommand\istqbnewsubstitutedunicodechar[2]{%
+  \newunicodechar{#1}{\texorpdfstring{\istqbactualtext{`#1}{#2}}{#1}}%
+}
 %% Subscripts
-\newunicodechar{₀}{\textsubscript{0}}
-\newunicodechar{₁}{\textsubscript{1}}
-\newunicodechar{₂}{\textsubscript{2}}
-\newunicodechar{₃}{\textsubscript{3}}
-\newunicodechar{₄}{\textsubscript{4}}
-\newunicodechar{₅}{\textsubscript{5}}
-\newunicodechar{₆}{\textsubscript{6}}
-\newunicodechar{₇}{\textsubscript{7}}
-\newunicodechar{₈}{\textsubscript{8}}
-\newunicodechar{₉}{\textsubscript{9}}
-\newunicodechar{ₐ}{\textsubscript{a}}
-\newunicodechar{ₑ}{\textsubscript{e}}
-\newunicodechar{ₒ}{\textsubscript{o}}
-\newunicodechar{ₓ}{\textsubscript{x}}
-\newunicodechar{ₕ}{\textsubscript{h}}
-\newunicodechar{ₖ}{\textsubscript{k}}
-\newunicodechar{ₗ}{\textsubscript{l}}
-\newunicodechar{ₘ}{\textsubscript{m}}
-\newunicodechar{ₙ}{\textsubscript{n}}
-\newunicodechar{ₚ}{\textsubscript{p}}
-\newunicodechar{ₛ}{\textsubscript{s}}
-\newunicodechar{ₜ}{\textsubscript{t}}
-\newunicodechar{₊}{\textsubscript{+}}
-\newunicodechar{₋}{\textsubscript{-}}
-\newunicodechar{₌}{\textsubscript{=}}
-\newunicodechar{₍}{\textsubscript{(}}
-\newunicodechar{₎}{\textsubscript{)}}
+\istqbnewsubstitutedunicodechar{₀}{\textsubscript{0}}
+\istqbnewsubstitutedunicodechar{₁}{\textsubscript{1}}
+\istqbnewsubstitutedunicodechar{₂}{\textsubscript{2}}
+\istqbnewsubstitutedunicodechar{₃}{\textsubscript{3}}
+\istqbnewsubstitutedunicodechar{₄}{\textsubscript{4}}
+\istqbnewsubstitutedunicodechar{₅}{\textsubscript{5}}
+\istqbnewsubstitutedunicodechar{₆}{\textsubscript{6}}
+\istqbnewsubstitutedunicodechar{₇}{\textsubscript{7}}
+\istqbnewsubstitutedunicodechar{₈}{\textsubscript{8}}
+\istqbnewsubstitutedunicodechar{₉}{\textsubscript{9}}
+\istqbnewsubstitutedunicodechar{ₐ}{\textsubscript{a}}
+\istqbnewsubstitutedunicodechar{ₑ}{\textsubscript{e}}
+\istqbnewsubstitutedunicodechar{ₒ}{\textsubscript{o}}
+\istqbnewsubstitutedunicodechar{ₓ}{\textsubscript{x}}
+\istqbnewsubstitutedunicodechar{ₕ}{\textsubscript{h}}
+\istqbnewsubstitutedunicodechar{ₖ}{\textsubscript{k}}
+\istqbnewsubstitutedunicodechar{ₗ}{\textsubscript{l}}
+\istqbnewsubstitutedunicodechar{ₘ}{\textsubscript{m}}
+\istqbnewsubstitutedunicodechar{ₙ}{\textsubscript{n}}
+\istqbnewsubstitutedunicodechar{ₚ}{\textsubscript{p}}
+\istqbnewsubstitutedunicodechar{ₛ}{\textsubscript{s}}
+\istqbnewsubstitutedunicodechar{ₜ}{\textsubscript{t}}
+\istqbnewsubstitutedunicodechar{₊}{\textsubscript{+}}
+\istqbnewsubstitutedunicodechar{₋}{\textsubscript{-}}
+\istqbnewsubstitutedunicodechar{₌}{\textsubscript{=}}
+\istqbnewsubstitutedunicodechar{₍}{\textsubscript{(}}
+\istqbnewsubstitutedunicodechar{₎}{\textsubscript{)}}
 %% Superscripts
-\newunicodechar{⁰}{\textsuperscript{0}}
-\newunicodechar{¹}{\textsuperscript{1}}
-\newunicodechar{²}{\textsuperscript{2}}
-\newunicodechar{³}{\textsuperscript{3}}
-\newunicodechar{⁴}{\textsuperscript{4}}
-\newunicodechar{⁵}{\textsuperscript{5}}
-\newunicodechar{⁶}{\textsuperscript{6}}
-\newunicodechar{⁷}{\textsuperscript{7}}
-\newunicodechar{⁸}{\textsuperscript{8}}
-\newunicodechar{⁹}{\textsuperscript{9}}
-\newunicodechar{ⁱ}{\textsuperscript{i}}
-\newunicodechar{ⁿ}{\textsuperscript{n}}
-\newunicodechar{⁺}{\textsuperscript{+}}
-\newunicodechar{⁻}{\textsuperscript{-}}
-\newunicodechar{⁼}{\textsuperscript{=}}
-\newunicodechar{⁽}{\textsuperscript{(}}
-\newunicodechar{⁾}{\textsuperscript{)}}
+\istqbnewsubstitutedunicodechar{⁰}{\textsuperscript{0}}
+\istqbnewsubstitutedunicodechar{¹}{\textsuperscript{1}}
+\istqbnewsubstitutedunicodechar{²}{\textsuperscript{2}}
+\istqbnewsubstitutedunicodechar{³}{\textsuperscript{3}}
+\istqbnewsubstitutedunicodechar{⁴}{\textsuperscript{4}}
+\istqbnewsubstitutedunicodechar{⁵}{\textsuperscript{5}}
+\istqbnewsubstitutedunicodechar{⁶}{\textsuperscript{6}}
+\istqbnewsubstitutedunicodechar{⁷}{\textsuperscript{7}}
+\istqbnewsubstitutedunicodechar{⁸}{\textsuperscript{8}}
+\istqbnewsubstitutedunicodechar{⁹}{\textsuperscript{9}}
+\istqbnewsubstitutedunicodechar{ⁱ}{\textsuperscript{i}}
+\istqbnewsubstitutedunicodechar{ⁿ}{\textsuperscript{n}}
+\istqbnewsubstitutedunicodechar{⁺}{\textsuperscript{+}}
+\istqbnewsubstitutedunicodechar{⁻}{\textsuperscript{-}}
+\istqbnewsubstitutedunicodechar{⁼}{\textsuperscript{=}}
+\istqbnewsubstitutedunicodechar{⁽}{\textsuperscript{(}}
+\istqbnewsubstitutedunicodechar{⁾}{\textsuperscript{)}}
 %% Punctuation
 \newunicodechar{−}{--}  % Render the minus sign as an en-dash, assuming that the author mistyped.
 %% Math
@@ -1166,8 +1388,8 @@
 \newunicodechar{≥}{\ensuremath{\geq}}
 \newunicodechar{≠}{\ensuremath{\neq}}
 %% Spacing
-\newunicodechar{ }{\,}
-\newunicodechar{ }{\,}
+\istqbnewsubstitutedunicodechar{ }{\,}
+\istqbnewsubstitutedunicodechar{ }{\,}
 \newunicodechar{​}{}
 %% Box-drawing characters from old code pages (e.g. CP437)
 \RequirePackage{pmboxdraw}

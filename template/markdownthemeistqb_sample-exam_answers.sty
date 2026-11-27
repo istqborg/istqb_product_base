@@ -29,35 +29,9 @@
   }
 
 % Answer key
-\RequirePackage
-  { multicol }
-\RequirePackage
-  { supertabular }
-\FirstAidNeededT
-  { supertabular }
-  { sty }
-  { 2024/07/20~v4.2c~the~supertabular~environment }
-  {
-    %% Patch the package supertabular, as suggested by @FrankMittelbach in
-    %% <https://github.com/latex3/latex2e/issues/1781#issuecomment-2981256594>.
-    \AddToHook
-      { cmd / x@supertabular / after }
-      {
-        \cs_set_eq:NN
-          \orig@startpbox@action
-          \@startpbox@action
-        \cs_set_eq:NN
-          \@startpbox@action
-          \@startpbox
-      }
-    \AddToHook
-      { cmd / ST@restorex / after }
-      {
-        \cs_set_eq:NN
-          \@startpbox@action
-          \orig@startpbox@action
-      }
-  }
+%% We typeset the answer key as pairs of tables side by side rather than as a single table in two columns with the
+%% packages multicol and supertabular, since the package supertabular is incompatible with tagging.
+%% See also <https://github.com/istqborg/istqb_product_base/issues/152#issuecomment-5715946481>.
 \RequirePackage
   { array }
 \newcolumntype
@@ -65,27 +39,26 @@
   [ 1 ]
   { >{ \centering\arraybackslash } p { #1 } }
 \tl_new:N
+  \l_istqb_answer_key_header_tl
+\tl_new:N
+  \l_istqb_answer_key_row_tl
+\tl_new:N
   \l_istqb_answer_key_table_tl
+\seq_new:N
+  \l_istqb_answer_key_rows_seq
+\int_new:N
+  \l_istqb_answer_key_rows_per_column_int
+\int_new:N
+  \l_istqb_answer_key_first_row_int
+\int_new:N
+  \l_istqb_answer_key_number_of_rows_int
+\int_new:N
+  \l_istqb_answer_key_number_of_left_rows_int
 \cs_new_protected:Nn
   \istqb_print_answer_key:n
   {
-    % Start a two-column layout
-    \begin { multicols } { 2 }
-    \cs_set:Npn
-      \newpage
-      {
-        \if@firstcolumn
-          \hrule width
-            \linewidth height0pt
-          \columnbreak
-          % Prevent a page break after the second column.
-          \advance \@colroom \@colroom
-        \fi
-      }
+    \group_begin:
     % Set the dimensions of the table rows.
-    \advance
-      \@colroom
-      1.25cm
     \int_compare:nTF
       { \seq_count:N \g_istqb_questions_seq > 45 }
       {
@@ -107,8 +80,12 @@
             { 1.175 }
         }
       }
-    % Prepare the heading of the table.
-    \tablehead
+    % In tagged PDF, mark the first row of each table as the header row.
+    \tagpdfsetup
+      { table / header-rows = { 1 } }
+    % Prepare the header row of the tables.
+    \tl_set:Nn
+      \l_istqb_answer_key_header_tl
       {
         \hline
         \textbf
@@ -136,19 +113,11 @@
             \tl_use:N
               \g_istqb_translation_number_of_points_tl
           } \\
+        \hline
       }
-    \tabletail { \hline }
-    \tablelasttail { \hline }
-    \tl_set:Nn
-      \l_istqb_answer_key_table_tl
-      {
-        \begin
-          { supertabular }
-          { | C { 1.9cm } | C { 1.5cm }
-            | C { 2.4cm } | C { 1.4cm }
-            | C { 1.9cm } | }
-      }
-    % Prepare the lines of the table
+    % Prepare the other rows of the tables.
+    \seq_clear:N
+      \l_istqb_answer_key_rows_seq
     \int_set:Nn
       \l_tmpa_int
       { 1 }
@@ -168,12 +137,11 @@
           \l_tmpa_tl
           { #1 }
           {
-            \tl_put_right:Nn
-              \l_istqb_answer_key_table_tl
-              { \hline }
+            \tl_clear:N
+              \l_istqb_answer_key_row_tl
             % Record the question number.
             \tl_put_right:Nn
-              \l_istqb_answer_key_table_tl
+              \l_istqb_answer_key_row_tl
               { \textbf }
             \tl_set:Nn
               \l_tmpa_tl
@@ -190,7 +158,7 @@
               \l_tmpa_tl
               \l_tmpa_int
             \tl_put_right:Nx
-              \l_istqb_answer_key_table_tl
+              \l_istqb_answer_key_row_tl
               {
                 {
                   \tl_use:N
@@ -216,17 +184,17 @@
                   \l_tmpa_clist
               }
             \tl_put_right:Ne
-              \l_istqb_answer_key_table_tl
+              \l_istqb_answer_key_row_tl
               { \clist_use:Nn
                   \l_tmpa_clist
                   { ,~ } &
               }
             % Record the learning objective.
             \tl_put_right:NV
-              \l_istqb_answer_key_table_tl
+              \l_istqb_answer_key_row_tl
               \g_istqb_prefix_tl
             \tl_put_right:Nn
-              \l_istqb_answer_key_table_tl
+              \l_istqb_answer_key_row_tl
               { - }
             \prop_get:cnN
               { g_istqb_question_learning
@@ -234,10 +202,10 @@
               { ##1 }
               \l_tmpa_tl
             \tl_put_right:NV
-              \l_istqb_answer_key_table_tl
+              \l_istqb_answer_key_row_tl
               \l_tmpa_tl
             \tl_put_right:Nn
-              \l_istqb_answer_key_table_tl
+              \l_istqb_answer_key_row_tl
               { & }
             % Record the K-level.
             \prop_get:NnN
@@ -245,10 +213,10 @@
               { ##1 }
               \l_tmpa_tl
             \tl_put_right:NV
-              \l_istqb_answer_key_table_tl
+              \l_istqb_answer_key_row_tl
               \l_tmpa_tl
             \tl_put_right:Nn
-              \l_istqb_answer_key_table_tl
+              \l_istqb_answer_key_row_tl
               { & }
             % Record the number of points.
             \prop_get:cnN
@@ -257,21 +225,124 @@
               { ##1 }
               \l_tmpa_tl
             \tl_put_right:NV
-              \l_istqb_answer_key_table_tl
+              \l_istqb_answer_key_row_tl
               \l_tmpa_tl
             \tl_put_right:Nn
-              \l_istqb_answer_key_table_tl
-              { \\ }
+              \l_istqb_answer_key_row_tl
+              { \\ \hline }
+            \seq_put_right:NV
+              \l_istqb_answer_key_rows_seq
+              \l_istqb_answer_key_row_tl
           }
       }
-    % Typeset the table.
-    \tl_put_right:Nn
-      \l_istqb_answer_key_table_tl
-      { \end { supertabular } }
-    \tl_use:N
-      \l_istqb_answer_key_table_tl
-    % End the two-column layout.
-    \end { multicols }
+    % Determine how many rows fit into a table on a single page, leaving space for a heading above the tables.
+    \int_set:Nn
+      \l_istqb_answer_key_rows_per_column_int
+      {
+        \int_max:nn
+          { 1 }
+          {
+            \int_div_truncate:nn
+              { \dim_to_decimal_in_sp:n { \textheight - 4 \baselineskip } }
+              { \dim_to_decimal_in_sp:n { \arraystretch \baselineskip + \arrayrulewidth } }
+            - 1
+          }
+      }
+    % Typeset the rows in pairs of tables side by side, starting a new page for every pair of tables.
+    \int_set:Nn
+      \l_istqb_answer_key_first_row_int
+      { 1 }
+    \int_while_do:nNnn
+      { \l_istqb_answer_key_first_row_int }
+      <
+      { \seq_count:N \l_istqb_answer_key_rows_seq + 1 }
+      {
+        \int_set:Nn
+          \l_istqb_answer_key_number_of_rows_int
+          {
+            \int_min:nn
+              { 2 * \l_istqb_answer_key_rows_per_column_int }
+              {
+                \seq_count:N \l_istqb_answer_key_rows_seq
+                - \l_istqb_answer_key_first_row_int + 1
+              }
+          }
+        \int_set:Nn
+          \l_istqb_answer_key_number_of_left_rows_int
+          {
+            \int_div_truncate:nn
+              { \l_istqb_answer_key_number_of_rows_int + 1 }
+              { 2 }
+          }
+        \par
+        \noindent
+        \istqb_print_answer_key_table:nn
+          { \l_istqb_answer_key_first_row_int }
+          {
+            \l_istqb_answer_key_first_row_int
+            + \l_istqb_answer_key_number_of_left_rows_int - 1
+          }
+        \hspace
+          { \columnsep }
+        \istqb_print_answer_key_table:nn
+          {
+            \l_istqb_answer_key_first_row_int
+            + \l_istqb_answer_key_number_of_left_rows_int
+          }
+          {
+            \l_istqb_answer_key_first_row_int
+            + \l_istqb_answer_key_number_of_rows_int - 1
+          }
+        \par
+        \int_add:Nn
+          \l_istqb_answer_key_first_row_int
+          { \l_istqb_answer_key_number_of_rows_int }
+      }
+    \group_end:
+  }
+%%% Typeset a table with the rows #1 to #2 of the answer key in one half of the line.
+\cs_new_protected:Nn
+  \istqb_print_answer_key_table:nn
+  {
+    \int_compare:nNnF
+      { #2 } < { #1 }
+      {
+        \tl_set:Nn
+          \l_istqb_answer_key_table_tl
+          {
+            \begin
+              { tabular }
+              [ t ]
+              { | C { 1.9cm } | C { 1.5cm }
+                | C { 2.4cm } | C { 1.4cm }
+                | C { 1.9cm } | }
+          }
+        \tl_put_right:NV
+          \l_istqb_answer_key_table_tl
+          \l_istqb_answer_key_header_tl
+        \int_step_inline:nnn
+          { #1 }
+          { #2 }
+          {
+            \tl_put_right:Nx
+              \l_istqb_answer_key_table_tl
+              {
+                \seq_item:Nn
+                  \l_istqb_answer_key_rows_seq
+                  { ##1 }
+              }
+          }
+        \tl_put_right:Nn
+          \l_istqb_answer_key_table_tl
+          { \end { tabular } }
+        \makebox
+          [ \dim_eval:n { ( \linewidth - \columnsep ) / 2 } ]
+          [ l ]
+          {
+            \tl_use:N
+              \l_istqb_answer_key_table_tl
+          }
+      }
   }
 
 % Answers
@@ -296,7 +367,6 @@
           { #2 }
       }
   }
-\RequirePackage { paralist }
 \cs_new_protected:Nn
   \istqb_print_answers:n
   {
@@ -468,13 +538,9 @@
                   {
                     \c_explanation_width_dim
                   }
-                \setdefaultleftmargin
+                \dim_set:Nn
+                  \leftmargini
                   { 1.5em }
-                  { }
-                  { }
-                  { }
-                  { }
-                  { }
               }
             \prop_get:cnN
               { g_istqb_question_explanation

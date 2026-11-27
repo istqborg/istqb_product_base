@@ -125,6 +125,15 @@ MARKDOWN_LIST_ITEM_REGEXP = re.compile(r'^(?P<indent>\s*)(?:[-*+]|\d+[.)])\s+(?P
 
 TEXLOGFILTER_FORBIDDEN_LINES = re.compile(r'imakeidx|fancyhdr|newunicodechar|hyperref|lipsum|LaTeX Font Warning|\(Font\)|\\@parboxrestore')
 
+TEX4HT_DISABLED_MESSAGE = (
+    'Compiling TeX files to %s is disabled until the template migrates from TeX4ht to a PDFToolkit-based solution '
+    'that derives %s from tagged PDF, see also <https://github.com/istqborg/istqb_product_base/issues/152>'
+)
+
+TEX_COMMENT_REGEXP = re.compile(r'(?<!\\)(?P<backslashes>(?:\\\\)*)%.*$', re.MULTILINE)
+DOCUMENT_METADATA_REGEXP = re.compile(r'\\DocumentMetadata(?![a-zA-Z@])')
+BCP_47_LANGUAGE_TAG_REGEXP = re.compile(r'[a-zA-Z]{2,3}(-[a-zA-Z0-9]{1,8})*')
+
 
 FileLocation = Tuple[Path, int]
 
@@ -612,6 +621,13 @@ def _validate_files(file_types: Iterable[str], silent: bool = False) -> None:
             LOGGER.info('Validated file "%s" with schema "%s"', path, schema.name)
 
     def validate_tex_file(path: Path):
+        document_metadata_line_number = _find_document_metadata(path)
+        if document_metadata_line_number is not None:
+            raise ValueError(
+                f'File "{path}" specifies \\DocumentMetadata on line {document_metadata_line_number}; remove it, since '
+                '\\DocumentMetadata is added automatically when the file is compiled to PDF'
+            )
+
         references = list(_get_references_from_tex_files([path]))
         for (tex_input_path, character_number), original_referenced_path, referenced_paths in references:
             line_number = _get_line_number_from_file_location((tex_input_path, character_number))
@@ -1276,14 +1292,54 @@ def _validate_log_file(input_path: Path) -> None:
         )
 
 
+def _find_document_metadata(input_path: Path) -> Optional[int]:
+    """
+    Find the line number of the first `\\DocumentMetadata` outside comments in a TeX file, if any.
+    """
+    with input_path.open('rt') as f:
+        for line_number, line in enumerate(f, start=1):
+            line = TEX_COMMENT_REGEXP.sub(r'\g<backslashes>', line)
+            if DOCUMENT_METADATA_REGEXP.search(line) is not None:
+                return line_number
+    return None
+
+
+def _get_document_metadata(input_path: Path) -> str:
+    """
+    Produce `\\DocumentMetadata` for a TeX file that will produce tagged PDF that conforms to PDF/UA-2.
+
+    See also <https://github.com/istqborg/istqb_product_base/issues/152#issuecomment-5715946481>.
+    """
+    keys = ['pdfversion=2.0', 'pdfstandard=ua-2', 'tagging=on']
+    metadata_yaml = _get_metadata_yaml(input_path, 'determine the language of the document for \\DocumentMetadata; will not specify it')
+    if metadata_yaml is not None and 'language' in metadata_yaml:
+        language = str(metadata_yaml['language']).strip()
+        if BCP_47_LANGUAGE_TAG_REGEXP.fullmatch(language):
+            keys.insert(0, f'lang={language}')
+        else:
+            _warning('Language "%s" of file "%s" is not a valid BCP 47 language tag; will not specify it in \\DocumentMetadata',
+                     language, input_path)
+    return f'\\DocumentMetadata{{{",".join(keys)}}}'
+
+
+def _get_latexmk_arguments(input_path: Path) -> List[str]:
+    # Execute `\DocumentMetadata` before the TeX file, see also file `latexmkrc`. TeX files must not specify their own
+    # `\DocumentMetadata`, which is checked in `_validate_files()`. Since the TeX file is then input by `\input`, we also
+    # need to specify the job name, so that it is not taken from the first file that is input.
+    document_metadata = _get_document_metadata(input_path)
+    LOGGER.debug('Adding %s to file "%s"', document_metadata, input_path)
+    return ['-r', f'{LATEXMKRC}', f'-jobname={input_path.stem}', f'-pretex={document_metadata}', f'{input_path}']
+
+
 def _compile_tex_file_to_pdf(input_path: Path, previous_continuous: bool) -> Union[int, Optional[Path]]:
     if not _should_compile_tex_file_to_pdf(input_path):
         return
+    latexmk_arguments = _get_latexmk_arguments(input_path)
     if previous_continuous:
-        _run_command('latexmk', '-pvc', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=None)
+        _run_command('latexmk', '-pvc', *latexmk_arguments, timeout=None)
     else:
         try:
-            _run_command('latexmk', '-r', f'{LATEXMKRC}', f'{input_path}', timeout=600)
+            _run_command('latexmk', *latexmk_arguments, timeout=600)
         except CalledProcessError as e:
             message_parts = ['Compiling the file "%s" returned non-zero exit status %d and the following output:\n\n%s']
             message_arguments = [input_path, e.returncode, e.output.decode(errors='ignore')]
@@ -1689,12 +1745,19 @@ def compile_tex_files_to_pdf(args: Namespace) -> None:
     _compile_tex_files_to_pdf(args.previous_continuous, input_paths, args.full_compile)
 
 
+def _exit_because_tex4ht_is_disabled(output_format: str) -> None:
+    _warning(TEX4HT_DISABLED_MESSAGE, output_format, output_format)
+    sys.exit(0)
+
+
 def compile_tex_files_to_html(args: Namespace) -> None:
+    _exit_because_tex4ht_is_disabled('HTML')
     input_paths = sorted(map(Path, args.filenames)) if args.filenames else None
     _compile_tex_files_to_html(Path(args.outputdir), input_paths, args.full_compile)
 
 
 def compile_tex_files_to_epub(args: Namespace) -> None:
+    _exit_because_tex4ht_is_disabled('EPUB')
     input_paths = sorted(map(Path, args.filenames)) if args.filenames else None
     _compile_tex_files_to_epub(Path(args.outputdir), input_paths, args.full_compile)
 
@@ -1787,7 +1850,7 @@ def main():
 
     parser_compile_tex_to_html = subparsers.add_parser(
         'compile-tex-to-html',
-        help='Compile all TeX files in this repository to HTML',
+        help='Compile all TeX files in this repository to HTML (currently disabled)',
     )
     parser_compile_tex_to_html.add_argument(
         '--full-compile',
@@ -1800,7 +1863,7 @@ def main():
 
     parser_compile_tex_to_epub = subparsers.add_parser(
         'compile-tex-to-epub',
-        help='Compile all TeX files in this repository to EPUB',
+        help='Compile all TeX files in this repository to EPUB (currently disabled)',
     )
     parser_compile_tex_to_epub.add_argument(
         '--full-compile',
