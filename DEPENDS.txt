@@ -8,6 +8,7 @@ biber
 biblatex
 biblatex-iso690
 collection-latexrecommended
+collection-luatex
 csquotes
 graphbox
 hyphen-czech
@@ -19,12 +20,7 @@ imakeidx
 lastpage
 latexmk
 lipsum
-lua-tinyyaml
-luakeyval
-lualatex-math
-lualineno
-luamml
-luaxml
+ltablex
 make4ht
 makeindex
 mwe
