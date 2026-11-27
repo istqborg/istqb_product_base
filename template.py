@@ -1746,9 +1746,8 @@ def compile_tex_files_to_pdf(args: Namespace) -> None:
 
 
 def _exit_because_tex4ht_is_disabled(output_format: str) -> None:
-    # The class istqb requires `\DocumentMetadata`, which template.py only adds to TeX files when compiling them to PDF.
-    LOGGER.error(TEX4HT_DISABLED_MESSAGE, output_format, output_format)
-    sys.exit(1)
+    _warning(TEX4HT_DISABLED_MESSAGE, output_format, output_format)
+    sys.exit(0)
 
 
 def compile_tex_files_to_html(args: Namespace) -> None:
